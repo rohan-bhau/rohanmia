@@ -2,13 +2,50 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import { 
+  FaGithub, 
+  FaLinkedin, 
+  FaXTwitter, 
+  FaFacebook, 
+  FaInstagram, 
+  FaYoutube, 
+  FaWhatsapp, 
+  FaTelegram, 
+  FaDiscord, 
+  FaTiktok, 
+  FaSnapchat, 
+  FaPinterest, 
+  FaReddit, 
+  FaDribbble, 
+  FaBehance, 
+  FaGlobe 
+} from 'react-icons/fa6';
+
 import Magnetic from '@/components/shared/Magnetic';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Cpu, GraduationCap } from 'lucide-react';
 
-export default function Hero({ settings, heroContent }) {
+const ICON_MAP = {
+  Github: FaGithub,
+  Linkedin: FaLinkedin,
+  Twitter: FaXTwitter,
+  Instagram: FaInstagram,
+  Facebook: FaFacebook,
+  Youtube: FaYoutube,
+  Portfolio: FaGlobe,
+  WhatsApp: FaWhatsapp,
+  Telegram: FaTelegram,
+  Discord: FaDiscord,
+  TikTok: FaTiktok,
+  Snapchat: FaSnapchat,
+  Pinterest: FaPinterest,
+  Reddit: FaReddit,
+  Dribbble: FaDribbble,
+  Behance: FaBehance
+};
+
+export default function Hero({ settings, heroContent, contactData }) {
   const titles = heroContent?.titles || [
     "Frontend Developer",
     "JavaScript Developer",
@@ -113,21 +150,26 @@ export default function Hero({ settings, heroContent }) {
 
         {/* Vertical Socials (Matching Reference) */}
         <div className="hidden lg:flex fixed left-10 top-1/2 -translate-y-1/2 flex-col gap-8 z-20">
-          {[
-            { icon: FaLinkedin, href: "https://linkedin.com" },
-            { icon: FaGithub, href: "https://github.com" },
-            { icon: FaXTwitter, href: "https://twitter.com" },
-          ].map((social, i) => (
-            <Magnetic key={i} strength={0.4}>
-              <Link 
-                href={social.href} 
-                target="_blank" 
-                className="w-10 h-10 rounded-full glass flex items-center justify-center text-foreground/40 hover:text-primary hover:border-primary/50 transition-all duration-300"
-              >
-                <social.icon size={20} />
-              </Link>
-            </Magnetic>
-          ))}
+          {(contactData?.socials || [
+            { name: "Linkedin", url: "https://linkedin.com" },
+            { name: "Github", url: "https://github.com" },
+            { name: "Twitter", url: "https://twitter.com" },
+          ])
+          .filter(social => ['linkedin', 'twitter', 'github'].includes(social.name.toLowerCase()))
+          .map((social, i) => {
+            const Icon = ICON_MAP[social.name] || FaGlobe;
+            return (
+              <Magnetic key={i} strength={0.4}>
+                <Link 
+                  href={social.url} 
+                  target="_blank" 
+                  className="w-10 h-10 rounded-full glass flex items-center justify-center text-foreground/40 hover:text-primary hover:border-primary/50 transition-all duration-300"
+                >
+                  <Icon size={20} />
+                </Link>
+              </Magnetic>
+            );
+          })}
         </div>
 
         {/* Right Side: Profile Image with Premium Floating Animation */}

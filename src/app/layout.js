@@ -20,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 import { getSettings } from "@/actions/settings";
+import { getContactData } from "@/actions/contact";
 
 export async function generateMetadata() {
   const settings = await getSettings();
@@ -45,7 +46,9 @@ export async function generateMetadata() {
 
 import { Toaster } from "sonner";
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const contactData = await getContactData();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -61,7 +64,7 @@ export default function RootLayout({ children }) {
           <Toaster theme="dark" richColors position="top-right" />
           <main className="relative z-10 min-h-screen">
             {children}
-            <Footer />
+            <Footer contactData={contactData} />
           </main>
         </Providers>
       </body>

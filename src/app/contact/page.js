@@ -2,23 +2,57 @@
 
 import { motion } from 'framer-motion';
 import { Mail, Send, MapPin, Phone } from 'lucide-react';
-import { FaGithub, FaLinkedin, FaXTwitter, FaFacebook, FaInstagram } from 'react-icons/fa6';
-import { useState } from 'react';
+import { FaGithub, FaLinkedin, FaXTwitter, FaFacebook, FaInstagram, FaYoutube, FaGlobe } from 'react-icons/fa6';
+import { useState, useEffect } from 'react';
 import Magnetic from '@/components/shared/Magnetic';
+import { getContactData, sendMessage } from '@/actions/contact';
+import { toast } from 'sonner';
+
+const ICON_MAP = {
+  Github: FaGithub,
+  Linkedin: FaLinkedin,
+  Twitter: FaXTwitter,
+  Instagram: FaInstagram,
+  Facebook: FaFacebook,
+  Youtube: FaYoutube,
+  Portfolio: FaGlobe
+};
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle, loading, success
+  const [contactInfo, setContactInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchInfo = async () => {
+      const data = await getContactData();
+      if (data) setContactInfo(data);
+    };
+    fetchInfo();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
-    // Simulate API call
-    setTimeout(() => {
+    
+    const res = await sendMessage(formData);
+    
+    if (res.success) {
       setStatus('success');
+      toast.success('Message sent successfully!');
       setFormData({ name: '', email: '', message: '' });
-    }, 2000);
+      setTimeout(() => setStatus('idle'), 3000);
+    } else {
+      setStatus('idle');
+      toast.error('Failed to send message. Please try again.');
+    }
   };
+
+  const contactItems = [
+    { icon: Mail, label: "Email", value: contactInfo?.email || "rohan@example.com" },
+    { icon: Phone, label: "Phone", value: contactInfo?.phone || "+880 1234 567890" },
+    { icon: MapPin, label: "Location", value: contactInfo?.address || "Dhaka, Bangladesh" },
+  ];
 
   return (
     <div className="pt-32 pb-20 px-6">
@@ -41,11 +75,7 @@ export default function ContactPage() {
             </div>
 
             <div className="space-y-6">
-              {[
-                { icon: Mail, label: "Email", value: "rohan@example.com" },
-                { icon: Phone, label: "Phone", value: "+880 1234 567890" },
-                { icon: MapPin, label: "Location", value: "Dhaka, Bangladesh" },
-              ].map((item, i) => (
+              {contactItems.map((item, i) => (
                 <div key={i} className="flex items-center gap-6 group">
                   <div className="w-12 h-12 rounded-2xl glass border-white/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <item.icon size={24} />
@@ -61,13 +91,27 @@ export default function ContactPage() {
             <div className="space-y-4">
               <p className="text-sm text-gray-400 font-bold uppercase tracking-widest">Follow Me</p>
               <div className="flex gap-4">
-                {[FaGithub, FaLinkedin, FaXTwitter, FaFacebook, FaInstagram].map((Icon, i) => (
-                  <Magnetic key={i} strength={0.2}>
-                    <div className="w-10 h-10 rounded-xl glass border-white/10 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/50 transition-all cursor-pointer">
-                      <Icon size={20} />
-                    </div>
-                  </Magnetic>
-                ))}
+                {(contactInfo?.socials || [
+                  { name: 'Github', url: '#' },
+                  { name: 'Linkedin', url: '#' },
+                  { name: 'Twitter', url: '#' },
+                  { name: 'Facebook', url: '#' },
+                  { name: 'Instagram', url: '#' }
+                ]).map((social, i) => {
+                  const Icon = ICON_MAP[social.name] || FaGlobe;
+                  return (
+                    <Magnetic key={i} strength={0.2}>
+                      <a 
+                        href={social.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 rounded-xl glass border-white/10 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/50 transition-all cursor-pointer"
+                      >
+                        <Icon size={20} />
+                      </a>
+                    </Magnetic>
+                  );
+                })}
               </div>
             </div>
           </motion.div>

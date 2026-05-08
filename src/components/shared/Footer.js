@@ -3,9 +3,45 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Mail, ArrowUpRight, Send, Globe, Cpu } from 'lucide-react';
-import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import { 
+  FaGithub, 
+  FaLinkedin, 
+  FaXTwitter, 
+  FaFacebook, 
+  FaInstagram, 
+  FaYoutube, 
+  FaWhatsapp, 
+  FaTelegram, 
+  FaDiscord, 
+  FaTiktok, 
+  FaSnapchat, 
+  FaPinterest, 
+  FaReddit, 
+  FaDribbble, 
+  FaBehance, 
+  FaGlobe 
+} from 'react-icons/fa6';
 import Magnetic from './Magnetic';
 import Tooltip from './Tooltip';
+
+const ICON_MAP = {
+  Github: FaGithub,
+  Linkedin: FaLinkedin,
+  Twitter: FaXTwitter,
+  Instagram: FaInstagram,
+  Facebook: FaFacebook,
+  Youtube: FaYoutube,
+  Portfolio: FaGlobe,
+  WhatsApp: FaWhatsapp,
+  Telegram: FaTelegram,
+  Discord: FaDiscord,
+  TikTok: FaTiktok,
+  Snapchat: FaSnapchat,
+  Pinterest: FaPinterest,
+  Reddit: FaReddit,
+  Dribbble: FaDribbble,
+  Behance: FaBehance
+};
 
 const footerLinks = [
   {
@@ -37,14 +73,7 @@ const footerLinks = [
   }
 ];
 
-const socials = [
-  { name: "GitHub", icon: FaGithub, href: "https://github.com", color: "#ffffff" },
-  { name: "LinkedIn", icon: FaLinkedin, href: "https://linkedin.com", color: "#0077b5" },
-  { name: "Twitter", icon: FaXTwitter, href: "https://twitter.com", color: "#ffffff" },
-  { name: "Email", icon: Mail, href: "mailto:contact@rohan.com", color: "#ea4335" },
-];
-
-export default function Footer() {
+export default function Footer({ contactData }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -87,20 +116,29 @@ export default function Footer() {
                 </Link>
               </Magnetic>
               <div className="flex items-center gap-4">
-                {socials.map((social, i) => (
-                  <Magnetic key={i} strength={0.3}>
-                    <Tooltip text={`View ${social.name}`} position="top">
-                      <a
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-14 h-14 rounded-2xl glass border border-border flex items-center justify-center text-foreground/40 hover:text-foreground hover:border-primary/50 transition-all"
-                      >
-                        <social.icon size={22} />
-                      </a>
-                    </Tooltip>
-                  </Magnetic>
-                ))}
+                {(contactData?.socials || [
+                  { name: "Github", url: "https://github.com" },
+                  { name: "Linkedin", url: "https://linkedin.com" },
+                  { name: "Twitter", url: "https://twitter.com" },
+                ])
+                .filter(social => ['linkedin', 'twitter', 'github'].includes(social.name.toLowerCase()))
+                .map((social, i) => {
+                  const Icon = ICON_MAP[social.name] || FaGlobe;
+                  return (
+                    <Magnetic key={i} strength={0.3}>
+                      <Tooltip text={`View ${social.name}`} position="top">
+                        <a
+                          href={social.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-14 h-14 rounded-2xl glass border border-border flex items-center justify-center text-foreground/40 hover:text-foreground hover:border-primary/50 transition-all"
+                        >
+                          <Icon size={22} />
+                        </a>
+                      </Tooltip>
+                    </Magnetic>
+                  );
+                })}
               </div>
             </div>
           </div>

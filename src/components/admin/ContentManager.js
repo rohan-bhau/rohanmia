@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, RefreshCcw, Layout, Type, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, Upload, User, Sparkles, GraduationCap } from 'lucide-react';
+import { Save, RefreshCcw, Layout, Type, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, Upload, User, Sparkles, GraduationCap, Globe } from 'lucide-react';
 import { getHomeContent, updateHomeContent } from '@/actions/content';
 import { uploadImage } from '@/actions/upload';
 import Image from 'next/image';
 import QualificationManager from '@/components/admin/QualificationManager';
+import ContactManager from '@/components/admin/ContactManager';
 
 export default function ContentManager() {
   const [activeSection, setActiveSection] = useState('hero');
@@ -91,6 +92,7 @@ export default function ContentManager() {
     { id: 'hero', icon: Layout },
     { id: 'about', icon: User },
     { id: 'qualifications', icon: GraduationCap },
+    { id: 'contact', icon: Globe },
     { id: 'services', icon: Sparkles }
   ];
 
@@ -122,7 +124,7 @@ export default function ContentManager() {
             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Visual Studio Environment</p>
           </div>
         </div>
-        {activeSection !== 'qualifications' && (
+        {activeSection !== 'qualifications' && activeSection !== 'contact' && (
           <button 
             onClick={handleSave}
             disabled={saving || uploading || !isChanged}
@@ -155,6 +157,8 @@ export default function ContentManager() {
         <div className="lg:col-span-3 glass-premium p-10 rounded-[3rem] border border-white/5 bg-[#0a0f1a]/40 space-y-12">
           {activeSection === 'qualifications' ? (
             <QualificationManager />
+          ) : activeSection === 'contact' ? (
+            <ContactManager />
           ) : activeSection === 'hero' ? (
             <div className="space-y-12">
               {/* Visual Banner Preview */}
