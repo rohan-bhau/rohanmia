@@ -7,23 +7,25 @@ import { createPortal } from 'react-dom';
 import { Maximize2, X, ChevronLeft, ChevronRight, Camera } from 'lucide-react';
 import Tooltip from '@/components/shared/Tooltip';
 
-const images = [
-  { id: 1, src: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=1200", category: "Workspace", title: "Midnight Coding Session" },
-  { id: 2, src: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200", category: "Code", title: "Clean Architecture" },
-  { id: 3, src: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200", category: "Hardware", title: "Setup Evolution" },
-  { id: 4, src: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&q=80&w=1200", category: "Workspace", title: "Minimalist Vibe" },
-  { id: 5, src: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80&w=1200", category: "Tech", title: "Future is Here" },
-  { id: 6, src: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=1200", category: "Tech", title: "AI Exploration" },
-];
+import { getGalleryImages } from '@/actions/gallery';
 
 export default function GalleryPage() {
+  const [images, setImages] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
+    fetchImages();
     return () => setMounted(false);
   }, []);
+
+  const fetchImages = async () => {
+    const data = await getGalleryImages();
+    setImages(data);
+    setLoading(false);
+  };
 
   // Prevent scroll and hide other UI when lightbox is open
   useEffect(() => {
@@ -55,6 +57,15 @@ export default function GalleryPage() {
     if (e) e.stopPropagation();
     setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
+
+  if (loading && images.length === 0) {
+    return (
+      <div className="pt-40 flex flex-col items-center justify-center min-h-[60vh] gap-4 opacity-20">
+        <div className="w-12 h-12 border-t-2 border-primary rounded-full animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.5em]">Synchronizing Chronicles...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-40 pb-20 px-6 bg-background transition-colors duration-500 min-h-screen">
@@ -89,10 +100,10 @@ export default function GalleryPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
           {images.map((img, i) => (
             <motion.div
-              key={img.id}
+              key={img._id || i}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -127,13 +138,18 @@ export default function GalleryPage() {
               </div>
             </motion.div>
           ))}
+          {images.length === 0 && !loading && (
+            <div className="col-span-full h-64 flex items-center justify-center border-2 border-dashed border-white/5 rounded-[3rem] text-white/10 font-black uppercase tracking-[0.5em] italic">
+              No Visual Chronicles cataloged yet.
+            </div>
+          )}
         </div>
       </div>
 
       {/* Portal Lightbox */}
       {mounted && createPortal(
         <AnimatePresence>
-          {selectedIndex !== null && (
+          {selectedIndex !== null && images[selectedIndex] && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

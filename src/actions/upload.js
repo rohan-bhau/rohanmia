@@ -21,12 +21,26 @@ export async function uploadImage(formData) {
         { folder: 'portfolio_cms' },
         (error, result) => {
           if (error) reject(error);
-          else resolve({ success: true, url: result.secure_url });
+          else resolve({ 
+            success: true, 
+            url: result.secure_url,
+            public_id: result.public_id 
+          });
         }
       ).end(buffer);
     });
   } catch (error) {
     console.error('Upload Error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteImage(publicId) {
+  try {
+    const result = await cloudinary.uploader.destroy(publicId);
+    return { success: result.result === 'ok' };
+  } catch (error) {
+    console.error('Delete Error:', error);
     return { success: false, error: error.message };
   }
 }
