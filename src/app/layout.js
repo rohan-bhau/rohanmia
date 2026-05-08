@@ -1,5 +1,7 @@
 import { Outfit, Geist_Mono } from "next/font/google";
 import "./globals.css";
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
 import Navbar from "@/components/shared/Navbar";
@@ -19,27 +21,36 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import { getSettings } from "@/actions/settings";
+import connectDB from "@/lib/db";
+import Settings from "@/models/Settings";
 import { getContactData } from "@/actions/contact";
 
 export async function generateMetadata() {
-  const settings = await getSettings();
+  await connectDB();
+  const settingsDoc = await Settings.findOne({}).sort({ updatedAt: -1 }).lean();
+  const settings = JSON.parse(JSON.stringify(settingsDoc));
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   
   return {
     metadataBase: new URL(baseUrl),
-    title: settings?.seo?.title || "Rohan Mia | Full Stack Developer",
-    description: settings?.seo?.description || "Futuristic developer portfolio showcasing modern web applications.",
+    title: "Rohan Mia",
+    description: settings?.siteDescription || "Rohan Mia - Full Stack Developer & Creative Engineer.",
+    keywords: settings?.keywords?.split(',').map(k => k.trim()) || ["Portfolio", "Developer"],
+    icons: {
+      icon: settings?.logoUrl || "/favicon.ico",
+      shortcut: settings?.logoUrl || "/favicon.ico",
+      apple: settings?.logoUrl || "/favicon.ico",
+    },
     openGraph: {
-      title: settings?.seo?.title,
-      description: settings?.seo?.description,
-      images: [settings?.seo?.ogImage || "/profile.png"],
+      title: settings?.siteName,
+      description: settings?.siteDescription,
+      images: [settings?.logoUrl || "/profile.png"],
     },
     twitter: {
       card: "summary_large_image",
-      title: settings?.seo?.title,
-      description: settings?.seo?.description,
-      images: [settings?.seo?.ogImage || "/profile.png"],
+      title: settings?.siteName,
+      description: settings?.siteDescription,
+      images: [settings?.logoUrl || "/profile.png"],
     },
   };
 }
@@ -47,7 +58,11 @@ export async function generateMetadata() {
 import { Toaster } from "sonner";
 
 export default async function RootLayout({ children }) {
+  await connectDB();
+  const settingsDoc = await Settings.findOne({}).sort({ updatedAt: -1 }).lean();
+  const settings = JSON.parse(JSON.stringify(settingsDoc));
   const contactData = await getContactData();
+  console.log('--- ROOT LAYOUT DB FETCH ---', { id: settings?._id, logo: settings?.logoUrl });
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -58,13 +73,13 @@ export default async function RootLayout({ children }) {
           <CustomCursor />
           <ClickBurst />
           <Background />
-          <Navbar />
+          <Navbar settings={settings} />
           <FloatingControls />
           <Chatbot />
           <Toaster theme="dark" richColors position="top-right" />
           <main className="relative z-10 min-h-screen">
             {children}
-            <Footer contactData={contactData} />
+            <Footer contactData={contactData} settings={settings} />
           </main>
         </Providers>
       </body>

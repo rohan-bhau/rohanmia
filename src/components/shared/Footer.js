@@ -73,7 +73,7 @@ const footerLinks = [
   }
 ];
 
-export default function Footer({ contactData }) {
+export default function Footer({ contactData, settings }) {
   const currentYear = new Date().getFullYear();
 
   return (
@@ -93,11 +93,17 @@ export default function Footer({ contactData }) {
                 viewport={{ once: true }}
                 className="flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                  <Cpu size={20} />
-                </div>
+                {settings?.logoUrl ? (
+                  <div className="w-10 h-10 relative">
+                    <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                    <Cpu size={20} />
+                  </div>
+                )}
                 <span className="text-2xl font-black text-foreground tracking-tighter uppercase italic">
-                  Rohan <span className="text-primary">Mia</span>
+                  {settings?.siteName || "Rohan Mia"}
                 </span>
               </motion.div>
               <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-[0.9]">
@@ -173,20 +179,16 @@ export default function Footer({ contactData }) {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 text-[10px] font-mono tracking-tighter uppercase">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              System_Online // {currentYear}
+              {settings?.siteName || "Rohan Mia"} // {currentYear}
             </div>
             <div className="hidden md:block w-px h-3 bg-border" />
             <div className="text-[10px] font-mono tracking-tighter uppercase">
-              LATENCY: 24MS
-            </div>
-            <div className="hidden md:block w-px h-3 bg-border" />
-            <div className="text-[10px] font-mono tracking-tighter uppercase">
-              Uptime: 99.9%
+              System: Online
             </div>
           </div>
 
           <div className="text-[10px] font-mono tracking-tighter uppercase">
-            &copy; {currentYear} Designed & Engineered by Bhau. All Rights Reserved.
+            &copy; {currentYear} {settings?.footerText || "Designed & Engineered by Bhau. All Rights Reserved."}
           </div>
         </div>
       </div>

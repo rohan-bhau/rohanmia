@@ -38,7 +38,7 @@ const dropdownItems = [
   { name: 'Gallery', href: '/gallery', icon: ImageIcon },
 ];
 
-export default function Navbar() {
+export default function Navbar({ settings }) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -55,19 +55,24 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-8">
       <div className="container mx-auto flex items-center justify-between">
         
-        {/* Left: Logo (Stylized 'A') */}
         <div className="flex-1 flex justify-start">
           <Tooltip text="Return Home" position="bottom">
             <Magnetic strength={0.3}>
               <Link href="/" className="group flex items-center gap-2">
                 <div className="relative w-12 h-12 flex items-center justify-center">
-                  <motion.div
-                    whileHover={{ rotate: 10 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    className="text-4xl font-black text-foreground tracking-tighter"
-                  >
-                    <span className="text-white dark:text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">A</span>
-                  </motion.div>
+                  {settings?.logoUrl ? (
+                    <div className="relative w-10 h-10 flex items-center justify-center">
+                      <img 
+                        src={settings.logoUrl} 
+                        alt={settings.siteName || "Logo"} 
+                        className="w-full h-full object-contain brightness-110 drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]" 
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic shadow-lg">
+                      {settings?.siteName ? settings.siteName.charAt(0).toUpperCase() : 'A'}
+                    </div>
+                  )}
                   <div className="absolute -inset-2 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </Link>
