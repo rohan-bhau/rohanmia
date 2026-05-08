@@ -48,8 +48,8 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
 
       <div className="container mx-auto relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-end mb-24 gap-8">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
+          <div className="space-y-6 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-4">
               <Cpu className="text-primary animate-pulse" size={24} />
               <div className="h-px w-12 bg-primary/30" />
             </div>
@@ -57,11 +57,11 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase italic"
+              className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter uppercase italic"
             >
               Featured <span className="text-primary text-glow">Works</span>
             </motion.h2>
-            <p className="text-muted-foreground max-w-xl font-medium italic">
+            <p className="text-muted-foreground max-w-xl font-medium italic text-sm md:text-base">
               "A selection of engineered solutions that blend technical complexity with cinematic design."
             </p>
           </div>

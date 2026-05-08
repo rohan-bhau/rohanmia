@@ -158,3 +158,14 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(14, 165, 233, 0.2) transparent;
 }
+
+/* Mobile Menu State - Simple Scroll Lock */
+body.mobile-menu-active {
+  overflow: hidden !important;
+}
+
+body.mobile-menu-active .chatbot-container,
+body.mobile-menu-active [class*='chatbot'],
+body.mobile-menu-active .fixed-action-btn {
+  display: none !important;
+}

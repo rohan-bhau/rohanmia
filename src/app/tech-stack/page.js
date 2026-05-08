@@ -102,7 +102,7 @@ export default function TechStackPage() {
               <Zap className="text-primary animate-pulse" size={24} />
               <div className="h-px w-12 bg-primary/30" />
             </div>
-            <h1 className="text-6xl md:text-8xl font-black text-foreground tracking-tighter uppercase italic">
+            <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-foreground tracking-tighter uppercase italic">
               System <span className="text-primary text-glow">Stack</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-medium italic opacity-80">

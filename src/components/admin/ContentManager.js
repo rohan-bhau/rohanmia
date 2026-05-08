@@ -92,8 +92,7 @@ export default function ContentManager() {
     { id: 'hero', icon: Layout },
     { id: 'about', icon: User },
     { id: 'qualifications', icon: GraduationCap },
-    { id: 'contact', icon: Globe },
-    { id: 'services', icon: Sparkles }
+    { id: 'contact', icon: Globe }
   ];
 
   return (
@@ -217,6 +216,20 @@ export default function ContentManager() {
                   onChange={handleImageUpload} 
                   className="hidden" 
                   accept="image/*" 
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <Globe size={16} />
+                  <label className="text-[10px] font-black uppercase tracking-widest italic text-glow">Resume / CV External Link (e.g. Google Drive)</label>
+                </div>
+                <input 
+                  type="text"
+                  value={content?.resumeUrl || ''}
+                  onChange={(e) => setContent({...content, resumeUrl: e.target.value})}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm text-white/60 italic focus:outline-none focus:border-primary transition-all"
+                  placeholder="https://drive.google.com/file/d/..."
                 />
               </div>
 

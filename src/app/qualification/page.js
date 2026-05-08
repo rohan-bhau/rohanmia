@@ -46,7 +46,7 @@ export default function QualificationPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase italic leading-none"
+            className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter uppercase italic leading-none"
           >
             My <span className="text-primary text-glow">Qualifications</span>
           </motion.h1>

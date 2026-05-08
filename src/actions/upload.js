@@ -18,7 +18,10 @@ export async function uploadImage(formData) {
 
     return new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: 'portfolio_cms' },
+        { 
+          folder: 'portfolio_cms',
+          resource_type: 'auto'
+        },
         (error, result) => {
           if (error) reject(error);
           else resolve({ 

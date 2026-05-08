@@ -30,7 +30,7 @@ export default function SkillsSection({ skills = [] }) {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-none"
+            className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-none text-center"
           >
             Core <span className="text-primary text-glow">Expertise</span>
           </motion.h2>
@@ -40,7 +40,7 @@ export default function SkillsSection({ skills = [] }) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-muted-foreground max-w-2xl italic font-medium opacity-80 text-lg"
+            className="text-muted-foreground max-w-2xl italic font-medium opacity-80 text-sm md:text-lg text-center"
           >
             "Engineering the next generation of digital interfaces with high-performance architectures."
           </motion.p>

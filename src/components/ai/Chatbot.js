@@ -141,7 +141,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="fixed bottom-28 right-28 z-[4000000] chatbot-container pointer-events-auto">
+    <div className="fixed bottom-6 right-6 z-[4000000] chatbot-container pointer-events-auto">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -149,16 +149,16 @@ export default function Chatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.8, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.8 }}
-            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] h-[600px] glass-premium border border-white/10 rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden backdrop-blur-3xl bg-black/60 pointer-events-auto"
+            className="absolute bottom-20 right-0 w-[calc(100vw-32px)] sm:w-[380px] md:w-[400px] h-[550px] md:h-[600px] glass-premium border border-white/10 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_40px_80px_rgba(0,0,0,0.4)] flex flex-col overflow-hidden backdrop-blur-3xl bg-black/60 pointer-events-auto"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/10 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-between pointer-events-auto">
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/50">
-                    <Image src="/aru-avatar.png" alt="Aru" fill className="object-cover" />
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/30 shadow-[0_0_15px_rgba(14,165,233,0.3)] bg-background/50">
+                    <img src="/aru-avatar.png?v=2" alt="Aru" className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black animate-pulse" />
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-black animate-pulse shadow-lg" />
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-white tracking-tight italic">Aru</h3>
@@ -295,11 +295,10 @@ export default function Chatbot() {
           ) : (
             <div className="relative w-full h-full p-1">
               <div className="w-full h-full rounded-full overflow-hidden relative">
-                <Image 
-                  src="/aru-avatar.png" 
+                <img 
+                  src="/aru-avatar.png?v=2" 
                   alt="Aru AI" 
-                  fill 
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
             </div>

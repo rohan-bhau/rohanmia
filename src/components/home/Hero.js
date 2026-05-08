@@ -104,45 +104,77 @@ export default function Hero({ settings, heroContent, contactData }) {
             </motion.div>
 
             <div className="space-y-6">
-              <h1 className="text-5xl md:text-7xl font-bold text-foreground tracking-tight flex items-center gap-4 uppercase italic">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground tracking-tight flex items-center gap-4 uppercase italic flex-wrap">
                 {heroContent?.firstName || "Rohan"} <span className="text-glow">{heroContent?.lastName || "Mia"}</span>
                 <motion.span
                   animate={{ rotate: [0, 20, 0, 20, 0] }}
                   transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="inline-block origin-bottom-right text-4xl md:text-6xl"
+                  className="inline-block origin-bottom-right text-3xl md:text-5xl"
                 >
                   👋
                 </motion.span>
               </h1>
-              <div className="h-12 flex items-center">
-                <span className="text-xl md:text-2xl font-medium text-foreground/70 italic">
+              <div className="h-10 md:h-12 flex items-center">
+                <span className="text-lg md:text-2xl font-medium text-foreground/70 italic">
                   I am a <span className="text-foreground">{displayText}</span>
                   <motion.span
                     animate={{ opacity: [0, 1, 0] }}
                     transition={{ duration: 0.8, repeat: Infinity }}
-                    className="inline-block w-1 h-6 bg-primary ml-2 align-middle"
+                    className="inline-block w-1 h-5 md:h-6 bg-primary ml-2 align-middle"
                   />
                 </span>
               </div>
             </div>
           </div>
 
-          <p className="text-foreground/50 text-base md:text-lg max-w-md leading-relaxed font-normal">
+          <p className="text-foreground/50 text-sm md:text-lg max-w-md leading-relaxed font-normal">
             🚀 {heroDescription}
           </p>
 
           {mounted && (
-            <div className="flex items-center gap-4 md:gap-6 pt-4">
-              <Magnetic strength={0.2}>
-                <Link href="/contact" className="px-8 md:px-10 py-4 md:py-5 rounded-2xl bg-primary text-white font-bold shadow-[0_20px_40px_rgba(14,165,233,0.25)] hover:shadow-[0_25px_50px_rgba(14,165,233,0.4)] hover:-translate-y-1 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 text-sm md:text-base whitespace-nowrap">
-                  Say Hello 🚀
-                </Link>
-              </Magnetic>
-              <Magnetic strength={0.2}>
-                <Link href="/projects" className="px-8 md:px-10 py-4 md:py-5 rounded-2xl glass-premium border border-white/10 text-foreground font-bold hover:bg-foreground/5 transition-all duration-300 active:scale-95 text-sm md:text-base whitespace-nowrap">
-                  Explore Projects
-                </Link>
-              </Magnetic>
+            <div className="flex flex-col gap-4 md:gap-6 pt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 md:gap-6">
+                <Magnetic strength={0.2}>
+                  <Link href="/contact" className="px-8 md:px-10 py-4 md:py-5 rounded-2xl bg-primary text-white font-bold shadow-[0_20px_40px_rgba(14,165,233,0.25)] hover:shadow-[0_25px_50px_rgba(14,165,233,0.4)] hover:-translate-y-1 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 text-sm md:text-base whitespace-nowrap">
+                    Say Hello 🚀
+                  </Link>
+                </Magnetic>
+                <Magnetic strength={0.2}>
+                  <Link href="/projects" className="px-8 md:px-10 py-4 md:py-5 rounded-2xl glass-premium border border-white/10 text-foreground font-bold hover:bg-foreground/5 transition-all duration-300 active:scale-95 text-sm md:text-base whitespace-nowrap flex items-center justify-center">
+                    Explore Projects
+                  </Link>
+                </Magnetic>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="w-full sm:w-fit"
+              >
+                <Magnetic strength={0.1}>
+                  <a 
+                    href={
+                      heroContent?.resumeUrl 
+                        ? (() => {
+                            const cleanUrl = heroContent.resumeUrl.trim().replace(/^[^a-zA-Z0-9]+/, '');
+                            return cleanUrl.startsWith('http') ? cleanUrl : `https://${cleanUrl}`;
+                          })()
+                        : "#"
+                    } 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-white/[0.03] border border-white/10 text-foreground/80 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs hover:text-white hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    <div className="p-2 bg-foreground/5 rounded-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    </div>
+                    View Professional CV
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse ml-1" />
+                  </a>
+                </Magnetic>
+              </motion.div>
             </div>
           )}
 

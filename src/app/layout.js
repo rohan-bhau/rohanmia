@@ -34,9 +34,12 @@ export async function generateMetadata() {
     description: settings?.siteDescription || "Rohan Mia - Full Stack Developer & Creative Engineer.",
     keywords: settings?.keywords?.split(',').map(k => k.trim()) || ["Portfolio", "Developer"],
     icons: {
-      icon: settings?.logoUrl || "/favicon.ico",
-      shortcut: settings?.logoUrl || "/favicon.ico",
-      apple: settings?.logoUrl || "/favicon.ico",
+      icon: [
+        { url: "/favicon.png" },
+        { url: settings?.logoUrl || "/favicon.ico" }
+      ],
+      shortcut: "/favicon.png",
+      apple: "/favicon.png",
     },
     openGraph: {
       title: settings?.siteName,

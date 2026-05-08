@@ -36,7 +36,7 @@ export default function SkillsPage() {
             <span className="text-xs font-black uppercase tracking-[0.3em]">Expertise</span>
             <div className="h-px w-10 bg-primary/40" />
           </div>
-          <h1 className="text-6xl md:text-8xl font-black text-foreground tracking-tighter uppercase italic leading-none">
+          <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-foreground tracking-tighter uppercase italic leading-none">
             Core <span className="text-primary text-glow">Competencies</span>
           </h1>
           <p className="text-muted-foreground max-w-2xl italic font-medium opacity-80 text-lg">

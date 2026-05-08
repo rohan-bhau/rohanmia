@@ -67,7 +67,7 @@ export default function AboutPage() {
                 <div className="h-px w-10 bg-primary/40" />
                 <span className="text-xs font-black uppercase tracking-[0.3em]">Identity</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-none">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-none">
                 {aboutContent?.titlePart1 || "The Story Behind"} <span className="text-primary text-glow">{aboutContent?.titlePart2 || "The Code"}</span>
               </h1>
             </div>
@@ -148,7 +148,7 @@ export default function AboutPage() {
               <Briefcase className="text-primary" size={24} />
               <div className="h-px w-12 bg-primary/30" />
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-foreground tracking-tighter uppercase italic text-glow">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tighter uppercase italic text-glow">
               Professional <span className="text-primary">Evolution</span>
             </h2>
             <p className="text-muted-foreground max-w-xl italic font-medium">A technical blueprint of my growth as a developer and architect.</p>

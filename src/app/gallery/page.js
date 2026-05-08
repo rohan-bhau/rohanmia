@@ -91,7 +91,7 @@ export default function GalleryPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-8xl font-black text-foreground tracking-tighter uppercase italic text-center"
+            className="text-4xl md:text-6xl lg:text-8xl font-black text-foreground tracking-tighter uppercase italic text-center"
           >
             Visual <span className="text-glow text-primary">Chronicles</span>
           </motion.h1>

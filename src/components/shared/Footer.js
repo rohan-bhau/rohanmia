@@ -106,7 +106,7 @@ export default function Footer({ contactData, settings }) {
                   {settings?.siteName || "Rohan Mia"}
                 </span>
               </motion.div>
-              <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-[0.9]">
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-[0.9] text-center lg:text-left">
                 Ready to build <br />
                 <span className="text-primary text-glow italic">the future?</span>
               </h2>

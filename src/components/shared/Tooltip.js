@@ -35,6 +35,7 @@ export default function Tooltip({ text, children, position = "top" }) {
   };
 
   const handleMouseEnter = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return;
     updateCoords();
     setIsVisible(true);
   };
