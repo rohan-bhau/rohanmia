@@ -31,19 +31,9 @@ const sidebarItems = [
 ];
 
 import { useState, useEffect } from 'react';
-import { getHomeContent } from '@/actions/content';
 
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children, adminIdentity }) {
   const pathname = usePathname();
-  const [adminIdentity, setAdminIdentity] = useState(null);
-
-  useEffect(() => {
-    const fetchIdentity = async () => {
-      const data = await getHomeContent('hero');
-      setAdminIdentity(data);
-    };
-    fetchIdentity();
-  }, []);
 
   return (
     <div className="flex min-h-screen bg-[#080c14] text-white selection:bg-primary/30">

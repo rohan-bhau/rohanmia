@@ -16,12 +16,7 @@ const DEFAULT_TECH = [
 export async function getTechStacks() {
   try {
     await dbConnect();
-    let tech = await TechStack.find({}).sort({ category: 1, name: 1 }).lean();
-    
-    if (tech.length === 0) {
-      await TechStack.insertMany(DEFAULT_TECH);
-      tech = await TechStack.find({}).sort({ category: 1, name: 1 }).lean();
-    }
+    const tech = await TechStack.find({}).sort({ category: 1, name: 1 }).lean();
     
     return JSON.parse(JSON.stringify(tech));
   } catch (error) {
@@ -34,6 +29,7 @@ export async function getTopSkills() {
   try {
     await dbConnect();
     const skills = await TechStack.find({ isTopSkill: true }).sort({ proficiency: -1 }).lean();
+    console.log(`--- FETCH TOP SKILLS --- Found: ${skills.length}`);
     return JSON.parse(JSON.stringify(skills));
   } catch (error) {
     console.error('Fetch Top Skills Error:', error);
@@ -114,6 +110,7 @@ export async function toggleTopSkill(id) {
     const tech = await TechStack.findById(id);
     tech.isTopSkill = !tech.isTopSkill;
     await tech.save();
+    console.log(`--- TOGGLE TOP SKILL --- ID: ${id}, New State: ${tech.isTopSkill}`);
     revalidatePath('/');
     revalidatePath('/admin/tech-stack');
     return { success: true, isTopSkill: tech.isTopSkill };

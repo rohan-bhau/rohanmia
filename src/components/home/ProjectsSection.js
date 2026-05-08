@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Globe, Code2, Database, Cpu } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
+import { getTechColor } from '@/lib/tech-colors';
 
 export default function ProjectsSection({ projects: initialProjects = [] }) {
   const displayProjects = initialProjects;
@@ -101,14 +102,26 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
 
                   {/* Tech Badges */}
                   <div className="flex flex-wrap gap-2 pt-6 border-t border-border mt-auto">
-                    {(project.techStack || []).map(t => {
-                      const Icon = getIcon(t);
-                      return (
-                        <div key={t} className="w-9 h-9 rounded-lg bg-muted/50 dark:bg-white/5 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all group/icon">
-                          <Icon size={16} className="group-hover/icon:scale-110 transition-transform" />
-                        </div>
-                      );
-                    })}
+                      {(project.techStack || []).map(t => {
+                        const Icon = getIcon(t);
+                        const color = getTechColor(t);
+                        return (
+                          <div 
+                            key={t} 
+                            className="w-9 h-9 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:border-primary/40 transition-all group/icon relative"
+                          >
+                            <Icon 
+                              size={16} 
+                              style={{ color: color }}
+                              className="group-hover/icon:scale-110 transition-transform relative z-10" 
+                            />
+                            <div 
+                              className="absolute inset-0 blur-lg opacity-0 group-hover/icon:opacity-20 transition-opacity rounded-lg"
+                              style={{ backgroundColor: color }}
+                            />
+                          </div>
+                        );
+                      })}
                   </div>
 
                   {/* Action Buttons */}

@@ -13,8 +13,8 @@ const TECH_CATEGORIES_PRESETS = {
   Programming: [
     { name: 'JavaScript', id: 'SiJavascript' },
     { name: 'TypeScript', id: 'SiTypescript' },
-    { name: 'Python', id: 'FaPython' },
-    { name: 'Java', id: 'SiOpenjdk' },
+    { name: 'Python', id: 'SiPython' },
+    { name: 'Java', id: 'SiJava' },
     { name: 'C++', id: 'SiCplusplus' },
     { name: 'C#', id: 'SiCsharp' },
     { name: 'PHP', id: 'SiPhp' },
@@ -25,8 +25,8 @@ const TECH_CATEGORIES_PRESETS = {
     { name: 'Dart', id: 'SiDart' },
   ],
   Frontend: [
-    { name: 'Next.js', id: 'TbBrandNextjs' },
-    { name: 'React', id: 'FaReact' },
+    { name: 'Next.js', id: 'SiNextdotjs' },
+    { name: 'React', id: 'SiReact' },
     { name: 'Vue.js', id: 'SiVuedotjs' },
     { name: 'Angular', id: 'SiAngular' },
     { name: 'Tailwind CSS', id: 'SiTailwindcss' },
@@ -36,7 +36,7 @@ const TECH_CATEGORIES_PRESETS = {
     { name: 'GSAP', id: 'SiGreensock' },
   ],
   Backend: [
-    { name: 'Node.js', id: 'FaNodeJs' },
+    { name: 'Node.js', id: 'SiNodedotjs' },
     { name: 'Express.js', id: 'SiExpress' },
     { name: 'Django', id: 'SiDjango' },
     { name: 'Laravel', id: 'SiLaravel' },
@@ -84,74 +84,7 @@ const TECH_CATEGORIES_PRESETS = {
   ]
 };
 
-const TECH_BRAND_COLORS = {
-  "Next.js": "#ffffff",
-  "React": "#61DAFB",
-  "TypeScript": "#3178C6",
-  "Tailwind CSS": "#06B6D4",
-  "Three.js": "#ffffff",
-  "GSAP": "#88CE02",
-  "Framer Motion": "#E10098",
-  "Node.js": "#339933",
-  "Express.js": "#ffffff",
-  "Python": "#3776AB",
-  "Golang": "#00ADD8",
-  "MongoDB": "#47A248",
-  "PostgreSQL": "#4169E1",
-  "Prisma": "#2D3748",
-  "Redis": "#DC382D",
-  "Docker": "#2496ED",
-  "Kubernetes": "#326CE5",
-  "AWS": "#FF9900",
-  "Vercel": "#ffffff",
-  "Supabase": "#3ECF8E",
-  "Appwrite": "#F02E65",
-  "Figma": "#F24E1E",
-  "VS Code": "#007ACC",
-  "Postman": "#FF6C37",
-  "Stripe": "#635BFF",
-  "JavaScript": "#F7DF1E",
-  "Zod": "#3068b7",
-  "Zustand": "#443e38",
-  "Java": "#ED8B00",
-  "C++": "#00599C",
-  "C#": "#239120",
-  "PHP": "#777BB4",
-  "Ruby": "#CC342D",
-  "Go": "#00ADD8",
-  "Rust": "#000000",
-  "Kotlin": "#7F52FF",
-  "Dart": "#0175C2",
-  "Angular": "#DD0031",
-  "Vue.js": "#4FC08D",
-  "Sass": "#CC6699",
-  "Django": "#092E20",
-  "Laravel": "#FF2D20",
-  "Spring Boot": "#6DB33F",
-  "FastAPI": "#05998B",
-  "Flutter": "#02569B",
-  "React Native": "#61DAFB",
-  "Swift": "#F05138",
-  "Ionic": "#3880FF",
-  "Expo": "#000020",
-  "MySQL": "#4479A1",
-  "Firebase": "#FFCA28",
-  "Adobe Photoshop": "#31A8FF",
-  "Adobe Illustrator": "#FF9A00",
-  "Adobe XD": "#FF61F6",
-  "Adobe After Effects": "#CF96FD",
-  "Sketch": "#F7B500",
-  "Canva": "#00C4CC",
-  "Blender": "#F5792A",
-  "WebStorm": "#000000",
-  "IntelliJ IDEA": "#000000",
-  "PyCharm": "#000000",
-  "Android Studio": "#3DDC84",
-  "Xcode": "#147EFB",
-  "Sublime Text": "#FF9800",
-  "Vim": "#019733",
-  "Git": "#F05032"
-};
+import { TECH_BRAND_COLORS } from '@/lib/tech-colors';
 
 export default function TechStackManager() {
   const [techList, setTechList] = useState([]);
@@ -250,10 +183,20 @@ export default function TechStackManager() {
   };
 
   const handleToggleTop = async (id) => {
+    // Optimistic Update
+    setTechList(prev => prev.map(t => 
+      t._id === id ? { ...t, isTopSkill: !t.isTopSkill } : t
+    ));
+
     const result = await toggleTopSkill(id);
     if (result.success) {
-      showNotification(result.isTopSkill ? 'Promoted to Top Skill' : 'Removed from Top Skills');
+      showNotification(result.isTopSkill ? 'Promoted to Core Expertise' : 'Removed from Core Expertise');
+      // No need to fetchTech() here if we trust the optimistic update, 
+      // but fetchTech() ensures everything is in sync with server.
       fetchTech();
+    } else {
+      showNotification('Neural Link Failure', 'error');
+      fetchTech(); // Revert on failure
     }
   };
 
@@ -436,24 +379,41 @@ export default function TechStackManager() {
                         {/* Administrative Ghost Overlay */}
                         <div className="absolute inset-0 z-[100] flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 bg-black/80 backdrop-blur-sm rounded-2xl">
                           <button 
-                            onClick={() => handleToggleTop(tech._id)}
-                            className={`w-9 h-9 rounded-xl border transition-all flex items-center justify-center ${tech.isTopSkill ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'bg-white/5 border-white/10 text-white/30 hover:text-yellow-500 hover:border-yellow-500/40'}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleTop(tech._id);
+                            }}
+                            className={`w-10 h-10 rounded-xl border transition-all flex items-center justify-center ${tech.isTopSkill ? 'bg-yellow-400 border-yellow-400 text-black shadow-[0_0_20px_rgba(250,204,21,0.5)]' : 'bg-white/5 border-white/10 text-white/30 hover:text-yellow-400 hover:border-yellow-400/40'}`}
+                            title={tech.isTopSkill ? "Remove from Core Expertise" : "Promote to Core Expertise"}
                           >
-                            <Star size={16} fill={tech.isTopSkill ? "currentColor" : "none"} />
+                            <Star size={18} fill={tech.isTopSkill ? "currentColor" : "none"} strokeWidth={2.5} />
                           </button>
                           <button 
-                            onClick={() => handleOpenModal(tech)}
-                            className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white/30 hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenModal(tech);
+                            }}
+                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white/30 hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center"
                           >
-                            <Edit2 size={16} />
+                            <Edit2 size={18} />
                           </button>
                           <button 
-                            onClick={() => handleDelete(tech._id)}
-                            className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 text-white/30 hover:text-red-500 hover:border-red-500/40 transition-all flex items-center justify-center"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(tech._id);
+                            }}
+                            className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white/30 hover:text-red-500 hover:border-red-500/40 transition-all flex items-center justify-center"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={18} />
                           </button>
                         </div>
+
+                        {/* Persistent Star Badge */}
+                        {tech.isTopSkill && (
+                          <div className="absolute -top-2 -left-2 z-[110] w-8 h-8 rounded-lg bg-yellow-400 text-black flex items-center justify-center shadow-[0_0_15px_rgba(250,204,21,0.4)] border border-yellow-300 animate-in fade-in zoom-in duration-300">
+                            <Star size={14} fill="currentColor" />
+                          </div>
+                        )}
                         
                         <div className="relative w-12 h-12 flex items-center justify-center">
                           {Icon && (
@@ -648,7 +608,12 @@ export default function TechStackManager() {
                               <button
                                 type="button"
                                 key={t.id}
-                                onClick={() => setFormData({...formData, icon: t.id, name: t.name})}
+                                onClick={() => setFormData({
+                                  ...formData, 
+                                  icon: t.id, 
+                                  name: t.name,
+                                  color: TECH_BRAND_COLORS[t.name] || '#0ea5e9'
+                                })}
                                 className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
                                   formData.icon === t.id
                                     ? 'bg-primary/20 border-primary text-primary'
