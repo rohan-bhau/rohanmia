@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,87 +9,24 @@ import { getIcon } from '@/lib/icons';
 
 const categories = ["All", "Full Stack", "Frontend", "Backend", "Open Source"];
 
-const projects = [
-  {
-    id: 1,
-    title: "FlatFlow - Management",
-    category: "Full Stack",
-    features: [
-      "Real-time apartment booking.",
-      "Admin dashboard for property.",
-      "Secure Stripe integration.",
-      "Interactive map visualization."
-    ],
-    image: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=1000",
-    tech: ["SiNextdotjs", "SiTailwindcss", "SiMongodb", "SiStripe"],
-    liveLink: "#",
-    clientLink: "#",
-    serverLink: "#"
-  },
-  {
-    id: 2,
-    title: "MealMart - Restaurant",
-    category: "Full Stack",
-    features: [
-      "Role-based access system.",
-      "Email verification flow.",
-      "Live order tracking.",
-      "Menu management system."
-    ],
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1000",
-    tech: ["SiReact", "SiNodedotjs", "SiExpress", "SiRedux"],
-    liveLink: "#",
-    clientLink: "#"
-  },
-  {
-    id: 3,
-    title: "JobDrop - Career Portal",
-    category: "Full Stack",
-    features: [
-      "Job search multi-filtering.",
-      "Recruiter portal & review.",
-      "PDF resume management.",
-      "Direct messaging system."
-    ],
-    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=1000",
-    tech: ["SiNextdotjs", "SiTailwindcss", "SiFirebase", "SiPrisma"],
-    liveLink: "#",
-    clientLink: "#",
-    serverLink: "#"
-  },
-  {
-    id: 4,
-    title: "EcoTrack - Sustenance",
-    category: "Open Source",
-    features: [
-      "Carbon footprint calculator.",
-      "Social sustainability feed.",
-      "Energy API integration.",
-      "Gamified environmental tasks."
-    ],
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1000",
-    tech: ["SiNodedotjs", "SiReact", "SiDocker", "SiGithubactions"]
-  },
-  {
-    id: 5,
-    title: "Nebula - Data Vis",
-    category: "Frontend",
-    features: [
-      "Interactive 3D charts.",
-      "WebSocket real-time sync.",
-      "Custom widget engine.",
-      "Dark-mode optimized UI."
-    ],
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1000",
-    tech: ["SiReact", "SiFramer", "SiThreejs", "SiTailwindcss"]
-  }
-];
+import { getProjects } from '@/actions/projects';
 
 export default function ProjectsPage() {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [dbProjects, setDbProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProjects = projects.filter(p => 
+  useEffect(() => {
+    async function loadProjects() {
+      const data = await getProjects();
+      setDbProjects(data);
+      setLoading(false);
+    }
+    loadProjects();
+  }, []);
+
+  const filteredProjects = dbProjects.filter(p => 
     (filter === "All" || p.category === filter) &&
     (p.title.toLowerCase().includes(search.toLowerCase()))
   );
@@ -152,11 +89,17 @@ export default function ProjectsPage() {
         </div>
 
         {/* Dense 3-Column Staggered Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-start">
-          <AnimatePresence mode='popLayout'>
-            {filteredProjects.map((project, index) => (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 space-y-4 opacity-50">
+            <Cpu className="animate-spin text-primary" size={40} />
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] italic">Accessing Archives...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-start">
+            <AnimatePresence mode='popLayout'>
+              {filteredProjects.map((project, index) => (
               <motion.div
-                key={project.id}
+                key={project._id || index}
                 layout
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -191,8 +134,16 @@ export default function ProjectsPage() {
                       <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-tight">
                         {project.title}
                       </h3>
+                      
+                      {/* Short Description */}
+                      {project.description && (
+                        <p className="text-muted-foreground text-[11px] italic leading-relaxed opacity-80">
+                          {project.description}
+                        </p>
+                      )}
+
                       <div className="space-y-3">
-                        {project.features.map((feature, i) => (
+                        {(project.features || []).map((feature, i) => (
                           <div key={i} className="flex gap-3 text-muted-foreground text-xs leading-relaxed">
                             <span className="text-primary mt-1">•</span>
                             <span>{feature}</span>
@@ -203,7 +154,7 @@ export default function ProjectsPage() {
 
                     {/* Tech Badges */}
                     <div className="flex flex-wrap gap-2 pt-6 border-t border-border mt-auto">
-                      {project.tech.map(t => {
+                      {(project.techStack || []).map(t => {
                         const Icon = getIcon(t);
                         return (
                           <div key={t} className="w-9 h-9 rounded-lg bg-muted/50 dark:bg-white/5 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all group/icon">
@@ -246,8 +197,9 @@ export default function ProjectsPage() {
                 </div>
               </motion.div>
             ))}
-          </AnimatePresence>
-        </div>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );

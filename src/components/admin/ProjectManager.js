@@ -97,7 +97,8 @@ export default function ProjectManager() {
     liveLink: '',
     clientLink: '',
     serverLink: '',
-    featured: false
+    featured: false,
+    features: []
   });
 
   const fileInputRef = useRef(null);
@@ -143,7 +144,8 @@ export default function ProjectManager() {
         liveLink: '',
         clientLink: '',
         serverLink: '',
-        featured: false
+        featured: false,
+        features: []
       });
     }
     setShowModal(true);
@@ -448,7 +450,7 @@ export default function ProjectManager() {
                   <input 
                     type="text" 
                     placeholder="Direct Image URL (Alternative to upload)"
-                    value={formData.image}
+                    value={formData.image || ''}
                     onChange={(e) => setFormData({...formData, image: e.target.value})}
                     className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-[11px] text-white/60 italic"
                   />
@@ -462,7 +464,7 @@ export default function ProjectManager() {
                       required
                       type="text"
                       placeholder="FlatFlow - Management"
-                      value={formData.title}
+                      value={formData.title || ''}
                       onChange={(e) => setFormData({...formData, title: e.target.value})}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 text-sm text-white focus:border-primary transition-all italic"
                     />
@@ -488,10 +490,60 @@ export default function ProjectManager() {
                   <textarea 
                     required
                     placeholder="Briefly describe the purpose of this architecture..."
-                    value={formData.description}
+                    value={formData.description || ''}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     className="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-8 text-sm text-white focus:border-primary transition-all italic resize-none"
                   />
+                </div>
+
+                {/* Dynamic Features List */}
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-primary italic">Project Highlights (Bullet Points)</label>
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, features: [...(formData.features || []), '']})}
+                      className="text-[9px] font-black uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2"
+                    >
+                      <Plus size={12} /> Add Highlight
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    {(formData.features || []).map((feature, idx) => (
+                      <div key={idx} className="flex gap-4">
+                        <div className="flex-1 relative">
+                          <div className="absolute left-6 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary" />
+                          <input 
+                            type="text"
+                            placeholder="e.g., Real-time booking system"
+                            value={feature || ''}
+                            onChange={(e) => {
+                              const newFeatures = [...(formData.features || [])];
+                              newFeatures[idx] = e.target.value;
+                              setFormData({...formData, features: newFeatures});
+                            }}
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-12 pr-6 text-sm text-white focus:border-primary transition-all italic"
+                          />
+                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const newFeatures = (formData.features || []).filter((_, i) => i !== idx);
+                            setFormData({...formData, features: newFeatures});
+                          }}
+                          className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    {(!formData.features || formData.features.length === 0) && (
+                      <div className="py-10 border-2 border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center space-y-3 opacity-20">
+                        <Layout size={24} />
+                        <p className="text-[9px] font-black uppercase tracking-[0.3em]">No highlights added yet</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Tech Stack Matrix with Search */}
@@ -564,7 +616,7 @@ export default function ProjectManager() {
                         required
                         type="url"
                         placeholder="https://flatflow.live"
-                        value={formData.liveLink}
+                        value={formData.liveLink || ''}
                         onChange={(e) => setFormData({...formData, liveLink: e.target.value})}
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-5 text-[11px] text-white italic"
                       />
@@ -577,7 +629,7 @@ export default function ProjectManager() {
                         required
                         type="url"
                         placeholder="https://github.com/client"
-                        value={formData.clientLink}
+                        value={formData.clientLink || ''}
                         onChange={(e) => setFormData({...formData, clientLink: e.target.value})}
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-5 text-[11px] text-white italic"
                       />
@@ -589,7 +641,7 @@ export default function ProjectManager() {
                       <input 
                         type="url"
                         placeholder="https://github.com/server"
-                        value={formData.serverLink}
+                        value={formData.serverLink || ''}
                         onChange={(e) => setFormData({...formData, serverLink: e.target.value})}
                         className="w-full bg-white/5 border border-white/10 rounded-xl p-5 text-[11px] text-white italic"
                       />

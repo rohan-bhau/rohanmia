@@ -72,9 +72,9 @@ export default function Navbar({ settings }) {
   return (
     <>
       <nav className={cn(
-        "fixed top-0 left-0 w-full z-[10000000] transition-all duration-500",
+        "fixed top-0 left-0 w-full z-[1000000] transition-all duration-500",
         isScrolled 
-          ? "py-4 bg-background/80 backdrop-blur-xl border-b border-white/5 shadow-2xl" 
+          ? "py-4 bg-transparent" 
           : "py-6 bg-transparent"
       )}>
         <div className="container mx-auto px-6 flex items-center justify-between relative">
@@ -107,7 +107,7 @@ export default function Navbar({ settings }) {
               </Magnetic>
             </Tooltip>
           </div>
-
+ 
           {/* Center: Desktop Menu */}
           <div className="hidden lg:flex items-center justify-center px-1 py-1 bg-white/[0.03] dark:bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl">
             <div className="flex items-center gap-0.5">
@@ -117,17 +117,17 @@ export default function Navbar({ settings }) {
                   <Link key={item.name} href={item.href}>
                     <Magnetic strength={0.2}>
                       <div className={cn(
-                        "px-5 py-2 rounded-full text-[9px] font-black uppercase tracking-[0.2em] italic transition-all duration-500 flex items-center gap-2 relative group",
+                        "px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.2em] italic transition-all duration-500 flex items-center gap-3 relative group",
                         isActive ? "text-white" : "text-white/40 hover:text-white"
                       )}>
                         {isActive && (
                           <motion.div
                             layoutId="nav-pill"
-                            className="absolute inset-0 bg-primary rounded-full -z-10 shadow-[0_0_15px_rgba(14,165,233,0.3)]"
+                            className="absolute inset-0 bg-primary rounded-full -z-10 shadow-[0_0_20px_rgba(14,165,233,0.4)] pointer-events-none"
                             transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                           />
                         )}
-                        <item.icon size={10} className={cn("transition-transform group-hover:scale-110", isActive ? "text-white" : "text-primary")} />
+                        <item.icon size={14} className={cn("transition-transform group-hover:scale-110", isActive ? "text-white" : "text-primary")} />
                         {item.name}
                       </div>
                     </Magnetic>

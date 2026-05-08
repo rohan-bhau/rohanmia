@@ -24,5 +24,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       },
     }),
   ],
+  secret: process.env.AUTH_SECRET,
+  trustHost: true,
   debug: true,
 });

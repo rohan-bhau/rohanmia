@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const ProjectSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true }, // Short description
+  features: [{ type: String }], // Array of strings for bullet points
   image: { type: String, required: true },
   category: { 
     type: String, 

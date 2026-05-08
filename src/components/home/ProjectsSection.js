@@ -7,37 +7,7 @@ import { Globe, Code2, Database, Cpu } from 'lucide-react';
 import { getIcon } from '@/lib/icons';
 
 export default function ProjectsSection({ projects: initialProjects = [] }) {
-  const displayProjects = initialProjects.length > 0 ? initialProjects : [
-    {
-      title: "FlatFlow - Management",
-      description: "An online apartment management web application with full responsiveness.",
-      features: ["Real-time booking", "Admin Dashboard", "Payment integration"],
-      image: "https://images.unsplash.com/photo-1557821552-17105176677c?auto=format&fit=crop&q=80&w=1000",
-      tech: ['SiNextdotjs', 'SiTailwindcss', 'SiMongodb', 'SiStripe'],
-      liveLink: "#",
-      clientLink: "#",
-      serverLink: "#"
-    },
-    {
-      title: "MealMart - Restaurant",
-      description: "Full-stack restaurant application for seamless ordering and management.",
-      features: ["Live tracking", "User Auth", "Menu Management"],
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1000",
-      tech: ['SiReact', 'SiTailwindcss', 'SiNodedotjs', 'SiExpress'],
-      liveLink: "#",
-      clientLink: "#"
-    },
-    {
-      title: "JobDrop - Career Portal",
-      description: "High-performance job portal for talent and recruiter interaction.",
-      features: ["Advanced Filtering", "Messaging System", "Resume Mgmt"],
-      image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=1000",
-      tech: ['SiNextdotjs', 'SiTailwindcss', 'SiFirebase', 'SiPrisma'],
-      liveLink: "#",
-      clientLink: "#",
-      serverLink: "#"
-    }
-  ];
+  const displayProjects = initialProjects;
 
   return (
     <section className="py-24 px-6 relative min-h-screen transition-colors duration-500">
@@ -66,25 +36,27 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
             </p>
           </div>
           <Link href="/projects">
-            <button className="px-10 py-4 rounded-full bg-muted/50 dark:bg-white/5 border border-border text-primary font-black uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-all duration-500 shadow-lg shadow-primary/10">
+            <button className="px-8 py-4 rounded-[2rem] bg-muted/30 dark:bg-white/5 border border-border text-muted-foreground hover:text-primary hover:border-primary/30 font-bold text-xs uppercase tracking-widest transition-all duration-500">
               View All Archive
             </button>
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+        {/* Dense 3-Column Staggered Grid - Same as Projects Page */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-start">
           {displayProjects.map((project, index) => (
             <motion.div
               key={project.title}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.2 }}
-              className={`group relative ${index % 3 === 1 ? 'lg:mt-20' : index % 3 === 2 ? 'lg:mt-10' : ''}`}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className={`group relative ${index % 3 === 1 ? 'xl:mt-24' : index % 3 === 2 ? 'xl:mt-12' : ''}`}
             >
-              {/* Interconnect Decoration */}
-              <div className="absolute -left-4 top-1/2 w-4 h-px bg-primary/20 hidden lg:block" />
-              
+              {/* Horizontal Interconnect Decoration */}
+              <div className="absolute -left-4 top-1/2 w-4 h-px bg-primary/20 hidden xl:block" />
+              <div className="absolute -right-4 top-1/2 w-4 h-px bg-primary/20 hidden xl:block" />
+
               <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden flex flex-col transition-all duration-700 hover:border-primary/40 hover:shadow-[0_30px_80px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
                 {/* Portrait Image */}
                 <div className="relative h-96 overflow-hidden">
@@ -95,6 +67,11 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80 dark:opacity-100" />
+                  <div className="absolute top-6 left-6">
+                    <span className="bg-primary/10 dark:bg-primary/20 backdrop-blur-xl text-primary text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-full border border-primary/20 dark:border-primary/30">
+                      {project.category || "Full Stack"}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Content */}
@@ -103,10 +80,19 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
                     <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-tight">
                       {project.title}
                     </h3>
-                    <div className="space-y-2">
+                    
+                    {/* Short Description */}
+                    {project.description && (
+                      <p className="text-muted-foreground text-[11px] italic leading-relaxed opacity-80">
+                        {project.description}
+                      </p>
+                    )}
+
+                    {/* Features (Bullet points) */}
+                    <div className="space-y-3">
                       {(project.features || []).map((feature, i) => (
-                        <div key={i} className="flex gap-2 text-muted-foreground text-[11px] leading-relaxed">
-                          <span className="text-primary">•</span>
+                        <div key={i} className="flex gap-3 text-muted-foreground text-xs leading-relaxed">
+                          <span className="text-primary mt-1">•</span>
                           <span>{feature}</span>
                         </div>
                       ))}
@@ -115,7 +101,7 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
 
                   {/* Tech Badges */}
                   <div className="flex flex-wrap gap-2 pt-6 border-t border-border mt-auto">
-                    {(project.tech || []).map(t => {
+                    {(project.techStack || []).map(t => {
                       const Icon = getIcon(t);
                       return (
                         <div key={t} className="w-9 h-9 rounded-lg bg-muted/50 dark:bg-white/5 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all group/icon">
