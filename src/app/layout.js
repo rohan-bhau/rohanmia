@@ -21,14 +21,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-import connectDB from "@/lib/db";
-import Settings from "@/models/Settings";
+import { getSettings } from "@/actions/settings";
 import { getContactData } from "@/actions/contact";
 
 export async function generateMetadata() {
-  await connectDB();
-  const settingsDoc = await Settings.findOne({}).sort({ updatedAt: -1 }).lean();
-  const settings = JSON.parse(JSON.stringify(settingsDoc));
+  const settings = await getSettings();
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
   
   return {
@@ -58,11 +55,9 @@ export async function generateMetadata() {
 import { Toaster } from "sonner";
 
 export default async function RootLayout({ children }) {
-  await connectDB();
-  const settingsDoc = await Settings.findOne({}).sort({ updatedAt: -1 }).lean();
-  const settings = JSON.parse(JSON.stringify(settingsDoc));
+  const settings = await getSettings();
   const contactData = await getContactData();
-  console.log('--- ROOT LAYOUT DB FETCH ---', { id: settings?._id, logo: settings?.logoUrl });
+  console.log('--- ROOT LAYOUT SETTINGS ---', { id: settings?._id, logo: settings?.logoUrl });
 
   return (
     <html lang="en" suppressHydrationWarning>

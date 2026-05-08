@@ -24,4 +24,5 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       },
     }),
   ],
+  debug: true,
 });
