@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🚀 Premium Full-Stack Developer Portfolio
 
-## Getting Started
+A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**, **MongoDB**, and **Framer Motion**. This project features a sophisticated administrative dashboard (CMS), real-time data synchronization, and a cinematic UI design.
 
-First, run the development server:
+![Portfolio Banner](https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## ✨ Key Features
+
+- **🛡️ Secure Admin Control Center**: A full-featured CMS to manage projects, technical stacks, and site content without touching the code.
+- **⚡ Real-time Synchronization**: Instant updates across the public portfolio when changes are made in the admin dashboard.
+- **🎨 Cinematic UI/UX**: Ultra-modern design with glassmorphism, holographic glows, and fluid animations.
+- **📊 Technical Matrix**: Dynamic tech stack showcase with official brand colors and proficiency tracking.
+- **📱 Fully Responsive**: Optimized for all devices, from ultra-wide monitors to mobile screens.
+- **🤖 AI Integration Ready**: Built-in architecture for AI-assisted interactions.
+
+## 🛠️ Technology Stack
+
+- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Framer Motion, Lucide React.
+- **Backend**: Next.js Server Actions, MongoDB with Mongoose ODM.
+- **Authentication**: NextAuth.js / BetterAuth.
+- **Styling**: Vanilla CSS with Tailwind utilities, Glassmorphism design system.
+- **Deployment**: Optimized for Vercel.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18.0 or later
+- MongoDB Database (Local or Atlas)
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/rohan-bhau/portfolio.git
+   cd portfolio
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Environment Variables**:
+   Create a `.env` file in the root directory and add your credentials:
+   ```env
+   MONGODB_URI=your_mongodb_uri
+   NEXTAUTH_SECRET=your_secret
+   NEXT_PUBLIC_BASE_URL=http://localhost:3000
+   ```
+
+4. **Run the development server**:
+   ```bash
+   npm run dev
+   ```
+
+## 📂 Project Structure
+
+```text
+src/
+├── app/            # Next.js App Router (Pages & Layouts)
+├── components/     # Reusable UI Components (Admin & Home)
+├── actions/        # Server Actions (Database logic)
+├── models/         # Mongoose Models (Schemas)
+├── lib/            # Utility functions & Shared configurations
+└── styles/         # Global styles & Design tokens
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 👨‍💻 Author
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+**Rohan Mia**
+- **GitHub**: [@rohan-bhau](https://github.com/rohan-bhau)
+- **LinkedIn**: [Rohan Mia](https://linkedin.com/in/rohan-mia)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📄 License
 
-## Learn More
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Engineered with precision and passion.*

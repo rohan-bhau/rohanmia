@@ -5,6 +5,9 @@ export default auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const isOnAdmin = nextUrl.pathname.startsWith('/admin');
+  const isApiRoute = nextUrl.pathname.startsWith('/api');
+
+  if (isApiRoute) return NextResponse.next();
 
   if (isOnAdmin && !isLoggedIn) {
     return NextResponse.redirect(new URL('/login', nextUrl));
@@ -14,5 +17,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

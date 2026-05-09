@@ -60,7 +60,7 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
 
               <div className="bg-card border border-border rounded-[2.5rem] overflow-hidden flex flex-col transition-all duration-700 hover:border-primary/40 hover:shadow-[0_30px_80px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
                 {/* Portrait Image */}
-                <div className="relative h-96 overflow-hidden">
+                <div className="relative h-[300px] overflow-hidden">
                   <Image
                     src={project.image}
                     alt={project.title}
@@ -76,7 +76,7 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
                 </div>
 
                 {/* Content */}
-                <div className="p-8 space-y-8 flex flex-col flex-1">
+                <div className="p-8 space-y-6 flex flex-col flex-1">
                   <div className="space-y-4">
                     <h3 className="text-2xl font-black text-foreground group-hover:text-primary transition-colors uppercase tracking-tight">
                       {project.title}
@@ -84,17 +84,17 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
                     
                     {/* Short Description */}
                     {project.description && (
-                      <p className="text-muted-foreground text-[11px] italic leading-relaxed opacity-80">
+                      <p className="text-muted-foreground text-[11px] italic leading-relaxed opacity-80 line-clamp-3">
                         {project.description}
                       </p>
                     )}
 
                     {/* Features (Bullet points) */}
                     <div className="space-y-3">
-                      {(project.features || []).map((feature, i) => (
+                      {(project.features || []).slice(0, 3).map((feature, i) => (
                         <div key={i} className="flex gap-3 text-muted-foreground text-xs leading-relaxed">
                           <span className="text-primary mt-1">•</span>
-                          <span>{feature}</span>
+                          <span className="line-clamp-1">{feature}</span>
                         </div>
                       ))}
                     </div>
