@@ -16,7 +16,7 @@ const DEFAULT_TECH = [
 export async function getTechStacks() {
   try {
     await dbConnect();
-    const tech = await TechStack.find({}).sort({ category: 1, name: 1 }).lean();
+    const tech = await TechStack.find({}).sort({ order: 1, category: 1, name: 1 }).lean();
     
     return JSON.parse(JSON.stringify(tech));
   } catch (error) {
@@ -96,6 +96,24 @@ export async function deleteTech(id) {
   try {
     await dbConnect();
     await TechStack.findByIdAndDelete(id);
+    revalidatePath('/');
+    revalidatePath('/admin/tech-stack');
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function reorderTech(reorderedData) {
+  try {
+    await dbConnect();
+    
+    const promises = reorderedData.map(item => 
+      TechStack.findByIdAndUpdate(item.id, { order: item.order })
+    );
+    
+    await Promise.all(promises);
+    
     revalidatePath('/');
     revalidatePath('/admin/tech-stack');
     return { success: true };

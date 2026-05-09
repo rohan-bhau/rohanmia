@@ -21,32 +21,46 @@ const TECH_CATEGORIES = {
     { name: 'TypeScript', id: 'SiTypescript' },
     { name: 'JavaScript', id: 'SiJavascript' },
     { name: 'Vue.js', id: 'SiVuedotjs' },
+    { name: 'Nuxt.js', id: 'SiNuxtdotjs' },
     { name: 'Angular', id: 'SiAngular' },
     { name: 'Svelte', id: 'SiSvelte' },
+    { name: 'Remix', id: 'SiRemix' },
+    { name: 'Astro', id: 'SiAstro' },
     { name: 'Redux', id: 'SiRedux' },
     { name: 'Zustand', id: 'SiZustand' },
     { name: 'Framer Motion', id: 'SiFramermotion' },
     { name: 'Three.js', id: 'SiThreedotjs' },
     { name: 'GSAP', id: 'SiGsap' },
     { name: 'Sass', id: 'SiSass' },
+    { name: 'Bootstrap', id: 'SiBootstrap' },
     { name: 'MUI', id: 'SiMui' },
     { name: 'Shadcn UI', id: 'SiShadcnui' },
+    { name: 'HeroUI / NextUI', id: 'SiNextui' },
+    { name: 'DaisyUI', id: 'SiDaisyui' },
+    { name: 'Chakra UI', id: 'SiChakraui' },
+    { name: 'Mantine', id: 'SiMantine' },
+    { name: 'Radix UI', id: 'SiRadixui' },
+    { name: 'Headless UI', id: 'SiHeadlessui' },
+    { name: 'Ant Design', id: 'SiAntdesign' },
   ],
   Backend: [
     { name: 'Node.js', id: 'SiNodedotjs' },
     { name: 'Express', id: 'SiExpress' },
     { name: 'NestJS', id: 'SiNestjs' },
+    { name: 'Bun', id: 'SiBun' },
+    { name: 'Deno', id: 'SiDeno' },
     { name: 'Python', id: 'SiPython' },
     { name: 'Django', id: 'SiDjango' },
-    { name: 'Flask', id: 'SiFlask' },
+    { name: 'FastAPI', id: 'SiFastapi' },
     { name: 'Go', id: 'SiGo' },
     { name: 'Rust', id: 'SiRust' },
-    { name: 'Java', id: 'SiOpenjdk' },
-    { name: 'Spring', id: 'SiSpring' },
+    { name: 'Java', id: 'FaJava', lib: 'fa' },
+    { name: 'Spring Boot', id: 'SiSpringboot' },
     { name: 'PHP', id: 'SiPhp' },
     { name: 'Laravel', id: 'SiLaravel' },
+    { name: 'C++', id: 'SiCplusplus' },
+    { name: 'C#', id: 'SiCsharp' },
     { name: 'GraphQL', id: 'SiGraphql' },
-    { name: 'Apollo', id: 'SiApollographql' },
   ],
   Database: [
     { name: 'MongoDB', id: 'SiMongodb' },
@@ -57,22 +71,29 @@ const TECH_CATEGORIES = {
     { name: 'Supabase', id: 'SiSupabase' },
     { name: 'Prisma', id: 'SiPrisma' },
     { name: 'Drizzle', id: 'SiDrizzle' },
+    { name: 'Mongoose', id: 'SiMongoose' },
     { name: 'Appwrite', id: 'SiAppwrite' },
     { name: 'PlanetScale', id: 'SiPlanetscale' },
+  ],
+  Mobile: [
+    { name: 'React Native', id: 'SiReact' },
+    { name: 'Flutter', id: 'SiFlutter' },
+    { name: 'Swift', id: 'SiSwift' },
+    { name: 'Kotlin', id: 'SiKotlin' },
+    { name: 'Expo', id: 'SiExpo' },
   ],
   DevOps: [
     { name: 'Docker', id: 'SiDocker' },
     { name: 'Kubernetes', id: 'SiKubernetes' },
-    { name: 'AWS', id: 'SiAmazons3' },
+    { name: 'AWS', id: 'SiAmazonwebservices' },
     { name: 'GCP', id: 'SiGooglecloud' },
     { name: 'Azure', id: 'SiMicrosoftazure' },
     { name: 'Vercel', id: 'SiVercel' },
     { name: 'Netlify', id: 'SiNetlify' },
-    { name: 'DigitalOcean', id: 'SiDigitalocean' },
     { name: 'Git', id: 'SiGit' },
     { name: 'GitHub Actions', id: 'SiGithubactions' },
-    { name: 'Linux', id: 'SiLinux' },
     { name: 'Nginx', id: 'SiNginx' },
+    { name: 'Linux', id: 'SiLinux' },
   ]
 };
 
@@ -574,29 +595,32 @@ export default function ProjectManager() {
                             <div className="h-px flex-1 bg-white/5" />
                           </div>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {filteredTechs.map(tech => (
-                              <button
-                                type="button"
-                                key={tech.id}
-                                onClick={() => {
-                                  const exists = formData.techStack.includes(tech.id);
-                                  setFormData({
-                                    ...formData,
-                                    techStack: exists 
-                                      ? formData.techStack.filter(id => id !== tech.id)
-                                      : [...formData.techStack, tech.id]
-                                  });
-                                }}
-                                className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
-                                  formData.techStack.includes(tech.id)
-                                    ? 'bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10'
-                                    : 'bg-white/5 border-white/5 text-white/20 hover:border-white/20'
-                                }`}
-                              >
-                                {getIcon(tech.id)({ size: 16 })}
-                                <span className="text-[10px] font-black uppercase tracking-widest italic">{tech.name}</span>
-                              </button>
-                            ))}
+                            {filteredTechs.map(tech => {
+                              const TechIcon = getIcon(tech.id);
+                              return (
+                                <button
+                                  type="button"
+                                  key={tech.id}
+                                  onClick={() => {
+                                    const exists = formData.techStack.includes(tech.id);
+                                    setFormData({
+                                      ...formData,
+                                      techStack: exists 
+                                        ? formData.techStack.filter(id => id !== tech.id)
+                                        : [...formData.techStack, tech.id]
+                                    });
+                                  }}
+                                  className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
+                                    formData.techStack.includes(tech.id)
+                                      ? 'bg-primary/20 border-primary text-primary shadow-lg shadow-primary/10'
+                                      : 'bg-white/5 border-white/5 text-white/20 hover:border-white/20'
+                                  }`}
+                                >
+                                  <TechIcon size={16} />
+                                  <span className="text-[10px] font-black uppercase tracking-widest italic">{tech.name}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       );

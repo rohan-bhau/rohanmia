@@ -16,7 +16,7 @@ export function getIcon(iconName, library = 'si') {
 
   if (targetLib === 'si') {
     const Icon = SiIcons[iconName];
-    return Icon || SiIcons.SiJavascript;
+    return Icon || LucideIcons.HelpCircle;
   }
   
   if (targetLib === 'fa') {

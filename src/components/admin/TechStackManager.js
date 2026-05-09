@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Edit2, Trash2, Star, Search, X, Check, 
+  Plus, Edit2, Trash2, Star, Search, X, Check, ChevronUp, ChevronDown,
   Cpu, Database, Terminal, Code2, Globe, Layout, Palette, Zap, Layers, RefreshCw
 } from 'lucide-react';
-import { getTechStacks, addTech, updateTech, deleteTech, toggleTopSkill, seedTechStack } from '@/actions/techstack';
+import { getTechStacks, addTech, updateTech, deleteTech, toggleTopSkill, seedTechStack, reorderTech } from '@/actions/techstack';
 import { getIcon } from '@/lib/icons';
 
 const TECH_CATEGORIES_PRESETS = {
@@ -14,41 +14,48 @@ const TECH_CATEGORIES_PRESETS = {
     { name: 'JavaScript', id: 'SiJavascript' },
     { name: 'TypeScript', id: 'SiTypescript' },
     { name: 'Python', id: 'SiPython' },
-    { name: 'Java', id: 'SiJava' },
+    { name: 'Java', id: 'FaJava' },
+    { name: 'Go', id: 'SiGo' },
+    { name: 'Rust', id: 'SiRust' },
     { name: 'C++', id: 'SiCplusplus' },
     { name: 'C#', id: 'SiCsharp' },
     { name: 'PHP', id: 'SiPhp' },
-    { name: 'Ruby', id: 'SiRuby' },
-    { name: 'Go', id: 'SiGo' },
-    { name: 'Rust', id: 'SiRust' },
     { name: 'Kotlin', id: 'SiKotlin' },
+    { name: 'Swift', id: 'SiSwift' },
     { name: 'Dart', id: 'SiDart' },
   ],
   Frontend: [
     { name: 'Next.js', id: 'SiNextdotjs' },
     { name: 'React', id: 'SiReact' },
+    { name: 'Tailwind', id: 'SiTailwindcss' },
     { name: 'Vue.js', id: 'SiVuedotjs' },
+    { name: 'Nuxt.js', id: 'SiNuxtdotjs' },
     { name: 'Angular', id: 'SiAngular' },
-    { name: 'Tailwind CSS', id: 'SiTailwindcss' },
-    { name: 'Sass', id: 'SiSass' },
+    { name: 'Svelte', id: 'SiSvelte' },
+    { name: 'Remix', id: 'SiRemix' },
+    { name: 'Astro', id: 'SiAstro' },
+    { name: 'Redux', id: 'SiRedux' },
+    { name: 'Zustand', id: 'SiZustand' },
+    { name: 'Framer Motion', id: 'SiFramermotion' },
     { name: 'Three.js', id: 'SiThreedotjs' },
-    { name: 'Framer Motion', id: 'SiFramer' },
-    { name: 'GSAP', id: 'SiGreensock' },
+    { name: 'GSAP', id: 'SiGsap' },
+    { name: 'Sass', id: 'SiSass' },
+    { name: 'Bootstrap', id: 'SiBootstrap' },
+    { name: 'MUI', id: 'SiMui' },
+    { name: 'Shadcn UI', id: 'SiShadcnui' },
+    { name: 'HeroUI / NextUI', id: 'SiNextui' },
+    { name: 'DaisyUI', id: 'SiDaisyui' },
   ],
   Backend: [
     { name: 'Node.js', id: 'SiNodedotjs' },
     { name: 'Express.js', id: 'SiExpress' },
+    { name: 'NestJS', id: 'SiNestjs' },
+    { name: 'Bun', id: 'SiBun' },
+    { name: 'Deno', id: 'SiDeno' },
     { name: 'Django', id: 'SiDjango' },
     { name: 'Laravel', id: 'SiLaravel' },
     { name: 'Spring Boot', id: 'SiSpringboot' },
     { name: 'FastAPI', id: 'SiFastapi' },
-  ],
-  Mobile: [
-    { name: 'Flutter', id: 'SiFlutter' },
-    { name: 'React Native', id: 'SiReact' },
-    { name: 'Swift', id: 'SiSwift' },
-    { name: 'Ionic', id: 'SiIonic' },
-    { name: 'Expo', id: 'SiExpo' },
   ],
   Database: [
     { name: 'MongoDB', id: 'SiMongodb' },
@@ -58,29 +65,34 @@ const TECH_CATEGORIES_PRESETS = {
     { name: 'Firebase', id: 'SiFirebase' },
     { name: 'Supabase', id: 'SiSupabase' },
     { name: 'Prisma', id: 'SiPrisma' },
+    { name: 'Drizzle', id: 'SiDrizzle' },
+    { name: 'SQLite', id: 'SiSqlite' },
+  ],
+  Mobile: [
+    { name: 'React Native', id: 'SiReact' },
+    { name: 'Flutter', id: 'SiFlutter' },
+    { name: 'Swift', id: 'SiSwift' },
+    { name: 'Kotlin', id: 'SiKotlin' },
+    { name: 'Expo', id: 'SiExpo' },
+  ],
+  DevOps: [
+    { name: 'Docker', id: 'SiDocker' },
+    { name: 'Kubernetes', id: 'SiKubernetes' },
+    { name: 'AWS', id: 'SiAmazonwebservices' },
+    { name: 'GCP', id: 'SiGooglecloud' },
+    { name: 'Azure', id: 'SiMicrosoftazure' },
+    { name: 'Vercel', id: 'SiVercel' },
+    { name: 'Netlify', id: 'SiNetlify' },
+    { name: 'Git', id: 'SiGit' },
+    { name: 'GitHub Actions', id: 'SiGithubactions' },
+    { name: 'Nginx', id: 'SiNginx' },
+    { name: 'Linux', id: 'SiLinux' },
   ],
   Design: [
     { name: 'Figma', id: 'SiFigma' },
     { name: 'Adobe Photoshop', id: 'SiAdobephotoshop' },
     { name: 'Adobe Illustrator', id: 'SiAdobeillustrator' },
-    { name: 'Adobe XD', id: 'SiAdobexd' },
-    { name: 'Adobe After Effects', id: 'SiAdobeaftereffects' },
-    { name: 'Sketch', id: 'SiSketch' },
     { name: 'Canva', id: 'SiCanva' },
-    { name: 'Blender', id: 'SiBlender' },
-  ],
-  "Coding Tools": [
-    { name: 'VS Code', id: 'VscVscode' },
-    { name: 'WebStorm', id: 'SiWebstorm' },
-    { name: 'IntelliJ IDEA', id: 'SiIntellijidea' },
-    { name: 'PyCharm', id: 'SiPycharm' },
-    { name: 'Android Studio', id: 'SiAndroidstudio' },
-    { name: 'Xcode', id: 'SiXcode' },
-    { name: 'Sublime Text', id: 'SiSublimetext' },
-    { name: 'Vim', id: 'SiVim' },
-    { name: 'Postman', id: 'SiPostman' },
-    { name: 'Docker', id: 'SiDocker' },
-    { name: 'Git', id: 'SiGit' },
   ]
 };
 
@@ -191,12 +203,38 @@ export default function TechStackManager() {
     const result = await toggleTopSkill(id);
     if (result.success) {
       showNotification(result.isTopSkill ? 'Promoted to Core Expertise' : 'Removed from Core Expertise');
-      // No need to fetchTech() here if we trust the optimistic update, 
-      // but fetchTech() ensures everything is in sync with server.
       fetchTech();
     } else {
       showNotification('Neural Link Failure', 'error');
       fetchTech(); // Revert on failure
+    }
+  };
+
+  const handleMoveCategory = async (categoryName, direction) => {
+    const categories = Object.keys(groupedTech);
+    const index = categories.indexOf(categoryName);
+    if (index === -1) return;
+    
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= categories.length) return;
+    
+    const categoryOrder = [...categories];
+    [categoryOrder[index], categoryOrder[newIndex]] = [categoryOrder[newIndex], categoryOrder[index]];
+    
+    // Reconstruct techList based on new category order
+    const newList = categoryOrder.flatMap(cat => techList.filter(t => t.category === cat));
+    
+    setTechList(newList);
+    
+    const reorderedData = newList.map((t, i) => ({
+      id: t._id,
+      order: i
+    }));
+    
+    const result = await reorderTech(reorderedData);
+    if (!result.success) {
+      showNotification('Category Move Failed', 'error');
+      fetchTech();
     }
   };
 
@@ -342,13 +380,33 @@ export default function TechStackManager() {
             <div className="flex flex-col lg:flex-row gap-12">
               {/* Category Sidebar */}
               <div className="lg:w-1/5 space-y-4">
-                <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-primary group-hover:border-primary/30 transition-all duration-500">
-                    <Layers size={18} />
+                <div className="flex items-center justify-between group/header">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center text-primary group-hover:border-primary/30 transition-all duration-500">
+                      <Layers size={18} />
+                    </div>
+                    <h2 className="text-xl font-black text-white tracking-tighter uppercase italic leading-none group-hover:text-primary transition-colors">
+                      {category}
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-black text-white tracking-tighter uppercase italic leading-none group-hover:text-primary transition-colors">
-                    {category}
-                  </h2>
+                  
+                  {/* Category Move Controls */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover/header:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => handleMoveCategory(category, 'up')}
+                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center"
+                      title="Move Category Up"
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                    <button 
+                      onClick={() => handleMoveCategory(category, 'down')}
+                      className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center"
+                      title="Move Category Down"
+                    >
+                      <ChevronDown size={16} />
+                    </button>
+                  </div>
                 </div>
                 <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest leading-relaxed border-l border-primary/20 pl-4">
                   Technical Architecture // {techs.length} Active Nodes
@@ -604,26 +662,29 @@ export default function TechStackManager() {
                         <div key={cat} className="space-y-4">
                           <h4 className="text-[9px] font-black uppercase tracking-widest text-white/20 italic ml-2">{cat}</h4>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            {filtered.map(t => (
-                              <button
-                                type="button"
-                                key={t.id}
-                                onClick={() => setFormData({
-                                  ...formData, 
-                                  icon: t.id, 
-                                  name: t.name,
-                                  color: TECH_BRAND_COLORS[t.name] || '#0ea5e9'
-                                })}
-                                className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
-                                  formData.icon === t.id
-                                    ? 'bg-primary/20 border-primary text-primary'
-                                    : 'bg-white/5 border-white/5 text-white/20 hover:border-white/10'
-                                }`}
-                              >
-                                {getIcon(t.id)({ size: 16 })}
-                                <span className="text-[9px] font-black uppercase tracking-widest italic">{t.name}</span>
-                              </button>
-                            ))}
+                            {filtered.map(t => {
+                              const TechIcon = getIcon(t.id);
+                              return (
+                                <button
+                                  type="button"
+                                  key={t.id}
+                                  onClick={() => setFormData({
+                                    ...formData, 
+                                    icon: t.id, 
+                                    name: t.name,
+                                    color: TECH_BRAND_COLORS[t.name] || '#0ea5e9'
+                                  })}
+                                  className={`p-4 rounded-2xl border flex items-center gap-3 transition-all ${
+                                    formData.icon === t.id
+                                      ? 'bg-primary/20 border-primary text-primary'
+                                      : 'bg-white/5 border-white/5 text-white/20 hover:border-white/10'
+                                  }`}
+                                >
+                                  <TechIcon size={16} />
+                                  <span className="text-[9px] font-black uppercase tracking-widest italic">{t.name}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       );
