@@ -10,6 +10,7 @@ import Chatbot from "@/components/ai/Chatbot";
 import CustomCursor from "@/components/shared/CustomCursor";
 import ClickBurst from "@/components/shared/ClickBurst";
 import Footer from "@/components/shared/Footer";
+import Preloader from "@/components/shared/Preloader";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -68,6 +69,7 @@ export default async function RootLayout({ children }) {
         className={`${outfit.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <Providers>
+          <Preloader />
           <CustomCursor />
           <ClickBurst />
           <Background />
