@@ -1,8 +1,6 @@
-# 🚀 Premium Full-Stack Developer Portfolio
+# 🚀 Portfolio
 
 A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**, **MongoDB**, and **Framer Motion**. This project features a sophisticated administrative dashboard (CMS), real-time data synchronization, and a cinematic UI design.
-
-![Portfolio Banner](https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop)
 
 ## ✨ Key Features
 
@@ -32,7 +30,7 @@ A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**,
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/rohan-bhau/portfolio.git
+   git clone https://github.com/rohan-bhau/rohanmia.git
    cd portfolio
    ```
 
