@@ -37,7 +37,7 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
             </p>
           </div>
           <Link href="/projects">
-            <button className="px-8 py-4 rounded-[2rem] bg-muted/30 dark:bg-white/5 border border-border text-muted-foreground hover:text-primary hover:border-primary/30 font-bold text-xs uppercase tracking-widest transition-all duration-500">
+            <button className="px-8 py-4 rounded-[2rem] bg-foreground/5 border border-border text-muted-foreground hover:text-primary hover:border-primary/30 font-bold text-xs uppercase tracking-widest transition-all duration-500">
               View All Archive
             </button>
           </Link>
@@ -108,7 +108,7 @@ export default function ProjectsSection({ projects: initialProjects = [] }) {
                         return (
                           <div 
                             key={t} 
-                            className="w-9 h-9 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center text-white/40 hover:border-primary/40 transition-all group/icon relative"
+                            className="w-9 h-9 rounded-lg bg-foreground/5 border border-border flex items-center justify-center text-foreground/40 hover:border-primary/40 transition-all group/icon relative"
                           >
                             <Icon 
                               size={16} 

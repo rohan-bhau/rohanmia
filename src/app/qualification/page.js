@@ -34,7 +34,7 @@ export default function QualificationPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
         <Loader2 size={40} className="animate-spin text-primary" />
-        <p className="text-sm font-black uppercase tracking-[0.4em] text-white/20 animate-pulse text-glow">Accessing Educational Matrix...</p>
+        <p className="text-sm font-black uppercase tracking-[0.4em] text-foreground/20 animate-pulse text-glow">Accessing Educational Matrix...</p>
       </div>
     );
   }
@@ -46,7 +46,7 @@ export default function QualificationPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tighter uppercase italic leading-none"
+            className="text-4xl md:text-6xl lg:text-7xl font-black text-foreground tracking-tighter uppercase italic leading-none"
           >
             My <span className="text-primary text-glow">Qualifications</span>
           </motion.h1>
@@ -54,7 +54,7 @@ export default function QualificationPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-gray-400 text-lg font-medium italic"
+            className="text-muted-foreground text-lg font-medium italic"
           >
             "A comprehensive summary of my academic background and professional evolution."
           </motion.p>
@@ -71,7 +71,7 @@ export default function QualificationPage() {
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  className="flex items-center gap-4 text-white"
+                  className="flex items-center gap-4 text-foreground"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary border border-primary/20 shadow-[0_0_15px_rgba(14,165,233,0.2)]">
                     <Icon size={24} />
@@ -79,7 +79,7 @@ export default function QualificationPage() {
                   <h2 className="text-3xl font-black tracking-tight uppercase italic">{type}</h2>
                 </motion.div>
 
-                <div className="space-y-8 relative pl-6 border-l border-white/10">
+                <div className="space-y-8 relative pl-6 border-l border-border/50">
                   {items.map((item, iIndex) => (
                     <motion.div
                       key={item._id}
@@ -94,24 +94,24 @@ export default function QualificationPage() {
                         item.accent === 'primary' ? 'bg-primary' : 'bg-purple-600'
                       }`} />
                       
-                      <div className="bg-white/[0.02] border border-white/5 p-6 rounded-3xl hover:border-white/20 transition-all duration-500 group backdrop-blur-sm">
+                      <div className="bg-foreground/[0.02] border border-border/50 p-6 rounded-3xl hover:border-primary/20 transition-all duration-500 group backdrop-blur-sm">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h3 className="text-xl font-black text-white group-hover:text-primary transition-colors uppercase italic tracking-tight">{item.title}</h3>
-                            <p className="text-gray-400 text-sm font-bold italic opacity-80">{item.subtitle}</p>
+                            <h3 className="text-xl font-black text-foreground group-hover:text-primary transition-colors uppercase italic tracking-tight">{item.title}</h3>
+                            <p className="text-muted-foreground text-sm font-bold italic opacity-80">{item.subtitle}</p>
                           </div>
-                          <span className="text-[9px] uppercase tracking-widest font-black text-gray-500 bg-white/5 px-2 py-1 rounded-md">
+                          <span className="text-[9px] uppercase tracking-widest font-black text-muted-foreground bg-foreground/5 px-2 py-1 rounded-md">
                             {item.date}
                           </span>
                         </div>
-                        <p className="text-gray-500 text-sm leading-relaxed mt-4 font-medium italic">
+                        <p className="text-muted-foreground text-sm leading-relaxed mt-4 font-medium italic">
                           {item.description}
                         </p>
                       </div>
                     </motion.div>
                   ))}
                   {items.length === 0 && (
-                    <p className="text-white/10 text-[10px] font-black uppercase tracking-widest italic py-8">Section Initializing...</p>
+                    <p className="text-foreground/10 text-[10px] font-black uppercase tracking-widest italic py-8">Section Initializing...</p>
                   )}
                 </div>
               </div>
@@ -123,7 +123,7 @@ export default function QualificationPage() {
         {groupedQualifications.Certification.length > 0 && (
           <div className="mt-24 space-y-12">
             <div className="text-center">
-              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">Accreditations & <span className="text-primary text-glow">Achievements</span></h2>
+              <h2 className="text-3xl font-black text-foreground uppercase italic tracking-tighter">Accreditations & <span className="text-primary text-glow">Achievements</span></h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {groupedQualifications.Certification.map((cert, i) => (
@@ -133,14 +133,14 @@ export default function QualificationPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] flex items-center gap-4 hover:border-primary/30 transition-all group backdrop-blur-sm"
+                  className="bg-foreground/[0.02] border border-border/50 p-6 rounded-[2rem] flex items-center gap-4 hover:border-primary/30 transition-all group backdrop-blur-sm"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(14,165,233,0.2)]">
                     <Award size={24} />
                   </div>
                   <div>
-                    <h4 className="text-white font-black text-sm uppercase italic tracking-tight">{cert.title}</h4>
-                    <p className="text-gray-500 text-xs font-bold italic">{cert.subtitle} • {cert.date}</p>
+                    <h4 className="text-foreground font-black text-sm uppercase italic tracking-tight">{cert.title}</h4>
+                    <p className="text-muted-foreground text-xs font-bold italic">{cert.subtitle} • {cert.date}</p>
                   </div>
                 </motion.div>
               ))}

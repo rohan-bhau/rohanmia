@@ -118,7 +118,7 @@ export default function Navbar({ settings }) {
                     <Magnetic strength={0.2}>
                       <div className={cn(
                         "px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-[0.2em] italic transition-all duration-500 flex items-center gap-3 relative group",
-                        isActive ? "text-white" : "text-white/40 hover:text-white"
+                        isActive ? "text-white" : "text-foreground/40 hover:text-foreground"
                       )}>
                         {isActive && (
                           <motion.div
@@ -142,7 +142,7 @@ export default function Navbar({ settings }) {
                     onMouseEnter={() => setIsMoreOpen(true)}
                     onMouseLeave={() => setIsMoreOpen(false)}
                     className={`px-4 py-2 rounded-full flex items-center gap-1.5 transition-all duration-300 ${
-                      isMoreOpen ? 'text-foreground bg-white/10' : 'text-foreground/40 hover:text-foreground'
+                      isMoreOpen ? 'text-foreground bg-foreground/10' : 'text-foreground/40 hover:text-foreground'
                     }`}
                   >
                     <LayoutGrid size={14} />
@@ -159,7 +159,7 @@ export default function Navbar({ settings }) {
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       onMouseEnter={() => setIsMoreOpen(true)}
                       onMouseLeave={() => setIsMoreOpen(false)}
-                      className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 glass-premium border border-white/10 rounded-2xl p-2 shadow-2xl backdrop-blur-3xl bg-black/40"
+                      className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 glass-premium border border-border/10 rounded-2xl p-2 shadow-2xl backdrop-blur-3xl bg-background/80"
                     >
                       {dropdownItems.map((item) => (
                         <Link

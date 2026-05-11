@@ -65,7 +65,7 @@ export default function SkillsSection({ skills = [] }) {
                     style={{ backgroundColor: brandColor }}
                   />
 
-                  <div className="relative bg-[#0a0f1a]/80 border border-white/5 rounded-[2rem] p-8 h-full min-h-[220px] flex flex-col items-center justify-between gap-8 transition-all duration-500 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+                  <div className="relative bg-card/80 border border-border/50 rounded-[2rem] p-8 h-full min-h-[220px] flex flex-col items-center justify-between gap-8 transition-all duration-500 hover:border-primary/40 hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-xl">
                     {/* Blueprint Decoration */}
                     <div className="absolute top-4 right-4 flex gap-1.5 opacity-20 group-hover:opacity-100 transition-opacity">
                       <div className="w-1 h-1 rounded-full bg-primary" />
@@ -77,7 +77,7 @@ export default function SkillsSection({ skills = [] }) {
                         <Icon 
                           size={48} 
                           style={{ color: brandColor }} 
-                          className="relative z-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-6 filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"
+                          className="relative z-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-6 filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.1)] dark:drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]"
                         />
                       )}
                       {/* Glow background */}
@@ -89,13 +89,13 @@ export default function SkillsSection({ skills = [] }) {
 
                     <div className="w-full space-y-5">
                       <div className="text-center">
-                        <span className="text-[11px] font-black text-white uppercase tracking-[0.25em] group-hover:text-primary transition-colors italic" style={{ color: brandColor + 'CC' }}>
+                        <span className="text-[11px] font-black uppercase tracking-[0.25em] group-hover:text-primary transition-colors italic" style={{ color: brandColor }}>
                           {skill.name}
                         </span>
                       </div>
                       
                       {/* Tech Level Bar */}
-                      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
                         <motion.div
                           initial={{ width: 0 }}
                           whileInView={{ width: level }}
@@ -108,7 +108,7 @@ export default function SkillsSection({ skills = [] }) {
                     </div>
 
                     {/* Status Label */}
-                    <div className="text-[8px] font-mono text-white/20 uppercase tracking-tighter opacity-60 group-hover:opacity-100 transition-opacity">
+                    <div className="text-[8px] font-mono text-foreground/20 uppercase tracking-tighter opacity-60 group-hover:opacity-100 transition-opacity">
                       System Active // {level}
                     </div>
                   </div>
@@ -117,12 +117,12 @@ export default function SkillsSection({ skills = [] }) {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 border border-dashed border-white/10 rounded-[3rem] bg-white/[0.01]">
-            <Zap className="text-white/10 mb-4 animate-pulse" size={48} />
-            <p className="text-white/20 font-black uppercase tracking-[0.3em] text-[10px] italic text-center px-6">
+          <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border/20 rounded-[3rem] bg-foreground/[0.01]">
+            <Zap className="text-foreground/10 mb-4 animate-pulse" size={48} />
+            <p className="text-foreground/20 font-black uppercase tracking-[0.3em] text-[10px] italic text-center px-6">
               Neural Network Standby // No Core Expertise Nodes Promoted Yet
             </p>
-            <p className="text-white/10 text-[8px] mt-2 uppercase tracking-widest italic">
+            <p className="text-foreground/10 text-[8px] mt-2 uppercase tracking-widest italic">
               Please use the admin dashboard to promote technical nodes
             </p>
           </div>

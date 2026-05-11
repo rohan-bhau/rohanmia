@@ -66,7 +66,7 @@ export default function ContactPage() {
             className="space-y-12"
           >
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tighter">
+              <h1 className="text-5xl md:text-7xl font-bold text-foreground tracking-tighter">
                 Let&apos;s <span className="text-primary text-glow">Connect</span>
               </h1>
               <p className="text-gray-400 text-lg max-w-md">
@@ -77,12 +77,12 @@ export default function ContactPage() {
             <div className="space-y-6">
               {contactItems.map((item, i) => (
                 <div key={i} className="flex items-center gap-6 group">
-                  <div className="w-12 h-12 rounded-2xl glass border-white/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                  <div className="w-12 h-12 rounded-2xl glass border-border/50 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
                     <item.icon size={24} />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase font-bold tracking-widest">{item.label}</p>
-                    <p className="text-white font-medium">{item.value}</p>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">{item.label}</p>
+                    <p className="text-foreground font-medium">{item.value}</p>
                   </div>
                 </div>
               ))}
@@ -105,7 +105,7 @@ export default function ContactPage() {
                         href={social.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="w-10 h-10 rounded-xl glass border-white/10 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/50 transition-all cursor-pointer"
+                        className="w-10 h-10 rounded-xl glass border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all cursor-pointer"
                       >
                         <Icon size={20} />
                       </a>
@@ -124,7 +124,7 @@ export default function ContactPage() {
             className="relative"
           >
             <div className="absolute inset-0 bg-primary/5 blur-[100px] -z-10" />
-            <div className="glass border-white/10 p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
+            <div className="glass border-border/50 p-8 md:p-12 rounded-[2.5rem] shadow-2xl">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
@@ -132,7 +132,7 @@ export default function ContactPage() {
                     <input
                       required
                       type="text"
-                      className="w-full glass border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all"
+                      className="w-full glass border-border/50 rounded-2xl px-6 py-4 text-foreground focus:outline-none focus:border-primary/50 transition-all"
                       placeholder="Your Name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -143,7 +143,7 @@ export default function ContactPage() {
                     <input
                       required
                       type="email"
-                      className="w-full glass border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all"
+                      className="w-full glass border-border/50 rounded-2xl px-6 py-4 text-foreground focus:outline-none focus:border-primary/50 transition-all"
                       placeholder="Your Email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -155,7 +155,7 @@ export default function ContactPage() {
                   <textarea
                     required
                     rows={6}
-                    className="w-full glass border-white/10 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-primary/50 transition-all resize-none"
+                    className="w-full glass border-border/50 rounded-2xl px-6 py-4 text-foreground focus:outline-none focus:border-primary/50 transition-all resize-none"
                     placeholder="Tell me about your project..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}

@@ -140,7 +140,7 @@ export default function Hero({ settings, heroContent, contactData }) {
                   </Link>
                 </Magnetic>
                 <Magnetic strength={0.2}>
-                  <Link href="/projects" className="px-8 md:px-10 py-4 md:py-5 rounded-2xl glass-premium border border-white/10 text-foreground font-bold hover:bg-foreground/5 transition-all duration-300 active:scale-95 text-sm md:text-base whitespace-nowrap flex items-center justify-center">
+                  <Link href="/projects" className="px-8 md:px-10 py-4 md:py-5 rounded-2xl glass-premium border border-border/50 text-foreground font-bold hover:bg-foreground/5 transition-all duration-300 active:scale-95 text-sm md:text-base whitespace-nowrap flex items-center justify-center">
                     Explore Projects
                   </Link>
                 </Magnetic>
@@ -164,7 +164,7 @@ export default function Hero({ settings, heroContent, contactData }) {
                     } 
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-white/[0.03] border border-white/10 text-foreground/80 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs hover:text-white hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 overflow-hidden"
+                    className="group relative flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-foreground/[0.03] border border-border/50 text-foreground/80 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs hover:text-white hover:border-primary/50 hover:bg-primary/5 transition-all duration-500 overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                     <div className="p-2 bg-foreground/5 rounded-lg group-hover:bg-primary/20 group-hover:text-primary transition-colors">
@@ -195,7 +195,7 @@ export default function Hero({ settings, heroContent, contactData }) {
                 <Link 
                   href={social.url} 
                   target="_blank" 
-                  className="w-10 h-10 rounded-full glass flex items-center justify-center text-foreground/40 hover:text-primary hover:border-primary/50 transition-all duration-300"
+                  className="w-10 h-10 rounded-full glass border border-border flex items-center justify-center text-foreground/40 hover:text-primary hover:border-primary/50 transition-all duration-300"
                 >
                   <Icon size={20} />
                 </Link>
@@ -226,7 +226,7 @@ export default function Hero({ settings, heroContent, contactData }) {
             <div className="absolute inset-0 bg-primary/10 rounded-[3rem] blur-3xl -z-10 group-hover:bg-primary/20 transition-colors duration-500" />
             
             {/* Main Image Container (Card Style) */}
-            <div className="relative w-full h-full rounded-[3rem] overflow-hidden border-2 border-white/10 dark:border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.3)] transition-transform duration-500 group-hover:scale-[1.02]">
+            <div className="relative w-full h-full rounded-[3rem] overflow-hidden border-2 border-border/50 dark:border-white/5 shadow-[0_30px_60px_rgba(0,0,0,0.3)] transition-transform duration-500 group-hover:scale-[1.02]">
               <Image
                 src={heroContent?.bannerImage || "/hero-art.jpg"}
                 alt={heroContent?.firstName || "Rohan Mia"}
@@ -236,7 +236,7 @@ export default function Hero({ settings, heroContent, contactData }) {
               />
               {/* Artistic Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
-              <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-[3rem]" />
+              <div className="absolute inset-0 ring-1 ring-inset ring-border/20 rounded-[3rem]" />
             </div>
 
             {/* Floating Experience Badge */}
@@ -277,4 +277,3 @@ export default function Hero({ settings, heroContent, contactData }) {
     </section>
   );
 }
-
