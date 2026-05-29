@@ -28,7 +28,7 @@ import { getContactData } from "@/actions/contact";
 export async function generateMetadata() {
   const settings = await getSettings();
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-  
+
   return {
     metadataBase: new URL(baseUrl),
     title: "Rohan Mia",
@@ -68,21 +68,64 @@ export default async function RootLayout({ children }) {
       <body
         className={`${outfit.variable} ${geistMono.variable} font-sans antialiased`}
       >
-        <Providers>
-          <Preloader />
-          <CustomCursor />
-          <ClickBurst />
-          <Background />
-          <Navbar settings={settings} />
-          <FloatingControls />
-          <Chatbot />
-          <Toaster theme="dark" richColors position="top-right" />
-          <main className="relative z-10 min-h-screen">
-            {children}
-            <Footer contactData={contactData} settings={settings} />
-          </main>
-        </Providers>
-      </body>
+
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Person",
+                name: "MD Rohan Mia",
+                alternateName: ["Rohan Bhau", "Rohan Mia", "rohan-bhau"],
+                url: "https://rohanmia.vercel.app",
+                image:
+                  "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png",
+                jobTitle: "Frontend & MERN Stack Developer",
+                description:
+                  "MD Rohan Mia, also known as Rohan Bhau, is a Frontend and MERN Stack Developer from Dhaka, Bangladesh. Specializing in React, Next.js, Tailwind CSS, Node.js, and MongoDB.",
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "Dhaka",
+                  addressCountry: "BD",
+                },
+                knowsAbout: [
+                  "React",
+                  "Next.js",
+                  "Tailwind CSS",
+                  "Node.js",
+                  "MongoDB",
+                  "Express.js",
+                  "Figma",
+                  "REST API",
+                  "HTML",
+                  "Frontend Development",
+                  "MERN Stack",
+                ],
+                sameAs: [
+                  "https://www.linkedin.com/in/rohan-mia/",
+                  "https://www.facebook.com/bhau.rohan",
+                  "https://www.instagram.com/__rohan.bhau/",
+                  "https://x.com/_Rohan_Bhau",
+                  "https://github.com/rohan-bhau",
+                ],
+              }),
+            }}
+          />
+          <Providers>
+            <Preloader />
+            <CustomCursor />
+            <ClickBurst />
+            <Background />
+            <Navbar settings={settings} />
+            <FloatingControls />
+            <Chatbot />
+            <Toaster theme="dark" richColors position="top-right" />
+            <main className="relative z-10 min-h-screen">
+              {children}
+              <Footer contactData={contactData} settings={settings} />
+            </main>
+          </Providers>
+        </body>
     </html>
   );
 }
