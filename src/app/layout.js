@@ -34,6 +34,11 @@ export async function generateMetadata() {
     title: "Rohan Mia",
     description: settings?.siteDescription || "Rohan Mia - Full Stack Developer & Creative Engineer.",
     keywords: settings?.keywords?.split(',').map(k => k.trim()) || ["Portfolio", "Developer"],
+
+    verification: {
+      google: "yH9eJO5yYLc4wgh3jwtqR_QE28Vsc1SrST5teq331do",
+    },
+
     icons: {
       icon: [
         { url: "/favicon.png" },
@@ -61,71 +66,60 @@ import { Toaster } from "sonner";
 export default async function RootLayout({ children }) {
   const settings = await getSettings();
   const contactData = await getContactData();
-  console.log('--- ROOT LAYOUT SETTINGS ---', { id: settings?._id, logo: settings?.logoUrl });
 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${outfit.variable} ${geistMono.variable} font-sans antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: "MD Rohan Mia",
+              alternateName: ["Rohan Bhau", "Rohan Mia", "rohan-bhau"],
+              url: "https://rohanmia.vercel.app",
+              image: "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png",
+              jobTitle: "Frontend & MERN Stack Developer",
+              description: "MD Rohan Mia, also known as Rohan Bhau, is a Frontend and MERN Stack Developer from Dhaka, Bangladesh. Specializing in React, Next.js, Tailwind CSS, Node.js, and MongoDB.",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Dhaka",
+                addressCountry: "BD",
+              },
+              knowsAbout: [
+                "React", "Next.js", "Tailwind CSS", "Node.js",
+                "MongoDB", "Express.js", "Figma", "REST API",
+                "HTML", "Frontend Development", "MERN Stack",
+              ],
+              sameAs: [
+                "https://www.linkedin.com/in/rohan-mia/",
+                "https://www.facebook.com/bhau.rohan",
+                "https://www.instagram.com/__rohan.bhau/",
+                "https://x.com/_Rohan_Bhau",
+                "https://github.com/rohan-bhau",
+              ],
+            }),
+          }}
+        />
 
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Person",
-                name: "MD Rohan Mia",
-                alternateName: ["Rohan Bhau", "Rohan Mia", "rohan-bhau"],
-                url: "https://rohanmia.vercel.app",
-                image:
-                  "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png",
-                jobTitle: "Frontend & MERN Stack Developer",
-                description:
-                  "MD Rohan Mia, also known as Rohan Bhau, is a Frontend and MERN Stack Developer from Dhaka, Bangladesh. Specializing in React, Next.js, Tailwind CSS, Node.js, and MongoDB.",
-                address: {
-                  "@type": "PostalAddress",
-                  addressLocality: "Dhaka",
-                  addressCountry: "BD",
-                },
-                knowsAbout: [
-                  "React",
-                  "Next.js",
-                  "Tailwind CSS",
-                  "Node.js",
-                  "MongoDB",
-                  "Express.js",
-                  "Figma",
-                  "REST API",
-                  "HTML",
-                  "Frontend Development",
-                  "MERN Stack",
-                ],
-                sameAs: [
-                  "https://www.linkedin.com/in/rohan-mia/",
-                  "https://www.facebook.com/bhau.rohan",
-                  "https://www.instagram.com/__rohan.bhau/",
-                  "https://x.com/_Rohan_Bhau",
-                  "https://github.com/rohan-bhau",
-                ],
-              }),
-            }}
-          />
-          <Providers>
-            <Preloader />
-            <CustomCursor />
-            <ClickBurst />
-            <Background />
-            <Navbar settings={settings} />
-            <FloatingControls />
-            <Chatbot />
-            <Toaster theme="dark" richColors position="top-right" />
-            <main className="relative z-10 min-h-screen">
-              {children}
-              <Footer contactData={contactData} settings={settings} />
-            </main>
-          </Providers>
-        </body>
+        <Providers>
+          <Preloader />
+          <CustomCursor />
+          <ClickBurst />
+          <Background />
+          <Navbar settings={settings} />
+          <FloatingControls />
+          <Chatbot />
+          <Toaster theme="dark" richColors position="top-right" />
+          <main className="relative z-10 min-h-screen">
+            {children}
+            <Footer contactData={contactData} settings={settings} />
+          </main>
+        </Providers>
+      </body>
     </html>
   );
 }
