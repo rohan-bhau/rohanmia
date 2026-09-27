@@ -4,12 +4,12 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
-import Navbar from "@/components/shared/Navbar";
+import Navbar from "@/components/layout/Navbar";
 import FloatingControls from "@/components/shared/FloatingControls";
 import Chatbot from "@/components/ai/Chatbot";
 import CustomCursor from "@/components/shared/CustomCursor";
 import ClickBurst from "@/components/shared/ClickBurst";
-import Footer from "@/components/shared/Footer";
+import Footer from "@/components/layout/Footer";
 import Preloader from "@/components/shared/Preloader";
 
 const outfit = Outfit({
