@@ -8,6 +8,7 @@
   --color-ring: var(--ring);
   --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
   
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -147,11 +148,14 @@
   }
 }
 
-/* Hide default cursor globally */
-@media (pointer: fine) {
-  * {
-    cursor: none !important;
-  }
+/* Restore default browser cursor */
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 10s linear infinite;
 }
 
 /* Custom Premium Utilities */

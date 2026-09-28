@@ -197,7 +197,7 @@ export default function FeaturedCaseStudies() {
                       )}
 
                       <Link
-                        href="/projects"
+                        href={`/projects/${project.slug}`}
                         className="py-2.5 px-3.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] text-xs sm:text-sm font-mono text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors whitespace-nowrap cursor-pointer"
                       >
                         <span>Case Study</span>

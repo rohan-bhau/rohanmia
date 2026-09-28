@@ -107,8 +107,8 @@ export default function TechBadge({ name, size = 'sm', className = '' }: TechBad
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-white/15 transition-all text-muted-foreground hover:text-foreground font-mono whitespace-nowrap ${
-        isSmall ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-xs'
+      className={`inline-flex items-center gap-1.5 rounded-lg bg-[#12141c]/90 hover:bg-[#181a24] border border-white/[0.09] hover:border-white/20 transition-all text-neutral-300 font-mono font-medium uppercase tracking-wider whitespace-nowrap shadow-sm ${
+        isSmall ? 'px-2.5 py-1 text-[10px] sm:text-[11px]' : 'px-3 py-1.5 text-xs'
       } ${className}`}
     >
       <Icon 

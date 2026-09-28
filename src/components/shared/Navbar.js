@@ -29,14 +29,14 @@ import Tooltip from './Tooltip';
 
 const navItems = [
   { name: 'Home', href: '/', icon: Home, color: '#eab308' },
+  { name: 'About', href: '/about', icon: User, color: '#3b82f6' },
+  { name: 'Work', href: '/projects', icon: Briefcase, color: '#f97316' },
   { name: 'Tech Stack', href: '/tech-stack', icon: Cpu, color: '#06b6d4' },
-  { name: 'Qualification', href: '/qualification', icon: GraduationCap, color: '#a855f7' },
-  { name: 'Projects', href: '/projects', icon: Briefcase, color: '#f97316' },
   { name: 'Contact Me', href: '/contact', icon: Send, color: '#ec4899' },
 ];
 
 const dropdownItems = [
-  { name: 'About', href: '/about', icon: User },
+  { name: 'Qualification', href: '/qualification', icon: GraduationCap },
   { name: 'Skills', href: '/skills', icon: Code },
   { name: 'Testimonials', href: '/testimonials', icon: MessageSquare },
   { name: 'Gallery', href: '/gallery', icon: ImageIcon },
@@ -112,7 +112,9 @@ export default function Navbar({ settings }) {
           <div className="hidden lg:flex items-center justify-center px-1 py-1 bg-white/[0.03] dark:bg-white/[0.02] backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl">
             <div className="flex items-center gap-0.5">
               {navItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = item.href === '/' 
+                  ? pathname === '/' 
+                  : pathname === item.href || pathname?.startsWith(`${item.href}/`);
                 return (
                   <Link key={item.name} href={item.href}>
                     <Magnetic strength={0.2}>
@@ -258,7 +260,9 @@ export default function Navbar({ settings }) {
                 <div className="space-y-1">
                   <div className="grid grid-cols-1 gap-1 px-1">
                     {[...navItems, ...dropdownItems].map((item, i) => {
-                      const isActive = pathname === item.href;
+                      const isActive = item.href === '/' 
+                        ? pathname === '/' 
+                        : pathname === item.href || pathname?.startsWith(`${item.href}/`);
                       return (
                         <motion.div
                           key={item.name}

@@ -1,4 +1,4 @@
-import { Outfit, Geist_Mono } from "next/font/google";
+import { Outfit, Geist_Mono, Newsreader } from "next/font/google";
 import "./globals.css";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -20,6 +20,12 @@ const outfit = Outfit({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const newsreader = Newsreader({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 import { getSettings } from "@/actions/settings";
@@ -70,7 +76,7 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} font-sans antialiased`}
       >
         <script
           type="application/ld+json"
@@ -107,7 +113,6 @@ export default async function RootLayout({ children }) {
 
         <Providers>
           <Preloader />
-          <CustomCursor />
           <ClickBurst />
           <Background />
           <Navbar settings={settings} />

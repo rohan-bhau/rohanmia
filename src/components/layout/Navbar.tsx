@@ -27,8 +27,8 @@ import { useBooking } from '@/components/booking/BookingContext';
 
 const PRIMARY_LINKS = [
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Projects', href: '/projects', icon: Briefcase },
   { name: 'About', href: '/about', icon: User },
+  { name: 'Work', href: '/projects', icon: Briefcase },
   { name: 'Stack', href: '/tech-stack', icon: Layers },
 ];
 
@@ -114,7 +114,9 @@ export default function Navbar() {
             {/* Center: Floating Navigation Pill (Enclosed in its own glass border) */}
             <nav className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#0f1115]/80 border border-white/[0.08] backdrop-blur-xl shadow-lg relative">
               {PRIMARY_LINKS.map((link) => {
-                const isActive = pathname === link.href;
+                const isActive = link.href === '/' 
+                  ? pathname === '/' 
+                  : pathname === link.href || pathname?.startsWith(`${link.href}/`);
                 return (
                   <Link
                     key={link.href}
@@ -267,7 +269,9 @@ export default function Navbar() {
             <div className="flex flex-col gap-1">
               {[...PRIMARY_LINKS, ...MORE_LINKS].map((link) => {
                 const Icon = link.icon;
-                const isActive = pathname === link.href;
+                const isActive = link.href === '/' 
+                  ? pathname === '/' 
+                  : pathname === link.href || pathname?.startsWith(`${link.href}/`);
                 return (
                   <Link
                     key={link.href}
