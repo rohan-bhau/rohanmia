@@ -87,9 +87,9 @@ export default function Footer() {
                 <span className="text-foreground font-semibold">{time || '12:00:00 PM'}</span>
               </div>
 
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/[0.08] border border-emerald-500/20 text-xs font-mono text-emerald-400">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-muted-foreground">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Available for Q4 Roles</span>
+                <span>Systems Operational</span>
               </div>
             </div>
           </div>
@@ -126,6 +126,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/gallery" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Visual Gallery
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
                   Contact & Inquiry
                 </Link>
@@ -145,9 +150,10 @@ export default function Footer() {
             <div className="flex flex-col gap-2.5">
               <button
                 onClick={openBooking}
-                className="w-full py-3 px-4 rounded-2xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                className="w-full py-3 px-4 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95"
                 style={{
                   backgroundColor: currentTheme.primary,
+                  color: currentTheme.contrastText,
                   boxShadow: `0 0 24px ${currentTheme.glow}`,
                 }}
               >

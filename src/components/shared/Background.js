@@ -40,8 +40,7 @@ export default function Background() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 dark:bg-primary/5 blur-[120px]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-accent/10 dark:bg-accent/5 blur-[120px]" />
       
-      {/* Grid Overlay */}
-      <div className="absolute inset-0 bg-grid opacity-[0.03] dark:opacity-[0.1]" />
+      {/* Smooth velvet dark ambient background (zero square boxes/grid) */}
 
       {/* Floating Particles */}
       {particles.map((p, i) => (

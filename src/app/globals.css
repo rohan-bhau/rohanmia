@@ -12,6 +12,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --color-primary-glow: var(--primary-glow);
   --color-accent: var(--accent);
   --color-accent-glow: var(--accent-glow);
@@ -39,6 +40,7 @@
 
   /* Default Cyan Theme */
   --primary: #0ea5e9;
+  --primary-foreground: #ffffff;
   --primary-glow: rgba(14, 165, 233, 0.35);
   --accent: #38bdf8;
   --accent-glow: rgba(56, 189, 248, 0.2);
@@ -88,6 +90,7 @@
 
 :root[data-accent="mono"] {
   --primary: #ffffff;
+  --primary-foreground: #000000;
   --primary-glow: rgba(255, 255, 255, 0.3);
   --accent: #e2e8f0;
   --accent-glow: rgba(226, 232, 240, 0.2);
