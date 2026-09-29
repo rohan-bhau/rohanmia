@@ -23,9 +23,15 @@ import {
   SiStripe,
   SiCloudinary,
   SiJsonwebtokens,
-  SiSocketdotio
+  SiSocketdotio,
+  SiZod,
+  SiGoogle,
+  SiPostman,
+  SiGithub,
+  SiLinux,
+  SiVscodium
 } from 'react-icons/si';
-import { Code2, Cpu, Database, Server } from 'lucide-react';
+import { Code2, Cpu, Database, Server, Laptop, Monitor } from 'lucide-react';
 
 interface TechBadgeProps {
   name: string;
@@ -68,10 +74,18 @@ const ICON_MAP: Record<string, { icon: React.ComponentType<{ size?: number; styl
   'JWT': { icon: SiJsonwebtokens, color: '#ffffff' },
   'WebSocket': { icon: SiSocketdotio, color: '#ffffff' },
   'HTML5': { icon: SiHtml5, color: '#E34F26' },
-  'CSS3': { icon: SiCss, color: '#1572B6' }
+  'CSS3': { icon: SiCss, color: '#1572B6' },
+  'Zod': { icon: SiZod, color: '#3E67B1' },
+  'Google OAuth 2.0': { icon: SiGoogle, color: '#4285F4' },
+  'Google Cloud': { icon: SiGoogle, color: '#4285F4' },
+  'Postman': { icon: SiPostman, color: '#FF6C37' },
+  'GitHub': { icon: SiGithub, color: '#ffffff' },
+  'Linux': { icon: SiLinux, color: '#FCC624' },
+  'VS Code & Antigravity IDE': { icon: SiVscodium, color: '#007ACC' },
+  'Dual Display Workstation': { icon: Monitor, color: '#38BDF8' }
 };
 
-function getIconForTech(name: string) {
+export function getIconForTech(name: string) {
   if (ICON_MAP[name]) return ICON_MAP[name];
 
   const lower = name.toLowerCase();
@@ -93,6 +107,10 @@ function getIconForTech(name: string) {
   if (lower.includes('cloudinary')) return ICON_MAP['Cloudinary'];
   if (lower.includes('socket') || lower.includes('realtime')) return ICON_MAP['WebSocket'];
   if (lower.includes('jwt') || lower.includes('auth')) return ICON_MAP['JWT'];
+  if (lower.includes('zod')) return ICON_MAP['Zod'];
+  if (lower.includes('google')) return ICON_MAP['Google OAuth 2.0'];
+  if (lower.includes('vscode') || lower.includes('ide') || lower.includes('editor')) return ICON_MAP['VS Code & Antigravity IDE'];
+  if (lower.includes('monitor') || lower.includes('workstation') || lower.includes('display')) return ICON_MAP['Dual Display Workstation'];
   if (lower.includes('db') || lower.includes('data')) return { icon: Database, color: '#38bdf8' };
   if (lower.includes('api') || lower.includes('server')) return { icon: Server, color: '#a855f7' };
   if (lower.includes('ai') || lower.includes('gemini')) return { icon: Cpu, color: '#ec4899' };
