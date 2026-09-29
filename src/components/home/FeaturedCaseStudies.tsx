@@ -313,23 +313,33 @@ export default function FeaturedCaseStudies() {
   return (
     <section id="projects" className="py-20 sm:py-28 px-4 sm:px-6 relative">
       <div className="container mx-auto max-w-6xl">
-        {/* Section Header: Left-Aligned matching all other homepage sections */}
-        <div className="text-left mb-14 sm:mb-20 space-y-2">
-          <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
-            CASE STUDIES
-          </p>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal tracking-tight text-white">
-            Curated{' '}
-            <span
-              className="font-serif italic font-normal text-transparent bg-clip-text"
-              style={{
-                backgroundImage:
-                  'linear-gradient(135deg, #d946ef 0%, #ec4899 50%, #f43f5e 100%)',
-              }}
-            >
-              work
-            </span>
-          </h2>
+        {/* Section Header: Left Title + Right Explore Archives Button */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-14 sm:mb-20 gap-6">
+          <div className="text-left space-y-2">
+            <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
+              CASE STUDIES
+            </p>
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal tracking-tight text-white">
+              Curated{' '}
+              <span
+                className="font-serif italic font-normal text-transparent bg-clip-text"
+                style={{
+                  backgroundImage:
+                    'linear-gradient(135deg, #d946ef 0%, #ec4899 50%, #f43f5e 100%)',
+                }}
+              >
+                work
+              </span>
+            </h2>
+          </div>
+
+          <Link
+            href="/projects"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap self-start sm:self-auto cursor-pointer"
+          >
+            <span>Explore All Archives</span>
+            <ArrowUpRight size={14} />
+          </Link>
         </div>
 
         {/* 2-Column Split: Left Scrolling Cards + Right Sticky Synchronized Details */}
@@ -504,17 +514,6 @@ export default function FeaturedCaseStudies() {
               </motion.div>
             </AnimatePresence>
           </div>
-        </div>
-
-        {/* Footer CTA: Link to full projects archive */}
-        <div className="mt-16 sm:mt-24 text-center">
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs sm:text-sm font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm"
-          >
-            <span>Explore All Archives &amp; Experiments</span>
-            <ArrowUpRight size={15} />
-          </Link>
         </div>
       </div>
 
