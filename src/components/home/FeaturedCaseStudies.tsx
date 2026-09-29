@@ -31,8 +31,14 @@ export default function FeaturedCaseStudies() {
               <FolderGit2 size={15} />
               Production Platforms
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground">
-              Featured <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, #ffffff, ${currentTheme.primary})` }}>Case Studies</span>
+            <h2 className="text-4xl sm:text-6xl font-serif font-normal tracking-tight text-foreground">
+              Featured{' '}
+              <span 
+                className="font-serif italic font-normal text-transparent bg-clip-text" 
+                style={{ backgroundImage: `linear-gradient(135deg, #ffffff, ${currentTheme.primary})` }}
+              >
+                Case Studies
+              </span>
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl font-normal leading-relaxed">
               Production web applications engineered with modern full-stack architectures, high concurrency guards, and fluid user experiences.
@@ -119,7 +125,7 @@ export default function FeaturedCaseStudies() {
                     
                     {/* Title & Tagline */}
                     <div className="space-y-1">
-                      <h3 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
+                      <h3 className="text-3xl sm:text-4xl font-serif font-normal text-foreground tracking-tight group-hover:text-primary transition-colors">
                         {project.title}
                       </h3>
                       <p className="text-xs sm:text-sm font-mono text-muted-foreground/90 font-medium">

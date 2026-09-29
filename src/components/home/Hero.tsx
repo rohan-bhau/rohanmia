@@ -107,10 +107,10 @@ export default function Hero() {
                 <span className="text-sm sm:text-base font-mono text-muted-foreground block font-normal tracking-wide">
                   Hi, I'm
                 </span>
-                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-[-0.03em] text-foreground leading-[1.04]">
+                <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-normal tracking-tight text-foreground leading-[1.02]">
                   Rohan{' '}
                   <span 
-                    className="relative inline-block text-transparent bg-clip-text transition-all duration-700"
+                    className="relative inline-block font-serif italic text-transparent bg-clip-text transition-all duration-700"
                     style={{
                       backgroundImage: `linear-gradient(135deg, #ffffff 35%, ${currentTheme.primary} 100%)`,
                     }}

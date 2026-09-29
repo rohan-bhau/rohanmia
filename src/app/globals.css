@@ -158,6 +158,18 @@
   animation: spinSlow 10s linear infinite;
 }
 
+/* Universal Interactive Cursor Pointer Reset */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+a,
+summary,
+select {
+  cursor: pointer !important;
+}
+
 /* Custom Premium Utilities */
 .text-glow {
   text-shadow: 0 0 30px rgba(14,165,233,0.5) !important;

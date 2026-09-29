@@ -22,8 +22,14 @@ export default function TestimonialsSection() {
             <ShieldCheck size={14} />
             Verified Endorsements
           </span>
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground uppercase italic">
-            What Engineering Leaders <span className="not-italic text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, #ffffff, ${currentTheme.primary})` }}>Say</span>
+          <h2 className="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-foreground">
+            What Engineering Leaders{' '}
+            <span 
+              className="font-serif italic font-normal text-transparent bg-clip-text" 
+              style={{ backgroundImage: `linear-gradient(135deg, #ffffff, ${currentTheme.primary})` }}
+            >
+              Say
+            </span>
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">
             Direct feedback on architectural discipline, shipping velocity, and product-focused execution.

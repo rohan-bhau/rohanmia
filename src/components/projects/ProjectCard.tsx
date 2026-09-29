@@ -60,7 +60,7 @@ export default function ProjectCard({ project, displayIndex, column }: ProjectCa
           </div>
 
           <Link href={`/projects/${project.slug}`} className="block">
-            <h2 className="font-serif sm:font-sans font-bold text-3xl sm:text-4xl text-white tracking-tight hover:text-white/80 transition-colors leading-tight">
+            <h2 className="font-serif font-normal text-3xl sm:text-4xl text-white tracking-tight hover:text-white/80 transition-colors leading-tight">
               {project.title}
             </h2>
           </Link>

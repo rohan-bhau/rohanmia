@@ -19,7 +19,9 @@ import {
   Image as ImageIcon,
   MessageSquare,
   Sparkles,
-  Code2
+  Code2,
+  Search,
+  Globe
 } from 'lucide-react';
 import ColorSwitcher from '@/components/theme/ColorSwitcher';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
@@ -33,6 +35,7 @@ const PRIMARY_LINKS = [
 ];
 
 const MORE_LINKS = [
+  { name: 'Links', href: '/links', icon: Globe, desc: 'Social profiles & connect hub' },
   { name: 'Guestbook', href: '/guestbook', icon: BookOpen, desc: 'Leave your note or greeting' },
   { name: 'Gallery', href: '/gallery', icon: ImageIcon, desc: 'Visual moments & snapshots' },
   { name: 'Testimonials', href: '/testimonials', icon: MessageSquare, desc: 'Endorsements from founders' },
@@ -204,27 +207,39 @@ export default function Navbar() {
             </nav>
 
             {/* Right: Actions (Standing clean and modular outside the nav pill) */}
-            <div className="flex items-center gap-2.5">
-              {/* CMD+K Palette Trigger */}
+            <div className="flex items-center gap-2">
+              {/* CMD+K Palette Trigger (Desktop) */}
               <button
                 onClick={() => {
-                  const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true });
-                  document.dispatchEvent(event);
+                  window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { view: 'search' } }));
                 }}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] font-mono text-muted-foreground hover:text-foreground transition-all duration-200"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-[11px] font-mono text-muted-foreground hover:text-foreground transition-all duration-200 cursor-pointer"
                 title="Open Command Palette (Cmd + K)"
               >
                 <CmdIcon size={12} />
                 <span>K</span>
               </button>
 
+              {/* Mobile Search Palette Trigger */}
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { view: 'search' } }));
+                }}
+                className="flex sm:hidden p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                aria-label="Search and Reach Out"
+              >
+                <Search size={15} />
+              </button>
+
               {/* Multi-Accent Color Switcher */}
               <ColorSwitcher variant="dropdown" />
 
-              {/* Book Call CTA with High Contrast Fix */}
+              {/* Book Call CTA (Triggers Command Palette Reach Out Hub) */}
               <button
-                onClick={openBooking}
-                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { view: 'reachout' } }));
+                }}
+                className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg cursor-pointer"
                 style={{
                   backgroundColor: currentTheme.primary,
                   color: currentTheme.contrastText,
@@ -238,7 +253,7 @@ export default function Navbar() {
               {/* Mobile Hamburger Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex md:hidden p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex md:hidden p-2.5 rounded-full bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                 aria-label="Toggle Menu"
               >
                 {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -302,7 +317,7 @@ export default function Navbar() {
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  openBooking();
+                  window.dispatchEvent(new CustomEvent('open-command-palette', { detail: { view: 'reachout' } }));
                 }}
                 className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-xs font-bold shadow-lg"
                 style={{

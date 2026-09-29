@@ -32,8 +32,14 @@ export default function BentoGrid() {
               <Sparkles size={13} />
               At A Glance
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground uppercase italic">
-              Overview & <span className="not-italic text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(135deg, #ffffff, ${currentTheme.primary})` }}>Work</span>
+            <h2 className="text-3xl sm:text-5xl font-serif font-normal tracking-tight text-foreground">
+              Overview &amp;{' '}
+              <span 
+                className="font-serif italic font-normal text-transparent bg-clip-text" 
+                style={{ backgroundImage: `linear-gradient(135deg, #ffffff, ${currentTheme.primary})` }}
+              >
+                Work
+              </span>
             </h2>
           </div>
           <p className="text-xs font-mono text-muted-foreground max-w-xs">

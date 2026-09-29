@@ -66,19 +66,16 @@ export default function ProjectsPage() {
 
       <div className="container mx-auto max-w-6xl relative z-10">
         
-        {/* Page Header */}
-        <div className="max-w-3xl space-y-4 mb-12 sm:mb-14">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
-            <FolderGit2 size={14} style={{ color: currentTheme.primary }} />
-            <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground font-semibold">
-              Selected Works &amp; Case Studies
-            </span>
-          </div>
+        {/* Page Header (Editorial Serif, No Badge Pill per user specification) */}
+        <div className="max-w-3xl space-y-3 mb-12 sm:mb-14">
+          <span className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-muted-foreground/80 block">
+            SELECTED WORKS &amp; ARCHITECTURE
+          </span>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-normal tracking-tight text-white leading-tight">
             Projects &amp;{' '}
             <span 
-              className="text-transparent bg-clip-text"
+              className="font-serif italic font-normal text-transparent bg-clip-text"
               style={{
                 backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`
               }}
