@@ -20,7 +20,6 @@ import { FaGithub } from 'react-icons/fa6';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { CaseStudy } from '@/data/projects';
 import TechBadge from '@/components/ui/TechBadge';
-import DiscoveryBanner from '@/components/home/DiscoveryBanner';
 import CodeBlock from '@/components/ui/CodeBlock';
 
 interface CaseStudyClientProps {
@@ -748,11 +747,6 @@ export type SchemaType = z.infer<typeof schema>;`
           </section>
         )}
 
-      </div>
-
-      {/* 6. Call To Action Conversion Banner (Homepage DiscoveryBanner) */}
-      <div className="mt-16">
-        <DiscoveryBanner />
       </div>
 
       {/* 7. GitHub Multi-Repo Modal Dialog */}

@@ -3,7 +3,6 @@ import Hero from '@/components/home/Hero';
 import BentoGrid from '@/components/home/BentoGrid';
 import FeaturedCaseStudies from '@/components/home/FeaturedCaseStudies';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
-import DiscoveryBanner from '@/components/home/DiscoveryBanner';
 import PinnedSocials from '@/components/layout/PinnedSocials';
 
 export const metadata = {
@@ -13,7 +12,7 @@ export const metadata = {
 
 export default function Home() {
   return (
-    <div className="flex flex-col gap-8 pb-20 relative">
+    <div className="flex flex-col gap-8 pb-12 relative">
       {/* Pinned Left Floating Social Bar for Homepage */}
       <PinnedSocials />
 
@@ -21,7 +20,6 @@ export default function Home() {
       <BentoGrid />
       <FeaturedCaseStudies />
       <TestimonialsSection />
-      <DiscoveryBanner />
     </div>
   );
 }

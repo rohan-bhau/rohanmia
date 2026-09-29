@@ -9,6 +9,7 @@
   --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
   --font-serif: var(--font-serif);
+  --font-instrument: var(--font-instrument);
   
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -216,4 +217,8 @@ body.mobile-menu-active .chatbot-container,
 body.mobile-menu-active [class*='chatbot'],
 body.mobile-menu-active .fixed-action-btn {
   display: none !important;
+}
+
+.font-instrument {
+  font-family: var(--font-instrument), "Instrument Serif", Georgia, serif;
 }

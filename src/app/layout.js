@@ -1,4 +1,4 @@
-import { Outfit, Geist_Mono, Newsreader } from "next/font/google";
+import { Outfit, Geist_Mono, Newsreader, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -25,6 +25,13 @@ const geistMono = Geist_Mono({
 const newsreader = Newsreader({
   variable: "--font-serif",
   subsets: ["latin"],
+  style: ["normal", "italic"],
+});
+
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument",
+  subsets: ["latin"],
+  weight: "400",
   style: ["normal", "italic"],
 });
 
@@ -76,7 +83,7 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} font-sans antialiased`}
+        className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
       >
         <script
           type="application/ld+json"

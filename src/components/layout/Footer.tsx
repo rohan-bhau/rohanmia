@@ -12,10 +12,13 @@ import {
   Sparkles
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import { usePathname } from 'next/navigation';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { useBooking } from '@/components/booking/BookingContext';
+import DiscoveryBanner from '@/components/home/DiscoveryBanner';
 
 export default function Footer() {
+  const pathname = usePathname();
   const { currentTheme } = useThemeAccent();
   const { openBooking } = useBooking();
   const [time, setTime] = useState<string>('');
@@ -43,8 +46,14 @@ export default function Footer() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
-    <footer className="relative mt-32 border-t border-white/[0.08] bg-[#07080a] overflow-hidden">
+    <>
+      <DiscoveryBanner />
+      <footer className="relative mt-8 border-t border-white/[0.08] bg-[#07080a] overflow-hidden">
       {/* Dynamic ambient top glow line */}
       <div 
         className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] opacity-70 blur-[1px] transition-all duration-700"
@@ -219,5 +228,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }
