@@ -313,13 +313,13 @@ export default function FeaturedCaseStudies() {
   return (
     <section id="projects" className="py-20 sm:py-28 px-4 sm:px-6 relative">
       <div className="container mx-auto max-w-6xl">
-        {/* Section Header: Left Title + Right Explore Archives Button */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-14 sm:mb-20 gap-6">
-          <div className="text-left space-y-2">
-            <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
-              CASE STUDIES
-            </p>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal tracking-tight text-white">
+        {/* Section Header: CASE STUDIES on top, Curated work and Explore Button on the EXACT same line */}
+        <div className="mb-14 sm:mb-20 space-y-2">
+          <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
+            CASE STUDIES
+          </p>
+          <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-normal tracking-tight text-white">
               Curated{' '}
               <span
                 className="font-serif italic font-normal text-transparent bg-clip-text"
@@ -331,15 +331,15 @@ export default function FeaturedCaseStudies() {
                 work
               </span>
             </h2>
-          </div>
 
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap self-start sm:self-auto cursor-pointer"
-          >
-            <span>Explore All Archives</span>
-            <ArrowUpRight size={14} />
-          </Link>
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
+            >
+              <span>Explore All Archives</span>
+              <ArrowUpRight size={14} />
+            </Link>
+          </div>
         </div>
 
         {/* 2-Column Split: Left Scrolling Cards + Right Sticky Synchronized Details */}
