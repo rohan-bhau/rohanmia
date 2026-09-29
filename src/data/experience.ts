@@ -27,43 +27,30 @@ export interface EducationItem {
 export const CAREER_EXPERIENCES: ExperienceItem[] = [
   {
     period: '2024 — Present',
-    role: 'Senior Full Stack & Creative Engineer',
-    company: 'Independent Contractor & Technical Lead',
-    location: 'Remote // Global',
-    description: 'Architecting enterprise full-stack web applications, distributed reservation platforms, and real-time interactive tools. Pioneering atomic database lock pipelines, sub-100ms UI navigations, and verified e-commerce marketplaces.',
+    role: 'Full-Stack Developer & Software Builder',
+    company: 'Independent Project Based',
+    location: 'Dhaka, Bangladesh · Remote',
+    description: 'Building modern full-stack web applications, exploring distributed system architectures, and engineering clean, accessible user experiences. Focused on atomic transactional integrity, responsive UI engineering, and API design.',
     achievements: [
-      'Engineered Reserva: High-throughput facility booking engine with verified 0.00% double-booking collision rate under concurrent stress simulations.',
-      'Architected Qurbaniya: End-to-end verified livestock digital marketplace featuring Google OAuth, automated CDN media pipelines, and atomic transaction locks.',
-      'Built Keen-Keeper: Modern relationship intelligence platform delivering sub-second dossier searches, contact cadence tracking, and dynamic health scores.'
+      'Engineered Reserva: Full-stack facility booking platform with atomic database operations preventing concurrent double-booking collisions.',
+      'Architected Qurbaniya: Livestock digital marketplace featuring Google OAuth, automated media pipelines, and role-based access control.',
+      'Built Keen-Keeper: Personal relationship intelligence application delivering instant searches, cadence tracking, and interaction logs.'
     ],
     skills: ['Next.js 16', 'TypeScript', 'Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'Docker', 'Tailwind CSS', 'Framer Motion'],
     isCurrent: true
   },
   {
-    period: '2022 — 2024',
-    role: 'Full Stack Software Engineer',
-    company: 'Client Solutions & Distributed Engineering',
+    period: '2023 — 2024',
+    role: 'Frontend & Web Developer',
+    company: 'Web Projects & Freelance',
     location: 'Remote',
-    description: 'Spearheaded full-stack product development from wireframe prototypes to edge production deployments. Integrated hardened auth protocols, optimized MongoDB/PostgreSQL query aggregations, and engineered high-conversion landing systems.',
+    description: 'Focused on core web standards, component architecture, and responsive design systems. Mastered modern JavaScript, React ecosystem, and clean REST API integrations.',
     achievements: [
-      'Developed hardened REST API microservices with role-based access control (RBAC), HTTPOnly cookie sessions, and CSRF token defenses.',
-      'Reduced initial page load latency by over 60% through Next.js hybrid server-side rendering, streaming SSR, and edge image caching.',
-      'Constructed scalable design systems with reusable Tailwind tokens, fluid animations, and strict TypeScript types.'
+      'Crafted responsive, accessible client web applications with zero cumulative layout shifts and optimized rendering.',
+      'Integrated RESTful APIs, JWT authentication routines, and asynchronous data fetching with optimistic feedback.',
+      'Maintained consistent UI design systems with reusable Tailwind CSS utility classes and modern animations.'
     ],
-    skills: ['React', 'Next.js', 'Node.js', 'PostgreSQL', 'Prisma', 'REST APIs', 'JWT', 'Redis', 'Cloudinary']
-  },
-  {
-    period: '2020 — 2022',
-    role: 'Frontend Specialist & Web Engineer',
-    company: 'Digital Product Studios',
-    location: 'Dhaka, Bangladesh',
-    description: 'Focused on core web fundamentals, pixel-perfect user interface engineering, and accessible design systems. Mastered modern JavaScript internals, state management paradigms, and cross-browser performance optimization.',
-    achievements: [
-      'Crafted 25+ modern responsive client web applications with zero cumulative layout shifts (CLS < 0.01).',
-      'Conducted exhaustive performance profiling, consistently securing 95+ Google Lighthouse scores across accessibility and SEO.',
-      'Championed modern CSS architectures, fluid micro-interactions, and component-driven engineering workflows.'
-    ],
-    skills: ['JavaScript (ES6+)', 'React', 'Tailwind CSS', 'Redux Toolkit', 'Git', 'HTML5/CSS3', 'Figma']
+    skills: ['JavaScript', 'React', 'Tailwind CSS', 'Redux Toolkit', 'Node.js', 'Git', 'HTML5', 'Figma']
   }
 ];
 
