@@ -36,7 +36,7 @@ export default function ProjectsPage() {
     });
   }, [selectedCategory, searchQuery]);
 
-  // Staggered columns for the exact Aayush Bharti desktop layout
+  // Staggered columns for the exact Editorial desktop layout
   const col1Projects = useMemo(() => {
     return filteredProjects.filter((_, i) => i % 2 === 0);
   }, [filteredProjects]);

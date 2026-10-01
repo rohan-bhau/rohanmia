@@ -430,7 +430,7 @@ export type SchemaType = z.infer<typeof schema>;`
         </div>
 
         {/* ============================================================== */}
-        {/* ASYMMETRIC 2-COLUMN BLUEPRINT SECTION GRID (Exact Aayush Bharti) */}
+        {/* ASYMMETRIC 2-COLUMN BLUEPRINT SECTION GRID (Exact Editorial) */}
         {/* ============================================================== */}
 
         {/* SECTION 01: Why I Built This */}

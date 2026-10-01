@@ -101,7 +101,7 @@ export default function DiscoveryBanner() {
                 "
                 title="Drag me around! Releasing will snap back to position."
               >
-                {/* Outer colored ring matching Aayush Bharti's badge */}
+                {/* Outer colored ring matching Editorial's badge */}
                 <div
                   className="relative rounded-full p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.65)] transition-all duration-300"
                   style={{
@@ -142,7 +142,7 @@ export default function DiscoveryBanner() {
                       </svg>
                     </div>
 
-                    {/* Aayush Bharti's Exact 4-Point Star Symbol */}
+                    {/* Editorial's Exact 4-Point Star Symbol */}
                     <svg
                       height="24"
                       viewBox="0 0 24 24"
@@ -157,7 +157,7 @@ export default function DiscoveryBanner() {
                 </div>
               </motion.div>
 
-              {/* Exact Aayush Bharti Headline Typography */}
+              {/* Exact Editorial Headline Typography */}
               <div className="order-2 font-sans font-light text-lg sm:text-3xl md:text-4xl lg:text-5xl tracking-wide text-white select-none">
                 <h2 className="whitespace-nowrap uppercase">
                   FROM CONCEPT TO <span className="font-extrabold text-white">CREATION</span>
@@ -199,7 +199,7 @@ export default function DiscoveryBanner() {
             </div>
 
             {/* ============================================================ */}
-            {/* SUBTEXT (Exact Aayush Bharti Typography & Content)           */}
+            {/* SUBTEXT (Exact Editorial Typography & Content)           */}
             {/* ============================================================ */}
             <div className="space-y-2 pt-2">
               <p className="font-serif font-semibold text-base sm:text-xl lg:text-2xl text-white tracking-tight">

@@ -409,8 +409,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="text-[10px] font-mono text-zinc-400 block uppercase tracking-wider">Direct Email</span>
-                    <a href="mailto:rohanmia.dev@gmail.com" className="text-xs sm:text-sm font-mono text-white hover:underline">
-                      rohanmia.dev@gmail.com
+                    <a href="mailto:rohanmia.org@gmail.com" className="text-xs sm:text-sm font-mono text-white hover:underline">
+                      rohanmia.org@gmail.com
                     </a>
                   </div>
                 </div>

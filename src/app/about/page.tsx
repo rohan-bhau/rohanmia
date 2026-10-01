@@ -69,7 +69,7 @@ export default function AboutPage() {
       <div className="container mx-auto max-w-6xl xl:max-w-7xl px-4 sm:px-6 space-y-20 sm:space-y-28 relative z-10">
         
         {/* =========================================================================
-            1. HERO BIOGRAPHY & STACKED 3D CAROUSEL (Exact Aayush Bharti Style Layout)
+            1. HERO BIOGRAPHY & STACKED 3D CAROUSEL (Exact Editorial Style Layout)
            ========================================================================= */}
         <section className="space-y-8">
           
@@ -159,7 +159,7 @@ export default function AboutPage() {
         </section>
 
         {/* =========================================================================
-            2. THE EXPERIENCE SECTION (Aayush Bharti Scroll-Driven Animated Divider & Avatar)
+            2. THE EXPERIENCE SECTION (Editorial Scroll-Driven Animated Divider & Avatar)
            ========================================================================= */}
         <section className="space-y-6">
           
@@ -187,7 +187,7 @@ export default function AboutPage() {
             className="relative flex w-full flex-col divide-y divide-white/10 overflow-hidden border-t border-b border-white/10"
           >
             
-            {/* DESKTOP VERTICAL PROGRESS DIVIDER & TRAVELING AVATAR (Exact Aayush Bharti 2px Crisp Line & Compact Avatar) */}
+            {/* DESKTOP VERTICAL PROGRESS DIVIDER & TRAVELING AVATAR (Exact Editorial 2px Crisp Line & Compact Avatar) */}
             <div 
               aria-hidden="true" 
               className="pointer-events-none hidden md:block absolute top-0 bottom-0 left-[380px] lg:left-[420px] -translate-x-1/2 w-8 z-10"
@@ -196,7 +196,7 @@ export default function AboutPage() {
                 {/* Background Rail Track - Crisp 2px width */}
                 <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[2px] bg-white/10 rounded-full" />
                 
-                {/* Active Colored Progress Fill - Solid gradient matching Aayush cyan -> magenta -> theme */}
+                {/* Active Colored Progress Fill - Solid gradient matching Editorial cyan -> magenta -> theme */}
                 <motion.div 
                   style={{ 
                     height: fillHeight,
@@ -388,7 +388,7 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
             
-            {/* Main GitHub Contribution Graph Card (8 cols) - Exact Aayush Bharti Heatmap */}
+            {/* Main GitHub Contribution Graph Card (8 cols) - Exact Editorial Heatmap */}
             <div className="lg:col-span-8 flex flex-col">
               <GithubContributionGraph 
                 totalContributions={githubStats.totalContributions}
@@ -396,7 +396,7 @@ export default function AboutPage() {
               />
             </div>
 
-            {/* Right Column: 3 Developer Metrics (4 cols) - Matching Aayush's 3-card stack with equal height */}
+            {/* Right Column: 3 Developer Metrics (4 cols) - Matching Editorial's 3-card stack with equal height */}
             <div className="lg:col-span-4 flex flex-col justify-between gap-3 sm:gap-3.5">
               
               {/* Card 1: Repositories */}
@@ -631,7 +631,7 @@ export default function AboutPage() {
             </Link>
 
             {/* =================================================================
-                CARD 3 (7 cols): DIRECT COLLABORATION (Aayush's signature card)
+                CARD 3 (7 cols): DIRECT COLLABORATION (Editorial's signature card)
                 Orbital Broadcast Beacon crazy icon + serif quote + dashed action pill
                ================================================================= */}
             <Link 
@@ -680,7 +680,7 @@ export default function AboutPage() {
                   Ready to ship &amp; accept new projects
                 </div>
 
-                {/* Aayush's signature floating dashed rounded-2xl action button */}
+                {/* Editorial's signature floating dashed rounded-2xl action button */}
                 <div className="flex size-10 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-white/5 group-hover:bg-rose-500/20 group-hover:border-rose-500/40 group-hover:-translate-y-1 transition-all">
                   <ArrowRight size={18} className="text-white group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -695,7 +695,7 @@ export default function AboutPage() {
               href="/guestbook"
               className="group md:col-span-12 lg:col-span-5 p-6 sm:p-7 rounded-3xl bg-[#0c1017]/80 border border-white/10 hover:border-violet-500/40 hover:bg-[#121622]/90 transition-all duration-500 flex flex-col justify-between min-h-[260px] sm:min-h-[290px] relative overflow-hidden backdrop-blur-md shadow-2xl"
             >
-              {/* Radial dot grid pattern (Aayush's signature) */}
+              {/* Radial dot grid pattern (Editorial's signature) */}
               <div className="absolute inset-0 bg-[radial-gradient(circle,#525252_1px,transparent_1px)] [background-size:16px_16px] opacity-25 pointer-events-none" />
 
               {/* Tilted layered postcard vector illustration in background */}

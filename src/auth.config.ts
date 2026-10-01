@@ -1,4 +1,6 @@
-export const authConfig = {
+import type { NextAuthConfig } from 'next-auth';
+
+export const authConfig: NextAuthConfig = {
   pages: {
     signIn: '/login',
   },
@@ -14,6 +16,6 @@ export const authConfig = {
       return true;
     },
   },
-  providers: [], // Add providers in auth.js
+  providers: [], // Configured in src/auth.ts
   trustHost: true,
 };
