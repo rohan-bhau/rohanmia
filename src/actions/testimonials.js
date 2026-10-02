@@ -3,6 +3,7 @@
 import Testimonial from '@/models/Testimonial';
 import connectDB from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 export async function getTestimonials(onlyApproved = true) {
   try {
@@ -29,6 +30,7 @@ export async function submitTestimonial(data) {
 
 export async function addTestimonial(data) {
   try {
+    await assertAdmin();
     await connectDB();
     const testimonial = await Testimonial.create({ ...data, status: 'approved' });
     revalidatePath('/testimonials');
@@ -41,6 +43,7 @@ export async function addTestimonial(data) {
 
 export async function updateTestimonialStatus(id, status) {
   try {
+    await assertAdmin();
     await connectDB();
     await Testimonial.findByIdAndUpdate(id, { status });
     revalidatePath('/testimonials');
@@ -53,6 +56,7 @@ export async function updateTestimonialStatus(id, status) {
 
 export async function deleteTestimonial(id) {
   try {
+    await assertAdmin();
     await connectDB();
     await Testimonial.findByIdAndDelete(id);
     revalidatePath('/testimonials');

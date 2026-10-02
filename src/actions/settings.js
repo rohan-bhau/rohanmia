@@ -3,6 +3,7 @@
 import connectDB from '@/lib/db';
 import Settings from '@/models/Settings';
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 import { unstable_noStore as noStore } from 'next/cache';
 
@@ -35,6 +36,7 @@ export async function getSettings() {
 
 export async function updateSettings(data) {
   try {
+    await assertAdmin();
     await connectDB();
     
     // Explicitly map fields to ensure they are saved according to the schema

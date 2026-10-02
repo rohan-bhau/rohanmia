@@ -18,4 +18,6 @@ export interface GuestbookEntry {
   theme: GuestbookTheme;
   createdAt: string;
   verified?: boolean;
+  /** Resolved server-side from the verified session */
+  isOwner?: boolean;
 }

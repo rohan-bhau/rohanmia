@@ -3,6 +3,7 @@
 import dbConnect from '@/lib/db';
 import Qualification from '@/models/Qualification';
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 export async function getQualifications() {
   await dbConnect();
@@ -15,8 +16,9 @@ export async function getQualifications() {
 }
 
 export async function addQualification(data) {
-  await dbConnect();
   try {
+    await assertAdmin();
+    await dbConnect();
     const qualification = await Qualification.create(data);
     revalidatePath('/qualification');
     revalidatePath('/admin');
@@ -27,8 +29,9 @@ export async function addQualification(data) {
 }
 
 export async function updateQualification(id, data) {
-  await dbConnect();
   try {
+    await assertAdmin();
+    await dbConnect();
     const qualification = await Qualification.findByIdAndUpdate(id, data, { new: true });
     revalidatePath('/qualification');
     revalidatePath('/admin');
@@ -39,8 +42,9 @@ export async function updateQualification(id, data) {
 }
 
 export async function deleteQualification(id) {
-  await dbConnect();
   try {
+    await assertAdmin();
+    await dbConnect();
     await Qualification.findByIdAndDelete(id);
     revalidatePath('/qualification');
     revalidatePath('/admin');
@@ -51,8 +55,9 @@ export async function deleteQualification(id) {
 }
 
 export async function seedQualifications(items) {
-  await dbConnect();
   try {
+    await assertAdmin();
+    await dbConnect();
     for (const item of items) {
       await Qualification.findOneAndUpdate(
         { title: item.title, subtitle: item.subtitle },

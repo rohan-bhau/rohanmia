@@ -3,6 +3,7 @@
 import dbConnect from '@/lib/db';
 import Project from '@/models/Project';
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 const DEFAULT_PROJECTS = [
   {
@@ -89,6 +90,7 @@ export async function getFeaturedProjects() {
 
 export async function addProject(data) {
   try {
+    await assertAdmin();
     await dbConnect();
     const project = await Project.create(data);
     revalidatePath('/projects');
@@ -103,6 +105,7 @@ export async function addProject(data) {
 
 export async function updateProject(id, data) {
   try {
+    await assertAdmin();
     await dbConnect();
     const project = await Project.findByIdAndUpdate(id, data, { new: true });
     revalidatePath('/projects');
@@ -117,6 +120,7 @@ export async function updateProject(id, data) {
 
 export async function deleteProject(id) {
   try {
+    await assertAdmin();
     await dbConnect();
     await Project.findByIdAndDelete(id);
     revalidatePath('/projects');
@@ -131,6 +135,7 @@ export async function deleteProject(id) {
 
 export async function toggleFeaturedProject(id) {
   try {
+    await assertAdmin();
     await dbConnect();
     const project = await Project.findById(id);
     project.featured = !project.featured;

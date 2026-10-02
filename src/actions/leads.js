@@ -2,6 +2,7 @@
 
 import dbConnect from '@/lib/db';
 import Lead from '@/models/Lead';
+import { assertAdmin } from '@/lib/admin';
 
 export async function saveLead(data) {
   try {
@@ -16,6 +17,7 @@ export async function saveLead(data) {
 
 export async function getLeads() {
   try {
+    await assertAdmin();
     await dbConnect();
     const leads = await Lead.find({}).sort({ createdAt: -1 });
     return JSON.parse(JSON.stringify(leads));
@@ -27,6 +29,7 @@ export async function getLeads() {
 
 export async function deleteLead(id) {
   try {
+    await assertAdmin();
     await dbConnect();
     await Lead.findByIdAndDelete(id);
     return { success: true };

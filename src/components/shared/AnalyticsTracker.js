@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { trackPageView, updatePageDuration } from '@/actions/analytics';
 
 export default function AnalyticsTracker() {
   const pathname = usePathname();
@@ -14,7 +13,7 @@ export default function AnalyticsTracker() {
       localStorage.setItem('visitor_id', visitorId);
     }
 
-    const track = async () => {
+    const track = () => {
       const data = {
         path: pathname,
         visitorId,
@@ -22,14 +21,29 @@ export default function AnalyticsTracker() {
         browser: window.navigator.userAgent.split(' ')[0],
       };
 
-      await trackPageView(data);
+      fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        keepalive: true,
+      }).catch(() => {});
     };
 
     track();
 
-    // Heartbeat to track duration (every 10 seconds)
+    // Heartbeat to track duration (every 10 seconds) - runs silently without triggering router refresh
     const interval = setInterval(() => {
-      updatePageDuration(visitorId, pathname, 10);
+      fetch('/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'duration',
+          visitorId,
+          path: pathname,
+          duration: 10,
+        }),
+        keepalive: true,
+      }).catch(() => {});
     }, 10000);
 
     return () => clearInterval(interval);
@@ -37,3 +51,4 @@ export default function AnalyticsTracker() {
 
   return null;
 }
+

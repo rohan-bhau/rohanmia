@@ -1,6 +1,7 @@
 'use server';
 
 import { v2 as cloudinary } from 'cloudinary';
+import { assertAdmin } from '@/lib/admin';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -10,6 +11,7 @@ cloudinary.config({
 
 export async function uploadImage(formData) {
   try {
+    await assertAdmin();
     const file = formData.get('file');
     if (!file) throw new Error('No file provided');
 
@@ -40,6 +42,7 @@ export async function uploadImage(formData) {
 
 export async function deleteImage(publicId) {
   try {
+    await assertAdmin();
     const result = await cloudinary.uploader.destroy(publicId);
     return { success: result.result === 'ok' };
   } catch (error) {

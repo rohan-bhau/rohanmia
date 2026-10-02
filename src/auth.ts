@@ -26,7 +26,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           const { email, password } = parsedCredentials.data;
           
           if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            return { id: 'admin', email, name: 'Admin' };
+            return { id: 'admin', email, name: 'Admin', role: 'admin' };
           }
         }
 
@@ -42,15 +42,18 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (token.picture) session.user.image = token.picture as string;
         if (token.email) session.user.email = token.email as string;
         if (token.name) session.user.name = token.name as string;
+        session.user.role = (token.role as string) || 'user';
+        session.user.isAdmin = token.role === 'admin';
       }
       return session;
     },
-    async jwt({ token, user, profile }) {
+    async jwt({ token, user, profile, account }) {
       if (user) {
         token.id = user.id;
         if (user.email) token.email = user.email;
         if (user.name) token.name = user.name;
         if (user.image) token.picture = user.image;
+        token.role = (user as any)?.role === 'admin' || user?.id === 'admin' ? 'admin' : 'user';
       }
       if (profile) {
         const p = profile as Record<string, any>;
@@ -59,11 +62,16 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           token.picture = avatar;
         }
       }
+      // Strict security barrier: OAuth accounts (Google/GitHub) from Guestbook are ALWAYS role 'user'
+      if (account && (account.provider === 'google' || account.provider === 'github')) {
+        token.role = 'user';
+      }
       return token;
     }
   },
   session: { strategy: "jwt" },
   secret: process.env.AUTH_SECRET,
   trustHost: true,
-  debug: process.env.NODE_ENV === 'development',
+  debug: false,
 });
+

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import crypto from 'crypto';
 import { sendGuestbookConfirmationEmail } from '@/lib/email';
-import { fetchAllEntries, insertEntry, deleteEntryById } from '@/lib/postgres';
+import { insertEntry, deleteEntryById } from '@/lib/postgres';
+import { getGuestbookData, isDevIdentityMode } from '@/lib/guestbook';
 import { auth } from '@/auth';
 
 const GuestbookSchema = z.object({
@@ -109,52 +110,10 @@ export function determineTheme(message: string): GuestbookTheme {
   return allThemes[sum % allThemes.length];
 }
 
-// Format relative date (e.g. "Just now", "2 hours ago", "Sep 12, 2026")
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - d.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-
-    if (diffMins < 2) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  } catch {
-    return 'Recently';
-  }
-}
-
 export async function GET() {
   try {
-    const rows = await fetchAllEntries();
-    const formatted = rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      email: r.email,
-      message: r.message,
-      avatar: r.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(r.name)}`,
-      provider: r.provider,
-      theme: r.theme,
-      createdAt: formatDate(r.created_at),
-      verified: true
-    }));
-
-    return NextResponse.json({
-      success: true,
-      entries: formatted,
-      oauthConfigured: {
-        google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-        github: Boolean((process.env.GITHUB_CLIENT_ID || process.env.GITHUB_ID) && (process.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_SECRET))
-      }
-    });
+    const { entries, oauthConfigured } = await getGuestbookData();
+    return NextResponse.json({ success: true, entries, oauthConfigured });
   } catch (error: any) {
     console.error('Guestbook GET error:', error.message);
     return NextResponse.json(
@@ -167,6 +126,21 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const session = await auth();
+    const sessionUser = session?.user;
+
+    // Verified OAuth identity always wins over anything the client sends
+    if (sessionUser?.email) {
+      body.name = sessionUser.name || body.name;
+      body.email = sessionUser.email;
+      body.avatar = sessionUser.image || body.avatar;
+    } else if (!isDevIdentityMode()) {
+      return NextResponse.json(
+        { success: false, error: 'Please sign in to sign the guestbook' },
+        { status: 401 }
+      );
+    }
+
     const parsed = GuestbookSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -212,7 +186,8 @@ export async function POST(req: NextRequest) {
         provider: newRow.provider,
         theme: newRow.theme,
         createdAt: 'Just now',
-        verified: true
+        verified: true,
+        isOwner: true
       }
     });
   } catch (error: any) {
@@ -229,12 +204,21 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const session = await auth();
-    const email = searchParams.get('email') || session?.user?.email;
+    // Query-string email is only honoured in local dev-identity mode (no OAuth configured)
+    const email =
+      session?.user?.email ||
+      (isDevIdentityMode() ? searchParams.get('email') : null);
 
-    if (!id || !email) {
+    if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Entry ID and author email are required to delete a note' },
+        { success: false, error: 'Entry ID is required to delete a note' },
         { status: 400 }
+      );
+    }
+    if (!email) {
+      return NextResponse.json(
+        { success: false, error: 'Please sign in to delete your note' },
+        { status: 401 }
       );
     }
 

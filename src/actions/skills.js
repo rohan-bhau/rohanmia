@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db';
 import SkillCategory from '@/models/SkillCategory';
 import { Skill } from '@/models/Skill';
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 const DEFAULT_SKILLS = [
   {
@@ -76,6 +77,7 @@ export async function getSkills() {
 
 export async function updateSkillCategory(id, data) {
   try {
+    await assertAdmin();
     await dbConnect();
     const category = await SkillCategory.findByIdAndUpdate(id, data, { new: true });
     revalidatePath('/skills');
@@ -88,6 +90,7 @@ export async function updateSkillCategory(id, data) {
 
 export async function addSkillCategory(data) {
   try {
+    await assertAdmin();
     await dbConnect();
     const category = await SkillCategory.create(data);
     revalidatePath('/skills');
@@ -100,6 +103,7 @@ export async function addSkillCategory(data) {
 
 export async function deleteSkillCategory(id) {
   try {
+    await assertAdmin();
     await dbConnect();
     await SkillCategory.findByIdAndDelete(id);
     revalidatePath('/skills');

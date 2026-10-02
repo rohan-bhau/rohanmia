@@ -17,17 +17,16 @@ export function generateGuestbookEmailText(name: string, message: string): strin
 
 Hi ${name},
 
-Thank you for taking a moment to visit my portfolio and leave your note on my guestbook wall!
+Thank you so much for taking a moment to visit my portfolio and sign the guestbook wall! Reading thoughts and notes from fellow engineers and visitors is one of the most rewarding parts of building on the web.
 
-Copy of your message:
 "${message}"
 
-If you ever want to connect, talk tech, or share ideas, feel free to reply directly to this email anytime.
+Feel free to reply directly to this email anytime if you ever want to connect, talk tech, or share ideas.
 
 Best regards,
 Rohan Mia
 
-(c) ${currentYear} Rohan Mia. All Rights Reserved.
+(c) ${currentYear} Rohan Mia. All rights reserved.
 rohanmia.org@gmail.com`;
 }
 
@@ -42,6 +41,7 @@ function escapeHtml(str: string): string {
 
 /**
  * Generate clean, professional HTML confirmation email (Zero horizontal scrollbar, 100% email-client compatible)
+ * Exactly matches the design in Image 2: Dark Midnight Navy header with Guestbook Wall pill, clean note card, tinted footer.
  */
 export function generateGuestbookEmailHtml(name: string, message: string): string {
   const currentYear = new Date().getFullYear();
@@ -55,7 +55,7 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
   <meta name="supported-color-schemes" content="light" />
-  <title>Thank you for leaving a note!</title>
+  <title>Thanks for signing the guestbook!</title>
   <style type="text/css">
     *, *:before, *:after {
       box-sizing: border-box !important;
@@ -70,7 +70,7 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
       padding: 0 !important;
       width: 100% !important;
       min-width: 100% !important;
-      background-color: #eaecf2;
+      background-color: #eef2f6;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       overflow-x: hidden;
     }
@@ -81,31 +81,29 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
     }
   </style>
 </head>
-<body style="margin: 0; padding: 0; width: 100%; background-color: #eaecf2; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden;">
+<body style="margin: 0; padding: 0; width: 100%; background-color: #eef2f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden;">
 
   <!-- Outer Full-Width Wrapper Table -->
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; margin: 0; padding: 0; background-color: #eaecf2; table-layout: fixed;">
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; margin: 0; padding: 0; background-color: #eef2f6; table-layout: fixed;">
     <tr>
       <td align="center" style="padding: 40px 14px;">
         
-        <!-- Main Card Container -->
-        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 530px; width: 100%; background-color: #ffffff; border: 1px solid #d4d9e4; border-radius: 18px; overflow: hidden; table-layout: fixed; box-shadow: 0 6px 24px rgba(10, 15, 40, 0.1);">
+        <!-- Main Card Container (Fixed max-width, strictly bounded to prevent any horizontal scroll) -->
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 530px; width: 100%; background-color: #ffffff; border: 1px solid #dbe2ea; border-radius: 16px; overflow: hidden; table-layout: fixed; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);">
 
-          <!-- ═══════ HEADER: Deep Violet-Indigo Gradient ═══════ -->
+          <!-- Top Distinct Header (Deep Midnight Slate Navy with GUESTBOOK WALL Pill) -->
           <tr>
-            <td style="padding: 0; background: linear-gradient(135deg, #1e1045 0%, #2d1060 40%, #1a1438 100%); text-align: left;">
-              <!-- Top accent line -->
-              <div style="height: 3px; background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 40%, #60a5fa 100%);"></div>
-              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding: 30px 36px 28px 36px;">
+            <td style="padding: 34px 36px 30px 36px; background-color: #1a2436; text-align: left;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                   <td>
-                    <!-- Monospace label -->
-                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(167, 139, 250, 0.75); margin-bottom: 10px;">
-                      RM · PERSONAL NOTE
+                    <!-- Pill Badge -->
+                    <div style="display: inline-block; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #38bdf8; background-color: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 9999px; padding: 4px 12px; margin-bottom: 14px;">
+                      &#10022; GUESTBOOK WALL
                     </div>
-                    <!-- Serif Headline -->
-                    <h1 style="margin: 0; font-family: Georgia, Cambria, 'Times New Roman', serif; font-size: 22px; font-weight: normal; color: #f8f6ff; line-height: 1.4; letter-spacing: -0.01em; word-wrap: break-word; overflow-wrap: break-word;">
-                      Thank you for leaving a note!
+                    <!-- Headline -->
+                    <h1 style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 23px; font-weight: 700; color: #ffffff; line-height: 1.35; letter-spacing: -0.01em; word-wrap: break-word; overflow-wrap: break-word;">
+                      Thanks for signing the guestbook!
                     </h1>
                   </td>
                 </tr>
@@ -113,7 +111,7 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
             </td>
           </tr>
 
-          <!-- ═══════ BODY CONTENT: Clean White Paper ═══════ -->
+          <!-- Body Content Section (Clean White Paper) -->
           <tr>
             <td style="padding: 32px 36px 34px 36px; background-color: #ffffff; text-align: left;">
               
@@ -123,18 +121,15 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
               </p>
 
               <!-- Intro Paragraph -->
-              <p style="margin: 0 0 22px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; color: #334155; line-height: 1.7; word-wrap: break-word; overflow-wrap: break-word;">
-                It genuinely means a lot that you took a moment to visit and leave your mark on the guestbook. Every single note on that wall is something I read, and yours is no exception.
+              <p style="margin: 0 0 22px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; color: #334155; line-height: 1.65; word-wrap: break-word; overflow-wrap: break-word;">
+                Thank you so much for taking a moment to visit my portfolio and sign the guestbook wall! Reading thoughts and notes from fellow engineers and visitors is one of the most rewarding parts of building on the web.
               </p>
 
-              <!-- Message / Quote Card -->
+              <!-- Note / Quote Card (Matching Image 2 with crisp blue left accent border) -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; margin: 0 0 24px 0; table-layout: fixed;">
                 <tr>
-                  <td style="background-color: #faf8ff; border: 1px solid #ede9fe; border-left: 3px solid #7c3aed; border-radius: 8px; padding: 16px 20px;">
-                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #7c3aed; margin-bottom: 8px;">
-                      Your note
-                    </div>
-                    <p style="margin: 0; font-family: Georgia, Cambria, 'Times New Roman', Times, serif; font-size: 14px; font-style: italic; color: #1e293b; line-height: 1.65; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
+                  <td style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #0284c7; border-radius: 8px; padding: 16px 20px;">
+                    <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; color: #1e293b; line-height: 1.6; font-style: italic; word-wrap: break-word; word-break: break-word; overflow-wrap: break-word;">
                       &ldquo;${safeMessage}&rdquo;
                     </p>
                   </td>
@@ -142,14 +137,14 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
               </table>
 
               <!-- Outro Paragraph -->
-              <p style="margin: 0 0 26px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; color: #334155; line-height: 1.7; word-wrap: break-word; overflow-wrap: break-word;">
-                If you ever want to exchange ideas, talk about something you're building, or just have a conversation — feel free to reply directly to this email. I always enjoy hearing from people.
+              <p style="margin: 0 0 24px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; font-weight: 400; color: #334155; line-height: 1.65; word-wrap: break-word; overflow-wrap: break-word;">
+                Feel free to reply directly to this email anytime if you ever want to connect, talk tech, or share ideas.
               </p>
 
               <!-- Sign-off Block -->
-              <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #334155; line-height: 1.6;">
+              <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; color: #334155; line-height: 1.5;">
                 Best regards,<br />
-                <span style="display: inline-block; margin-top: 5px; font-weight: 700; font-size: 15px; color: #0f172a;">
+                <span style="display: inline-block; margin-top: 4px; font-weight: 600; font-size: 15px; color: #0f172a;">
                   Rohan Mia
                 </span>
               </p>
@@ -157,12 +152,14 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
             </td>
           </tr>
 
-          <!-- ═══════ FOOTER: Warm Slate, Distinctly Different from Body ═══════ -->
+          <!-- Footer Section (Different Tinted Background #f1f5f9 with Distinct Top Border) -->
           <tr>
-            <td style="padding: 20px 36px 22px 36px; background-color: #1e1045; border-top: 1px solid rgba(124, 58, 237, 0.25); text-align: center;">
-              <p style="margin: 0 0 4px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 11px; color: rgba(200, 190, 230, 0.6); line-height: 1.5;">
-                &copy; ${currentYear} Rohan Mia &nbsp;&middot;&nbsp;
-                <a href="mailto:rohanmia.org@gmail.com" style="color: rgba(167, 139, 250, 0.85); text-decoration: none;">rohanmia.org@gmail.com</a>
+            <td style="padding: 22px 36px; background-color: #f1f5f9; border-top: 1px solid #e2e8f0; text-align: center;">
+              <p style="margin: 0 0 5px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #64748b; line-height: 1.5;">
+                &copy; ${currentYear} Rohan Mia. All rights reserved.
+              </p>
+              <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #0284c7; line-height: 1.4;">
+                <a href="mailto:rohanmia.org@gmail.com" style="color: #0284c7; text-decoration: underline;">rohanmia.org@gmail.com</a>
               </p>
             </td>
           </tr>

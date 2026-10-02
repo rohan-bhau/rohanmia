@@ -4,6 +4,7 @@ import Gallery from '@/models/Gallery';
 import connectDB from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { deleteImage } from './upload';
+import { assertAdmin } from '@/lib/admin';
 
 export async function getGalleryImages() {
   try {
@@ -18,6 +19,7 @@ export async function getGalleryImages() {
 
 export async function addGalleryImage(data) {
   try {
+    await assertAdmin();
     await connectDB();
     const newImage = await Gallery.create(data);
     revalidatePath('/gallery');
@@ -30,6 +32,7 @@ export async function addGalleryImage(data) {
 
 export async function updateGalleryImage(id, data) {
   try {
+    await assertAdmin();
     await connectDB();
     await Gallery.findByIdAndUpdate(id, data);
     revalidatePath('/gallery');
@@ -42,6 +45,7 @@ export async function updateGalleryImage(id, data) {
 
 export async function deleteGalleryImage(id, public_id) {
   try {
+    await assertAdmin();
     await connectDB();
     
     // Delete from Cloudinary

@@ -21,7 +21,7 @@ function escapeSqlString(val: string): string {
  * Execute raw SQL queries against Neon PostgreSQL via HTTPS (Port 443)
  * Guarantees zero port 5432 timeouts across all ISPs and deployment environments.
  */
-export async function executeSql<T = any>(query: string): Promise<{ rows: T[]; rowCount: number }> {
+async function runQuery<T>(query: string, useFamily4: boolean = true): Promise<{ rows: T[]; rowCount: number }> {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is not configured in environment variables');
@@ -31,7 +31,7 @@ export async function executeSql<T = any>(query: string): Promise<{ rows: T[]; r
   const postData = JSON.stringify({ query });
 
   return new Promise((resolve, reject) => {
-    const req = https.request({
+    const opts: https.RequestOptions = {
       hostname: u.hostname,
       port: 443,
       path: '/sql',
@@ -41,8 +41,13 @@ export async function executeSql<T = any>(query: string): Promise<{ rows: T[]; r
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData)
       },
-      family: 4 // Enforce IPv4 to avoid dual-stack OS timeout
-    }, (res) => {
+      timeout: 10000,
+    };
+    if (useFamily4) {
+      opts.family = 4;
+    }
+
+    const req = https.request(opts, (res) => {
       let body = '';
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
@@ -62,6 +67,10 @@ export async function executeSql<T = any>(query: string): Promise<{ rows: T[]; r
       });
     });
 
+    req.on('timeout', () => {
+      req.destroy(new Error('Neon HTTPS query timed out'));
+    });
+
     req.on('error', (err) => {
       reject(err);
     });
@@ -71,10 +80,43 @@ export async function executeSql<T = any>(query: string): Promise<{ rows: T[]; r
   });
 }
 
+export async function executeSql<T = any>(query: string): Promise<{ rows: T[]; rowCount: number }> {
+  try {
+    return await runQuery<T>(query, true);
+  } catch (err: any) {
+    // Retry once without family restriction if DNS or timeout occurs
+    if (err?.code === 'EAI_AGAIN' || err?.message?.includes('timed out')) {
+      return await runQuery<T>(query, false);
+    }
+    throw err;
+  }
+}
+
+// Run the CREATE TABLE check only once per server process instead of on every query
+let tableReady: Promise<void> | null = null;
+
+// Short-lived in-memory read cache (invalidated on every insert/delete)
+const READ_CACHE_TTL_MS = 10_000;
+let entriesCache: { rows: DbGuestbookRow[]; at: number } | null = null;
+
+function invalidateEntriesCache() {
+  entriesCache = null;
+}
+
 /**
  * Initialize guestbook_entries table if it does not already exist
  */
-export async function ensureGuestbookTable(): Promise<void> {
+export function ensureGuestbookTable(): Promise<void> {
+  if (!tableReady) {
+    tableReady = createGuestbookTable().catch((err) => {
+      tableReady = null; // allow retry on next request
+      throw err;
+    });
+  }
+  return tableReady;
+}
+
+async function createGuestbookTable(): Promise<void> {
   const ddl = `
     CREATE TABLE IF NOT EXISTS guestbook_entries (
       id VARCHAR(64) PRIMARY KEY,
@@ -95,10 +137,14 @@ export async function ensureGuestbookTable(): Promise<void> {
  * Fetch all entries sorted by newest first
  */
 export async function fetchAllEntries(): Promise<DbGuestbookRow[]> {
+  if (entriesCache && Date.now() - entriesCache.at < READ_CACHE_TTL_MS) {
+    return entriesCache.rows;
+  }
   await ensureGuestbookTable();
   const res = await executeSql<DbGuestbookRow>(
     `SELECT * FROM guestbook_entries ORDER BY created_at DESC;`
   );
+  entriesCache = { rows: res.rows, at: Date.now() };
   return res.rows;
 }
 
@@ -129,6 +175,7 @@ export async function insertEntry(entry: {
     RETURNING *;
   `;
   const res = await executeSql<DbGuestbookRow>(query);
+  invalidateEntriesCache();
   return res.rows[0];
 }
 
@@ -148,5 +195,6 @@ export async function deleteEntryById(id: string, requesterEmail: string): Promi
   }
 
   const res = await executeSql(query);
+  invalidateEntriesCache();
   return res.rowCount > 0;
 }

@@ -3,6 +3,7 @@
 import dbConnect from '@/lib/db';
 import { TechStack } from '@/models/Skill'; // Using the existing model we found
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 const DEFAULT_TECH = [
   { name: 'Next.js', icon: 'SiNextdotjs', category: 'Frontend', proficiency: 95, isTopSkill: true, color: '#ffffff' },
@@ -39,6 +40,7 @@ export async function getTopSkills() {
 
 export async function seedTechStack(techs) {
   try {
+    await assertAdmin();
     await dbConnect();
     
     // Process all techs from all categories
@@ -70,6 +72,7 @@ export async function seedTechStack(techs) {
 
 export async function addTech(data) {
   try {
+    await assertAdmin();
     await dbConnect();
     const tech = await TechStack.create(data);
     revalidatePath('/');
@@ -82,6 +85,7 @@ export async function addTech(data) {
 
 export async function updateTech(id, data) {
   try {
+    await assertAdmin();
     await dbConnect();
     const tech = await TechStack.findByIdAndUpdate(id, data, { new: true });
     revalidatePath('/');
@@ -94,6 +98,7 @@ export async function updateTech(id, data) {
 
 export async function deleteTech(id) {
   try {
+    await assertAdmin();
     await dbConnect();
     await TechStack.findByIdAndDelete(id);
     revalidatePath('/');
@@ -106,6 +111,7 @@ export async function deleteTech(id) {
 
 export async function reorderTech(reorderedData) {
   try {
+    await assertAdmin();
     await dbConnect();
     
     const promises = reorderedData.map(item => 
@@ -124,6 +130,7 @@ export async function reorderTech(reorderedData) {
 
 export async function toggleTopSkill(id) {
   try {
+    await assertAdmin();
     await dbConnect();
     const tech = await TechStack.findById(id);
     tech.isTopSkill = !tech.isTopSkill;

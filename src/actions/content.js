@@ -3,6 +3,7 @@
 import dbConnect from '@/lib/db';
 import HomeContent from '@/models/HomeContent';
 import { revalidatePath } from 'next/cache';
+import { assertAdmin } from '@/lib/admin';
 
 const DEFAULT_HERO = {
   greeting: "Hey, I'm",
@@ -80,6 +81,7 @@ export async function getHomeContent(section = "hero") {
 
 export async function updateHomeContent(section, data) {
   try {
+    await assertAdmin();
     await dbConnect();
     await HomeContent.findOneAndUpdate(
       { section },
