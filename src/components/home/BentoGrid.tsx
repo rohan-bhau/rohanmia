@@ -179,7 +179,8 @@ export default function BentoGrid() {
             </div>
 
             <span className="pt-4 text-[11px] font-mono text-muted-foreground/70 group-hover:text-primary transition-colors flex items-center gap-1">
-              Explore tech stack page &rarr;
+              <span>Explore tech stack page</span>
+              <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </span>
           </Link>
 

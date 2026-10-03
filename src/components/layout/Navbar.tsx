@@ -327,7 +327,7 @@ export default function Navbar() {
                 }}
               >
                 <Calendar size={15} />
-                <span>Schedule a 15-Min Discovery Call</span>
+                <span>Schedule a 30-Min Discovery Call</span>
               </button>
             </div>
           </motion.div>

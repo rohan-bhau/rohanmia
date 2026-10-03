@@ -167,7 +167,7 @@ export default function Footer() {
                 }}
               >
                 <Calendar size={14} />
-                <span>Book 15-Min Discovery Call (In-Site)</span>
+                <span>Book 30-Min Discovery Call (In-Site)</span>
               </button>
 
               <a
