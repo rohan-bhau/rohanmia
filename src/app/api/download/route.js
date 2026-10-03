@@ -15,6 +15,20 @@ export async function GET(request) {
     return new NextResponse('Missing URL', { status: 400 });
   }
 
+  // Security: Prevent SSRF by validating that fileUrl points to trusted domains (Cloudinary or local)
+  try {
+    const parsedUrl = new URL(fileUrl, 'http://localhost');
+    const allowedHosts = ['res.cloudinary.com', 'rohanmia.org', 'rohanmia.com'];
+    const isLocal = fileUrl.startsWith('/') || parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1';
+    const isAllowedHost = allowedHosts.some(host => parsedUrl.hostname === host || parsedUrl.hostname.endsWith('.' + host));
+
+    if (!isLocal && !isAllowedHost) {
+      return new NextResponse('Forbidden: Invalid download source', { status: 403 });
+    }
+  } catch {
+    return new NextResponse('Invalid URL format', { status: 400 });
+  }
+
   try {
     let finalUrl = fileUrl;
 
