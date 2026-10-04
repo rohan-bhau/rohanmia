@@ -68,7 +68,6 @@ const footerLinks = [
       { name: "Gallery", href: "/gallery" },
       { name: "Skills", href: "/skills" },
       { name: "Qualification", href: "/qualification" },
-      { name: "Testimonials", href: "/testimonials" },
     ]
   }
 ];

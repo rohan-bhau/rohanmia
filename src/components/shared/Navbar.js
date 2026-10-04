@@ -38,7 +38,6 @@ const navItems = [
 const dropdownItems = [
   { name: 'Qualification', href: '/qualification', icon: GraduationCap },
   { name: 'Skills', href: '/skills', icon: Code },
-  { name: 'Testimonials', href: '/testimonials', icon: MessageSquare },
   { name: 'Gallery', href: '/gallery', icon: ImageIcon },
 ];
 

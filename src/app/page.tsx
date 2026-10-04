@@ -2,7 +2,6 @@ import React from 'react';
 import Hero from '@/components/home/Hero';
 import BentoGrid from '@/components/home/BentoGrid';
 import FeaturedCaseStudies from '@/components/home/FeaturedCaseStudies';
-import TestimonialsSection from '@/components/home/TestimonialsSection';
 import PinnedSocials from '@/components/layout/PinnedSocials';
 
 export const metadata = {
@@ -19,7 +18,6 @@ export default function Home() {
       <Hero />
       <BentoGrid />
       <FeaturedCaseStudies />
-      <TestimonialsSection />
     </div>
   );
 }

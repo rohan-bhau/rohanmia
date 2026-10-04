@@ -26,7 +26,6 @@ const sidebarItems = [
   { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
   { name: 'Leads', href: '/admin/leads', icon: Users },
   { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
-  { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

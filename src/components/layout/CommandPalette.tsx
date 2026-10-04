@@ -223,7 +223,6 @@ export default function CommandPalette() {
     },
     { name: 'Links', href: '/links', icon: LinkIcon, desc: 'Social profiles & connect hub' },
     { name: 'Qualification', href: '/qualification', icon: Award, desc: 'Certifications & education' },
-    { name: 'Testimonials', href: '/testimonials', icon: Quote, desc: 'Client endorsements & reviews' },
     { name: 'Contact', href: '/contact', icon: Mail, desc: 'Direct message & project proposal' },
   ];
 

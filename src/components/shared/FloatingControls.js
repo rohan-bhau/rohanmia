@@ -14,7 +14,6 @@ const routes = [
   '/projects',
   '/about',
   '/skills',
-  '/testimonials',
   '/gallery',
   '/contact'
 ];

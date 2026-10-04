@@ -38,7 +38,6 @@ const MORE_LINKS = [
   { name: 'Links', href: '/links', icon: Globe, desc: 'Social profiles & connect hub' },
   { name: 'Guestbook', href: '/guestbook', icon: BookOpen, desc: 'Leave your note or greeting' },
   { name: 'Gallery', href: '/gallery', icon: ImageIcon, desc: 'Visual moments & snapshots' },
-  { name: 'Testimonials', href: '/testimonials', icon: MessageSquare, desc: 'Endorsements from founders' },
   { name: 'Contact', href: '/contact', icon: Mail, desc: 'Direct message & project inquiry' },
 ];
 
