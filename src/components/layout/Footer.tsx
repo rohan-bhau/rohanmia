@@ -157,8 +157,8 @@ export default function Footer() {
             </p>
 
             <div className="flex flex-col gap-2.5">
-              <button
-                onClick={openBooking}
+              <Link
+                href="/contact#meeting"
                 className="w-full py-3 px-4 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95"
                 style={{
                   backgroundColor: currentTheme.primary,
@@ -168,7 +168,7 @@ export default function Footer() {
               >
                 <Calendar size={14} />
                 <span>Book 30-Min Discovery Call (In-Site)</span>
-              </button>
+              </Link>
 
               <a
                 href="mailto:rohanmia.org@gmail.com"

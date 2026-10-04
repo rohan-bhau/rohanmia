@@ -160,8 +160,8 @@ export default function Hero() {
               className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3.5"
             >
               {/* Primary Call Booking CTA */}
-              <button
-                onClick={openBooking}
+              <Link
+                href="/contact#meeting"
                 className="px-6 py-3.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap cursor-pointer"
                 style={{
                   backgroundColor: currentTheme.primary,
@@ -172,7 +172,7 @@ export default function Hero() {
                 <Calendar size={15} />
                 <span>Book a Call</span>
                 <ArrowRight size={14} />
-              </button>
+              </Link>
 
               {/* View Projects Button */}
               <Link

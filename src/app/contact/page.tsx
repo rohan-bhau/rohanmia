@@ -20,14 +20,21 @@ export default function ContactPage() {
   const { currentTheme } = useThemeAccent();
   const [activeTab, setActiveTab] = useState<ContactTab>('book');
 
-  // Sync URL query params with tab selection
+  // Sync URL query params or hash with tab selection
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const search = window.location.search;
-      if (search.includes('send-message') || search.includes('tab=message')) {
+      const hash = window.location.hash;
+      if (search.includes('send-message') || search.includes('tab=message') || hash === '#message') {
         setActiveTab('message');
-      } else if (search.includes('book-call') || search.includes('tab=book')) {
+      } else if (search.includes('book-call') || search.includes('tab=book') || hash === '#meeting' || hash === '#book') {
         setActiveTab('book');
+        setTimeout(() => {
+          const el = document.getElementById('meeting');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 150);
       }
     }
   }, []);
@@ -35,7 +42,7 @@ export default function ContactPage() {
   const handleTabChange = (tab: ContactTab) => {
     setActiveTab(tab);
     if (typeof window !== 'undefined') {
-      const url = tab === 'book' ? '/contact?book-call' : '/contact?tab=message';
+      const url = tab === 'book' ? '/contact#meeting' : '/contact?tab=message';
       window.history.replaceState(null, '', url);
     }
   };
@@ -208,12 +215,13 @@ export default function ContactPage() {
           {/* TAB 1: BOOK A CALL (Exact Calendly UI from Screenshot) */}
           {activeTab === 'book' && (
             <motion.div
+              id="meeting"
               key="book-tab"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.25 }}
-              className="w-full space-y-8"
+              className="w-full space-y-8 scroll-mt-28"
             >
               {/* Calendly Booking Card */}
               <CalendlyBooking />
