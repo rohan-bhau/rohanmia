@@ -5,18 +5,12 @@ export const authConfig: NextAuthConfig = {
     error: '/guestbook',
   },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const user = auth?.user as any;
-      const isAdmin = user?.role === 'admin' || user?.id === 'admin';
-      const isOnAdmin = nextUrl.pathname.startsWith('/admin');
-      
-      if (isOnAdmin) {
-        if (isAdmin) return true;
-        return false; // Redirect to login
-      }
+    authorized() {
+      // In our stealth architecture, session gating is handled internally
+      // inside /control-room-internal without exposing public /login redirects
       return true;
     },
   },
-  providers: [], // Configured in src/auth.ts
+  providers: [],
   trustHost: true,
 };

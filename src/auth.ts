@@ -25,8 +25,15 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data;
           
+          // Strict credentials matching
           if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            return { id: 'admin', email, name: 'Admin', role: 'admin' };
+            return { 
+              id: 'admin', 
+              email, 
+              name: 'Admin', 
+              role: 'admin',
+              isAdmin: true 
+            };
           }
         }
 
@@ -36,24 +43,25 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   ],
   callbacks: {
     ...authConfig.callbacks,
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = (token.sub as string) || (token.id as string);
-        if (token.picture) session.user.image = token.picture as string;
-        if (token.email) session.user.email = token.email as string;
-        if (token.name) session.user.name = token.name as string;
-        session.user.role = (token.role as string) || 'user';
-        session.user.isAdmin = token.role === 'admin';
-      }
-      return session;
-    },
     async jwt({ token, user, profile, account }) {
+      if (account) {
+        token.provider = account.provider;
+      }
+
+      // Only credentials provider can grant admin access
+      if (token.provider === 'credentials' && ((user as any)?.role === 'admin' || token.role === 'admin')) {
+        token.role = 'admin';
+        token.isAdmin = true;
+      } else {
+        token.role = 'user';
+        token.isAdmin = false;
+      }
+
       if (user) {
         token.id = user.id;
         if (user.email) token.email = user.email;
         if (user.name) token.name = user.name;
         if (user.image) token.picture = user.image;
-        token.role = (user as any)?.role === 'admin' || user?.id === 'admin' ? 'admin' : 'user';
       }
       if (profile) {
         const p = profile as Record<string, any>;
@@ -62,16 +70,31 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           token.picture = avatar;
         }
       }
-      // Strict security barrier: OAuth accounts (Google/GitHub) from Guestbook are ALWAYS role 'user'
-      if (account && (account.provider === 'google' || account.provider === 'github')) {
-        token.role = 'user';
-      }
+
       return token;
-    }
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = (token.sub as string) || (token.id as string);
+        if (token.picture) session.user.image = token.picture as string;
+        if (token.email) session.user.email = token.email as string;
+        if (token.name) session.user.name = token.name as string;
+
+        // Double verification: Must be credentials provider AND admin email
+        const isVerifiedAdmin = 
+          token.provider === 'credentials' && 
+          token.role === 'admin' && 
+          token.isAdmin === true &&
+          token.email === process.env.ADMIN_EMAIL;
+
+        session.user.role = isVerifiedAdmin ? 'admin' : 'user';
+        session.user.isAdmin = isVerifiedAdmin;
+      }
+      return session;
+    },
   },
-  session: { strategy: "jwt" },
+  session: { strategy: 'jwt' },
   secret: process.env.AUTH_SECRET,
   trustHost: true,
   debug: false,
 });
-
