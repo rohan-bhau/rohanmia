@@ -5,45 +5,45 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
-  Calendar, 
-  ArrowRight, 
-  Code2, 
+  ArrowUpRight, 
+  Layers, 
   FileText
 } from 'lucide-react';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import { useBooking } from '@/components/booking/BookingContext';
 
 const ROTATING_ROLES = [
-  'Full Stack Engineer',
-  'Software Engineer',
-  'Next.js & TypeScript Developer',
-  'MERN & PostgreSQL Developer'
+  'Full-Stack Software Engineer',
+  'Next.js & TypeScript Specialist',
+  'Scalable Systems & Architecture',
+  'Crafting High-Performance Web Apps'
 ];
 
 const CLOUDINARY_PROFILE_IMAGE = "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png";
 
 export default function Hero() {
   const { currentTheme } = useThemeAccent();
-  const { openBooking } = useBooking();
 
   const [roleIndex, setRoleIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
+    let timeout: NodeJS.Timeout;
     const current = ROTATING_ROLES[roleIndex];
-    const speed = isDeleting ? 25 : 50;
 
-    const timeout = setTimeout(() => {
-      if (!isDeleting && displayText === current) {
-        setTimeout(() => setIsDeleting(true), 2400);
-      } else if (isDeleting && displayText === '') {
+    if (!isDeleting && displayText === current) {
+      timeout = setTimeout(() => setIsDeleting(true), 2200);
+    } else if (isDeleting && displayText === '') {
+      timeout = setTimeout(() => {
         setIsDeleting(false);
         setRoleIndex((prev) => (prev + 1) % ROTATING_ROLES.length);
-      } else {
+      }, 400);
+    } else {
+      const speed = isDeleting ? 28 : 60;
+      timeout = setTimeout(() => {
         setDisplayText(current.substring(0, isDeleting ? displayText.length - 1 : displayText.length + 1));
-      }
-    }, speed);
+      }, speed);
+    }
 
     return () => clearTimeout(timeout);
   }, [displayText, isDeleting, roleIndex]);
@@ -77,30 +77,12 @@ export default function Hero() {
           
           {/* Left Column: Big Name, Title, Bio, Action Buttons (Span 7) */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            
-            {/* Clean Eyebrow Pill */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="flex items-center justify-center lg:justify-start"
-            >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
-                <span 
-                  className="w-2 h-2 rounded-full animate-pulse" 
-                  style={{ backgroundColor: currentTheme.primary, boxShadow: `0 0 10px ${currentTheme.glow}` }} 
-                />
-                <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground font-semibold">
-                  Full Stack Software Engineer
-                </span>
-              </div>
-            </motion.div>
 
             {/* PROMINENT NAME (Clean, Architectural, Grand) */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              transition={{ duration: 0.6, delay: 0.05 }}
               className="space-y-3"
             >
               <div className="space-y-1">
@@ -127,17 +109,32 @@ export default function Hero() {
                 </h1>
               </div>
 
-              {/* Dynamic Rotating Role with Code Terminal Indicator */}
-              <div className="h-9 flex items-center justify-center lg:justify-start">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white/[0.03] border border-white/[0.06]">
-                  <span className="text-xs font-mono text-muted-foreground/60">&gt;</span>
-                  <p className="text-sm sm:text-base font-mono text-foreground font-semibold">
-                    <span>{displayText}</span>
-                    <span 
-                      className="w-1.5 h-4 ml-1 inline-block animate-pulse rounded-xs"
-                      style={{ backgroundColor: currentTheme.primary }}
-                    />
-                  </p>
+              {/* Dynamic Rotating Role (Borderless, Clean Terminal Prompt adapting to Theme) */}
+              <div className="h-8 flex items-center justify-center lg:justify-start pt-1">
+                <div className="flex items-center text-sm sm:text-base font-mono tracking-tight font-medium">
+                  <span 
+                    className="font-bold mr-2 select-none text-base transition-colors duration-500"
+                    style={{ color: currentTheme.primary }}
+                  >
+                    ~&gt;
+                  </span>
+                  <span 
+                    className="font-semibold tracking-tight transition-all duration-500 text-transparent bg-clip-text"
+                    style={{
+                      backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`,
+                    }}
+                  >
+                    {displayText}
+                  </span>
+                  <motion.span 
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                    className="w-[2px] h-4 sm:h-5 ml-1.5 inline-block rounded-full"
+                    style={{ 
+                      backgroundColor: currentTheme.primary,
+                      boxShadow: `0 0 8px ${currentTheme.glow}`
+                    }}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -152,16 +149,16 @@ export default function Hero() {
               I build modern full-stack web applications and digital products. Specializing in <strong className="text-foreground font-semibold">Next.js, React, TypeScript</strong>, and <strong className="text-foreground font-semibold">Node.js & MongoDB</strong>. Focused on writing clean, scalable code and delivering fast, intuitive user experiences.
             </motion.p>
 
-            {/* Action Buttons: Book Call, View Projects, View Resume */}
+            {/* Action Buttons: View Projects, View Resume */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3.5"
             >
-              {/* Primary Call Booking CTA */}
+              {/* Primary View Projects CTA */}
               <Link
-                href="/contact#meeting"
+                href="#projects"
                 className="px-6 py-3.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap cursor-pointer"
                 style={{
                   backgroundColor: currentTheme.primary,
@@ -169,18 +166,9 @@ export default function Hero() {
                   boxShadow: `0 0 25px ${currentTheme.glow}`,
                 }}
               >
-                <Calendar size={15} />
-                <span>Book a Call</span>
-                <ArrowRight size={14} />
-              </Link>
-
-              {/* View Projects Button */}
-              <Link
-                href="#projects"
-                className="px-6 py-3.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] hover:border-white/20 text-xs sm:text-sm font-semibold text-foreground flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap"
-              >
-                <Code2 size={15} className="text-muted-foreground" />
+                <Layers size={15} />
                 <span>View Projects</span>
+                <ArrowUpRight size={14} />
               </Link>
 
               {/* View Resume Button */}

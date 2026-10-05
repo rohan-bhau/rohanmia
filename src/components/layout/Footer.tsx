@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  ArrowUp, 
   Calendar, 
   Mail, 
   MapPin, 
@@ -16,6 +15,7 @@ import { usePathname } from 'next/navigation';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { useBooking } from '@/components/booking/BookingContext';
 import DiscoveryBanner from '@/components/home/DiscoveryBanner';
+import AnimatedLogo from '@/components/shared/AnimatedLogo';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -42,10 +42,6 @@ export default function Footer() {
     return () => clearInterval(interval);
   }, []);
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   if (pathname?.startsWith('/admin')) {
     return null;
   }
@@ -70,19 +66,18 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-white/[0.08]">
           {/* Col 1: Identity & Timezone */}
           <div className="md:col-span-5 space-y-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <span 
-                  className="font-mono text-xs font-bold px-2 py-0.5 rounded-full border border-white/10 uppercase tracking-widest"
-                  style={{ color: currentTheme.primary }}
-                >
-                  Architect
-                </span>
-                <span className="text-xs text-muted-foreground font-mono">Software Engineer</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3.5">
+                <AnimatedLogo size={46} animated={false} className="shrink-0" />
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-none">
+                    MD Rohan Mia
+                  </h3>
+                  <div className="flex items-center gap-2 pt-1.5">
+                    <span className="text-[11px] text-muted-foreground font-mono leading-none">Software Engineer</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-black text-foreground tracking-tight">
-                MD Rohan Mia
-              </h3>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
                 Specializing in high-performance Next.js architectures, type-safe full-stack platforms, and cinematic UI/UX for world-class products.
               </p>
@@ -213,18 +208,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-muted-foreground">
-          <p>© 2026 MD Rohan Mia. Built with Next.js 16, TypeScript & Tailwind CSS.</p>
-
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-2 hover:text-foreground transition-colors group"
-          >
-            <span>Back to top</span>
-            <span className="p-1 rounded-md bg-white/[0.05] border border-white/[0.08] group-hover:bg-white/[0.1] transition-colors">
-              <ArrowUp size={11} />
-            </span>
-          </button>
+        <div className="pt-8 flex items-center justify-center text-center text-xs font-mono text-muted-foreground/80">
+          <p>© {new Date().getFullYear()} MD Rohan Mia. All rights reserved.</p>
         </div>
       </div>
     </footer>

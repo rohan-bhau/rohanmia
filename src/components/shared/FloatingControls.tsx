@@ -2,23 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUp, ArrowLeft, ArrowRight } from 'lucide-react';
-import { useRouter, usePathname } from 'next/navigation';
+import { ArrowUp } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import Magnetic from './Magnetic';
 import Tooltip from './Tooltip';
 
-const routes = [
-  '/',
-  '/tech-stack',
-  '/projects',
-  '/about',
-  '/gallery',
-  '/contact'
-];
-
 export default function FloatingControls() {
-  const router = useRouter();
   const pathname = usePathname();
+  const { currentTheme } = useThemeAccent();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -31,85 +23,43 @@ export default function FloatingControls() {
 
   if (pathname?.startsWith('/admin')) return null;
 
-  const currentIndex = routes.indexOf(pathname);
-  const prevRoute = currentIndex > 0 ? routes[currentIndex - 1] : null;
-  const nextRoute = currentIndex < routes.length - 1 ? routes[currentIndex + 1] : null;
-
   return (
-    <>
-      <div className="floating-controls-container">
-        {/* Next/Prev Buttons (Desktop only - mobile uses bottom nav) */}
-        <div className="hidden md:flex fixed bottom-6 left-6 z-40 gap-3 md:gap-4">
-          <AnimatePresence>
-            {prevRoute && (
-              <motion.div
-                key="prev-btn"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <Tooltip text="Previous Page" position="top">
-                  <Magnetic strength={0.3}>
-                    <button
-                      onClick={() => router.push(prevRoute)}
-                      className="w-14 h-14 md:w-16 md:h-16 rounded-full glass-premium flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 transition-all duration-300 group shadow-lg cursor-pointer"
-                      aria-label="Previous Page"
-                    >
-                      <ArrowLeft size={20} className="md:size-[24px] group-hover:-translate-x-1 transition-transform" />
-                    </button>
-                  </Magnetic>
-                </Tooltip>
-              </motion.div>
-            )}
-            {nextRoute && (
-              <motion.div
-                key="next-btn"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <Tooltip text="Next Page" position="top">
-                  <Magnetic strength={0.3}>
-                    <button
-                      onClick={() => router.push(nextRoute)}
-                      className="w-14 h-14 md:w-16 md:h-16 rounded-full glass-premium flex items-center justify-center text-foreground hover:bg-primary/20 hover:border-primary/50 transition-all duration-300 group shadow-lg cursor-pointer"
-                      aria-label="Next Page"
-                    >
-                      <ArrowRight size={20} className="md:size-[24px] group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </Magnetic>
-                </Tooltip>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Scroll to Top (Positioned above bottom nav: bottom-20 left-4 on mobile, bottom-6 right-24 on desktop) */}
-        <div className="fixed bottom-20 left-4 md:left-auto md:right-24 z-40">
-          <AnimatePresence>
-            {showScrollTop && (
-              <motion.div
-                key="scroll-top"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.5 }}
-              >
-                <Tooltip text="Scroll To Top" position="top">
-                  <Magnetic strength={0.3}>
-                    <button
-                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                      className="w-12 h-12 md:w-14 md:h-14 rounded-full glass-premium flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-xl border border-primary/20 cursor-pointer"
-                      aria-label="Scroll to top"
-                    >
-                      <ArrowUp size={20} className="md:size-[24px]" />
-                    </button>
-                  </Magnetic>
-                </Tooltip>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+    <div className="floating-controls-container pointer-events-none">
+      {/* Scroll to Top (Cleanly stacked vertically right above the AI Chatbot trigger) */}
+      <div className="fixed bottom-[152px] right-[26px] md:bottom-[98px] md:right-[34px] z-40 pointer-events-auto">
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.div
+              key="scroll-top"
+              initial={{ opacity: 0, scale: 0.6, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.6, y: 10 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <Tooltip text="Scroll to top" position="left">
+                <Magnetic strength={0.3}>
+                  <motion.button
+                    whileHover={{ scale: 1.1, y: -2 }}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="w-11 h-11 rounded-full bg-[#0d0f12]/90 backdrop-blur-xl border border-white/[0.14] hover:border-white/30 flex items-center justify-center shadow-xl transition-all duration-300 group cursor-pointer"
+                    style={{
+                      boxShadow: `0 8px 24px -4px rgba(0,0,0,0.6), 0 0 16px ${currentTheme.glow}`,
+                    }}
+                    aria-label="Scroll to top"
+                  >
+                    <ArrowUp 
+                      size={18} 
+                      className="group-hover:-translate-y-0.5 transition-transform duration-200" 
+                      style={{ color: currentTheme.primary }}
+                    />
+                  </motion.button>
+                </Magnetic>
+              </Tooltip>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </>
+    </div>
   );
 }

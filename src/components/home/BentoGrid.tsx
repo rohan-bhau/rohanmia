@@ -42,9 +42,6 @@ export default function BentoGrid() {
               </span>
             </h2>
           </div>
-          <p className="text-xs font-mono text-muted-foreground max-w-xs">
-            A quick overview of what I build, my featured project, and primary tech stack.
-          </p>
         </div>
 
         {/* Bento Grid (12 Columns) */}

@@ -26,6 +26,7 @@ import {
 import ColorSwitcher from '@/components/theme/ColorSwitcher';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { useBooking } from '@/components/booking/BookingContext';
+import AnimatedLogo from '@/components/shared/AnimatedLogo';
 
 const PRIMARY_LINKS = [
   { name: 'Home', href: '/', icon: Home },
@@ -200,22 +201,17 @@ export default function Navbar({ settings }: { settings?: any }) {
             
             {/* Left: Brand Identity */}
             <div className="flex items-center gap-3">
-              <Link href="/" className="group flex items-center gap-2.5">
-                <div 
-                  className="w-9 h-9 rounded-xl flex items-center justify-center font-bold font-mono text-xs transition-all duration-300 group-hover:scale-105 border border-white/10 shadow-lg relative overflow-hidden"
-                  style={{
-                    backgroundColor: `${currentTheme.primary}15`,
-                    color: currentTheme.primary,
-                    boxShadow: `0 0 16px ${currentTheme.glow}`,
-                  }}
-                >
-                  <Code2 size={18} style={{ color: currentTheme.primary }} />
-                </div>
+              <Link href="/" className="group flex items-center gap-3">
+                <AnimatedLogo 
+                  size={42} 
+                  animated={true} 
+                  className="transition-transform duration-300 group-hover:scale-105 shrink-0" 
+                />
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                  <span className="text-sm sm:text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-tight">
                     {settings?.siteName || 'Rohan Mia'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-mono leading-none">
+                  <span className="text-[11px] text-muted-foreground font-mono leading-none pt-0.5">
                     Software Engineer
                   </span>
                 </div>
@@ -225,7 +221,6 @@ export default function Navbar({ settings }: { settings?: any }) {
             {/* Center: Desktop Expanding Floating Navigation */}
             <div className="hidden md:flex justify-center items-start relative h-10 w-[360px]">
               <motion.div
-                onMouseEnter={handleDesktopMouseEnter}
                 onMouseLeave={handleDesktopMouseLeave}
                 animate={{
                   width: desktopMoreHovered ? 510 : 360,
@@ -246,6 +241,10 @@ export default function Navbar({ settings }: { settings?: any }) {
                       <Link
                         key={link.href}
                         href={link.href}
+                        onMouseEnter={() => {
+                          if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                          setDesktopMoreHovered(false);
+                        }}
                         onClick={() => setDesktopMoreHovered(false)}
                         className={`relative px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                           active
@@ -269,7 +268,7 @@ export default function Navbar({ settings }: { settings?: any }) {
                     );
                   })}
 
-                  {/* Desktop More Trigger */}
+                  {/* Desktop More Trigger - ONLY hovering here opens the mega-menu */}
                   <button
                     onMouseEnter={handleDesktopMouseEnter}
                     onClick={() => setDesktopMoreHovered(!desktopMoreHovered)}
