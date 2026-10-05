@@ -66,7 +66,7 @@ export default function Footer() {
         style={{ backgroundColor: currentTheme.primary }}
       />
 
-      <div className="container mx-auto max-w-6xl px-6 pt-16 pb-12">
+      <div className="container mx-auto max-w-6xl px-6 pt-16 pb-24 md:pb-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-white/[0.08]">
           {/* Col 1: Identity & Timezone */}
           <div className="md:col-span-5 space-y-6">

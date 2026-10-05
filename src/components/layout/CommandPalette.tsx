@@ -222,7 +222,6 @@ export default function CommandPalette() {
       desc: '30 min discovery call'
     },
     { name: 'Links', href: '/links', icon: LinkIcon, desc: 'Social profiles & connect hub' },
-    { name: 'Qualification', href: '/qualification', icon: Award, desc: 'Certifications & education' },
     { name: 'Contact', href: '/contact', icon: Mail, desc: 'Direct message & project proposal' },
   ];
 

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, ArrowUpRight, ExternalLink, Eye, X } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa6';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { FEATURED_CASE_STUDIES, CaseStudy } from '@/data/projects';
 import TechBadge from '@/components/ui/TechBadge';
@@ -440,15 +439,7 @@ export default function FeaturedCaseStudies() {
               If content fits screen: shiftY = 0 (no right scroll, left images scroll).
               If content has overflow (e.g. 1 line): shiftY brings only that line into view, then locks! */}
           <div className="hidden lg:block lg:col-span-5 sticky top-28 lg:top-32 self-start pl-2">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeProject.id}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="space-y-4"
-              >
+            <div className="space-y-4">
                 {/* Title Row with Colored Dash - Strictly Fixed at Top */}
                 <div className="flex items-center gap-3">
                   <span
@@ -511,8 +502,7 @@ export default function FeaturedCaseStudies() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
           </div>
         </div>
       </div>

@@ -154,16 +154,16 @@ export default function GithubContributionGraph({
         </div>
       </div>
 
-      {/* Graph Area with Horizontal Scroll on Smaller Screens */}
-      <div className="overflow-x-auto pb-1 pt-0.5 scrollbar-thin scrollbar-thumb-white/10">
-        <div className="min-w-[620px] flex flex-col gap-1.5">
+      {/* Graph Area: Perfectly fitted on Desktop (Zero scrollbar) and smooth hidden-scrollbar scroll on smaller screens */}
+      <div className="overflow-x-auto lg:overflow-x-hidden pb-1 pt-0.5 no-scrollbar">
+        <div className="min-w-[580px] lg:min-w-0 w-full flex flex-col gap-1.5">
           
           {/* Month Labels Aligned Perfectly with Weeks */}
-          <div className="flex gap-[3.5px] items-center text-[11px] font-mono text-neutral-400 select-none h-4">
+          <div className="flex justify-between w-full items-center text-[10px] xl:text-[11px] font-mono text-neutral-400 select-none h-4">
             {weeks.map((_, wIdx) => {
               const label = weekMonthLabels[wIdx];
               return (
-                <div key={wIdx} className="w-[10px] sm:w-[11px] relative flex-shrink-0">
+                <div key={wIdx} className="w-[7.5px] sm:w-[8px] lg:w-[7.5px] min-[1100px]:w-[8.5px] xl:w-[10px] 2xl:w-[11px] relative flex-shrink-0">
                   {label && (
                     <span className="absolute left-0 top-0 whitespace-nowrap">
                       {label}
@@ -175,15 +175,15 @@ export default function GithubContributionGraph({
           </div>
 
           {/* 53 Columns Grid (7 rows each: Sun-Sat) */}
-          <div className="flex gap-[3.5px] items-center">
+          <div className="flex justify-between w-full items-center">
             {weeks.map((week, wIdx) => (
-              <div key={wIdx} className="flex flex-col gap-[3.5px] flex-shrink-0">
+              <div key={wIdx} className="flex flex-col gap-[2px] xl:gap-[2.5px] 2xl:gap-[3px] flex-shrink-0">
                 {week.map((day, dIdx) => {
                   if (!day) {
                     return (
                       <div
                         key={dIdx}
-                        className="size-[10px] sm:size-[11px] rounded-[2.5px] opacity-0 pointer-events-none"
+                        className="size-[7.5px] sm:size-[8px] lg:size-[7.5px] min-[1100px]:size-[8.5px] xl:size-[10px] 2xl:size-[11px] rounded-[2px] sm:rounded-[2.5px] opacity-0 pointer-events-none"
                       />
                     );
                   }
@@ -194,7 +194,7 @@ export default function GithubContributionGraph({
                       onMouseEnter={() => setHoveredDay(day)}
                       onMouseLeave={() => setHoveredDay(null)}
                       style={getSquareStyle(day.level, day.count)}
-                      className="size-[10px] sm:size-[11px] rounded-[2.5px] cursor-pointer transition-transform hover:scale-125"
+                      className="size-[7.5px] sm:size-[8px] lg:size-[7.5px] min-[1100px]:size-[8.5px] xl:size-[10px] 2xl:size-[11px] rounded-[2px] sm:rounded-[2.5px] cursor-pointer transition-transform hover:scale-125"
                       title={`${day.count} contribution${day.count === 1 ? '' : 's'} on ${formatDate(day.date)}`}
                     />
                   );

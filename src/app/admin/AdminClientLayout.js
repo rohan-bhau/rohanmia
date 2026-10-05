@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   FolderKanban, 
-  Wrench, 
   MessageSquare, 
   Image as ImageIcon, 
   Settings,
@@ -22,7 +21,6 @@ const sidebarItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Projects', href: '/admin/projects', icon: FolderKanban },
   { name: 'Tech Stack', href: '/admin/tech-stack', icon: Database },
-  { name: 'Skills', href: '/admin/skills', icon: Wrench },
   { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
   { name: 'Leads', href: '/admin/leads', icon: Users },
   { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },

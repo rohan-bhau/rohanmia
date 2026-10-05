@@ -366,7 +366,108 @@ export default function AboutPage() {
         </section>
 
         {/* =========================================================================
-            3. OPEN SOURCE & CONTRIBUTIONS SECTION
+            3. EDUCATION & ACADEMIC CREDENTIALS SECTION
+           ========================================================================= */}
+        <section className="space-y-8">
+          
+          {/* Eyebrow */}
+          <div>
+            <p className="font-mono text-xs uppercase tracking-widest text-neutral-400">
+              ACADEMIC BACKGROUND
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-normal text-white tracking-tight">
+              Education &amp;{' '}
+              <span 
+                className="font-serif italic font-normal text-transparent bg-clip-text"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, #f43f5e 0%, #d946ef 50%, ${currentTheme.primary} 100%)`
+                }}
+              >
+                Credentials
+              </span>
+            </h2>
+          </div>
+
+          {/* Clean Editorial Education Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 pt-2">
+            
+            {/* HSC Card */}
+            <div className="p-7 sm:p-9 rounded-[28px] bg-[#0c1017]/70 border border-white/[0.08] hover:border-white/15 transition-all duration-300 backdrop-blur-md flex flex-col justify-between group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <time className="font-mono text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                    2023 — 2025
+                  </time>
+                  <span 
+                    className="font-mono text-[11px] px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300 bg-white/[0.03]"
+                  >
+                    Higher Secondary
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+                    Higher Secondary Certificate (HSC)
+                  </h3>
+                  <p className="text-sm font-sans font-medium mt-1.5" style={{ color: currentTheme.primary }}>
+                    Adamjee Cantonment College
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
+                  <MapPin size={12} className="shrink-0" />
+                  <span>Dhaka Cantonment, Bangladesh</span>
+                </div>
+
+                <p className="text-sm text-neutral-300 font-light leading-relaxed pt-2 border-t border-white/5">
+                  Completed higher secondary education in the Science division with in-depth focus on mathematics, physics, and analytical problem-solving.
+                </p>
+              </div>
+            </div>
+
+            {/* SSC Card */}
+            <div className="p-7 sm:p-9 rounded-[28px] bg-[#0c1017]/70 border border-white/[0.08] hover:border-white/15 transition-all duration-300 backdrop-blur-md flex flex-col justify-between group">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <time className="font-mono text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                    Completed 2023
+                  </time>
+                  <span 
+                    className="font-mono text-[11px] px-2.5 py-0.5 rounded-full border border-white/10 text-neutral-300 bg-white/[0.03]"
+                  >
+                    Secondary School
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-serif text-2xl sm:text-3xl text-white font-medium tracking-tight">
+                    Secondary School Certificate (SSC)
+                  </h3>
+                  <p className="text-sm font-sans font-medium mt-1.5" style={{ color: currentTheme.primary }}>
+                    Saint Louis High School
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
+                  <MapPin size={12} className="shrink-0" />
+                  <span>Dhaka, Bangladesh</span>
+                </div>
+
+                <p className="text-sm text-neutral-300 font-light leading-relaxed pt-2 border-t border-white/5">
+                  Completed secondary education under the National Curriculum in Science, building fundamental competencies in mathematics, science, and computer studies.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* =========================================================================
+            4. OPEN SOURCE & CONTRIBUTIONS SECTION
            ========================================================================= */}
         <section className="space-y-8">
           <div className="space-y-3">

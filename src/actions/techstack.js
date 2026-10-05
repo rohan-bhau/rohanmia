@@ -1,7 +1,7 @@
 'use server';
 
 import dbConnect from '@/lib/db';
-import { TechStack } from '@/models/Skill'; // Using the existing model we found
+import { TechStack } from '@/models/TechStack';
 import { revalidatePath } from 'next/cache';
 import { assertAdmin } from '@/lib/admin';
 

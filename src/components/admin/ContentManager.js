@@ -2,11 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, RefreshCcw, Layout, Type, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, Upload, User, Sparkles, GraduationCap, Globe } from 'lucide-react';
+import { Save, RefreshCcw, Layout, Type, Image as ImageIcon, Loader2, CheckCircle2, AlertCircle, Upload, User, Sparkles, Globe } from 'lucide-react';
 import { getHomeContent, updateHomeContent } from '@/actions/content';
 import { uploadImage } from '@/actions/upload';
 import Image from 'next/image';
-import QualificationManager from '@/components/admin/QualificationManager';
 import ContactManager from '@/components/admin/ContactManager';
 
 export default function ContentManager() {
@@ -20,11 +19,7 @@ export default function ContentManager() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (activeSection !== 'qualifications') {
-      fetchContent();
-    } else {
-      setLoading(false);
-    }
+    fetchContent();
   }, [activeSection]);
 
   const fetchContent = async () => {
@@ -79,7 +74,7 @@ export default function ContentManager() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  if (loading && activeSection !== 'qualifications') {
+  if (loading) {
     return (
       <div className="h-64 flex flex-col items-center justify-center space-y-4 opacity-20">
         <Loader2 size={48} className="animate-spin text-primary" />
@@ -91,7 +86,6 @@ export default function ContentManager() {
   const sections = [
     { id: 'hero', icon: Layout },
     { id: 'about', icon: User },
-    { id: 'qualifications', icon: GraduationCap },
     { id: 'contact', icon: Globe }
   ];
 
@@ -123,7 +117,7 @@ export default function ContentManager() {
             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 italic">Visual Studio Environment</p>
           </div>
         </div>
-        {activeSection !== 'qualifications' && activeSection !== 'contact' && (
+        {activeSection !== 'contact' && (
           <button 
             onClick={handleSave}
             disabled={saving || uploading || !isChanged}
@@ -154,9 +148,7 @@ export default function ContentManager() {
         </div>
 
         <div className="lg:col-span-3 glass-premium p-10 rounded-[3rem] border border-white/5 bg-[#0a0f1a]/40 space-y-12">
-          {activeSection === 'qualifications' ? (
-            <QualificationManager />
-          ) : activeSection === 'contact' ? (
+          {activeSection === 'contact' ? (
             <ContactManager />
           ) : activeSection === 'hero' ? (
             <div className="space-y-12">
