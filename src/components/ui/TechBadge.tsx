@@ -29,8 +29,43 @@ import {
   SiPostman,
   SiGithub,
   SiLinux,
-  SiVscodium
+  SiVscodium,
+  SiBun,
+  SiGraphql,
+  SiSass,
+  SiVuedotjs,
+  SiSvelte,
+  SiPython,
+  SiGo,
+  SiRust,
+  SiFirebase,
+  SiVite,
+  SiTurborepo,
+  SiKubernetes,
+  SiOpenai,
+  SiPnpm,
+  SiYarn,
+  SiNginx,
+  SiNpm,
+  SiNestjs,
+  SiFastapi,
+  SiDjango,
+  SiFlask,
+  SiMysql,
+  SiSqlite,
+  SiDrizzle,
+  SiClerk,
+  SiShadcnui,
+  SiWebpack,
+  SiBabel,
+  SiJest,
+  SiCypress,
+  SiVitest,
+  SiMongoose,
+  SiResend,
+  SiPusher
 } from 'react-icons/si';
+import { FaAws } from 'react-icons/fa6';
 import { Code2, Cpu, Database, Server, Laptop, Monitor } from 'lucide-react';
 
 interface TechBadgeProps {
@@ -82,24 +117,67 @@ const ICON_MAP: Record<string, { icon: React.ComponentType<{ size?: number; styl
   'GitHub': { icon: SiGithub, color: '#ffffff' },
   'Linux': { icon: SiLinux, color: '#FCC624' },
   'VS Code & Antigravity IDE': { icon: SiVscodium, color: '#007ACC' },
-  'Dual Display Workstation': { icon: Monitor, color: '#38BDF8' }
+  'Dual Display Workstation': { icon: Monitor, color: '#38BDF8' },
+  'Bun': { icon: SiBun, color: '#FBF0DF' },
+  'GraphQL': { icon: SiGraphql, color: '#E10098' },
+  'Sass': { icon: SiSass, color: '#CC6699' },
+  'Vue': { icon: SiVuedotjs, color: '#4FC08D' },
+  'Vue.js': { icon: SiVuedotjs, color: '#4FC08D' },
+  'Svelte': { icon: SiSvelte, color: '#FF3E00' },
+  'Python': { icon: SiPython, color: '#3776AB' },
+  'Go': { icon: SiGo, color: '#00ADD8' },
+  'Golang': { icon: SiGo, color: '#00ADD8' },
+  'Rust': { icon: SiRust, color: '#DEA584' },
+  'Firebase': { icon: SiFirebase, color: '#FFCA28' },
+  'Vite': { icon: SiVite, color: '#646CFF' },
+  'Turborepo': { icon: SiTurborepo, color: '#EF4444' },
+  'Kubernetes': { icon: SiKubernetes, color: '#326CE5' },
+  'OpenAI': { icon: SiOpenai, color: '#10A37F' },
+  'AI / LLM': { icon: SiOpenai, color: '#10A37F' },
+  'pnpm': { icon: SiPnpm, color: '#F69220' },
+  'Yarn': { icon: SiYarn, color: '#2C8EBB' },
+  'Nginx': { icon: SiNginx, color: '#009639' },
+  'npm': { icon: SiNpm, color: '#CB3837' },
+  'NestJS': { icon: SiNestjs, color: '#E0234E' },
+  'FastAPI': { icon: SiFastapi, color: '#009688' },
+  'Django': { icon: SiDjango, color: '#092E20' },
+  'Flask': { icon: SiFlask, color: '#ffffff' },
+  'MySQL': { icon: SiMysql, color: '#4479A1' },
+  'SQLite': { icon: SiSqlite, color: '#003B57' },
+  'Drizzle': { icon: SiDrizzle, color: '#C5F74F' },
+  'Drizzle ORM': { icon: SiDrizzle, color: '#C5F74F' },
+  'Clerk': { icon: SiClerk, color: '#6C47FF' },
+  'Shadcn': { icon: SiShadcnui, color: '#ffffff' },
+  'Shadcn UI': { icon: SiShadcnui, color: '#ffffff' },
+  'Webpack': { icon: SiWebpack, color: '#8DD6F9' },
+  'Babel': { icon: SiBabel, color: '#F9DC3E' },
+  'Jest': { icon: SiJest, color: '#C21325' },
+  'Cypress': { icon: SiCypress, color: '#17202C' },
+  'Vitest': { icon: SiVitest, color: '#FCC72B' },
+  'Mongoose': { icon: SiMongoose, color: '#880000' },
+  'Resend': { icon: SiResend, color: '#ffffff' },
+  'Pusher': { icon: SiPusher, color: '#300D4F' },
+  'AWS': { icon: FaAws, color: '#FF9900' },
 };
 
 export function getIconForTech(name: string) {
+  if (!name) return { icon: Code2, color: '#94a3b8' };
   if (ICON_MAP[name]) return ICON_MAP[name];
 
-  const lower = name.toLowerCase();
+  const lower = name.toLowerCase().trim();
   if (lower.includes('next')) return ICON_MAP['Next.js'];
   if (lower.includes('react')) return ICON_MAP['React'];
   if (lower.includes('typescript') || lower === 'ts') return ICON_MAP['TypeScript'];
   if (lower.includes('javascript') || lower === 'js') return ICON_MAP['JavaScript'];
   if (lower.includes('tailwind')) return ICON_MAP['Tailwind CSS'];
-  if (lower.includes('postgres') || lower.includes('sql')) return ICON_MAP['PostgreSQL'];
+  if (lower.includes('postgres') || lower.includes('pg')) return ICON_MAP['PostgreSQL'];
   if (lower.includes('mongo')) return ICON_MAP['MongoDB'];
   if (lower.includes('node')) return ICON_MAP['Node.js'];
   if (lower.includes('express')) return ICON_MAP['Express'];
   if (lower.includes('prisma')) return ICON_MAP['Prisma'];
+  if (lower.includes('drizzle')) return ICON_MAP['Drizzle'];
   if (lower.includes('docker')) return ICON_MAP['Docker'];
+  if (lower.includes('k8s') || lower.includes('kubernetes')) return ICON_MAP['Kubernetes'];
   if (lower.includes('redis')) return ICON_MAP['Redis'];
   if (lower.includes('stripe')) return ICON_MAP['Stripe'];
   if (lower.includes('redux')) return ICON_MAP['Redux Toolkit'];
@@ -107,13 +185,37 @@ export function getIconForTech(name: string) {
   if (lower.includes('cloudinary')) return ICON_MAP['Cloudinary'];
   if (lower.includes('socket') || lower.includes('realtime')) return ICON_MAP['WebSocket'];
   if (lower.includes('jwt') || lower.includes('auth')) return ICON_MAP['JWT'];
+  if (lower.includes('clerk')) return ICON_MAP['Clerk'];
   if (lower.includes('zod')) return ICON_MAP['Zod'];
   if (lower.includes('google')) return ICON_MAP['Google OAuth 2.0'];
+  if (lower.includes('aws') || lower.includes('amazon')) return ICON_MAP['AWS'];
+  if (lower.includes('firebase')) return ICON_MAP['Firebase'];
+  if (lower.includes('bun')) return ICON_MAP['Bun'];
+  if (lower.includes('vite')) return ICON_MAP['Vite'];
+  if (lower.includes('turborepo') || lower.includes('turbo')) return ICON_MAP['Turborepo'];
+  if (lower.includes('graphql') || lower.includes('gql')) return ICON_MAP['GraphQL'];
+  if (lower.includes('python') || lower.includes('py')) return ICON_MAP['Python'];
+  if (lower.includes('golang') || lower === 'go') return ICON_MAP['Go'];
+  if (lower.includes('rust')) return ICON_MAP['Rust'];
+  if (lower.includes('vue')) return ICON_MAP['Vue'];
+  if (lower.includes('svelte')) return ICON_MAP['Svelte'];
+  if (lower.includes('sass') || lower.includes('scss')) return ICON_MAP['Sass'];
+  if (lower.includes('mysql')) return ICON_MAP['MySQL'];
+  if (lower.includes('sqlite')) return ICON_MAP['SQLite'];
+  if (lower.includes('nest')) return ICON_MAP['NestJS'];
+  if (lower.includes('fastapi')) return ICON_MAP['FastAPI'];
+  if (lower.includes('django')) return ICON_MAP['Django'];
+  if (lower.includes('flask')) return ICON_MAP['Flask'];
+  if (lower.includes('resend')) return ICON_MAP['Resend'];
+  if (lower.includes('pusher')) return ICON_MAP['Pusher'];
+  if (lower.includes('shadcn')) return ICON_MAP['Shadcn UI'];
+  if (lower.includes('openai') || lower.includes('ai') || lower.includes('gemini') || lower.includes('llm')) return ICON_MAP['OpenAI'];
   if (lower.includes('vscode') || lower.includes('ide') || lower.includes('editor')) return ICON_MAP['VS Code & Antigravity IDE'];
   if (lower.includes('monitor') || lower.includes('workstation') || lower.includes('display')) return ICON_MAP['Dual Display Workstation'];
+  if (lower.includes('git')) return ICON_MAP['Git'];
+  if (lower.includes('linux')) return ICON_MAP['Linux'];
   if (lower.includes('db') || lower.includes('data')) return { icon: Database, color: '#38bdf8' };
   if (lower.includes('api') || lower.includes('server')) return { icon: Server, color: '#a855f7' };
-  if (lower.includes('ai') || lower.includes('gemini')) return { icon: Cpu, color: '#ec4899' };
 
   return { icon: Code2, color: '#94a3b8' };
 }

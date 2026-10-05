@@ -17,7 +17,7 @@ import { useBooking } from '@/components/booking/BookingContext';
 import DiscoveryBanner from '@/components/home/DiscoveryBanner';
 import AnimatedLogo from '@/components/shared/AnimatedLogo';
 
-export default function Footer() {
+export default function Footer({ socialMap = {} }: { socialMap?: Record<string, string> }) {
   const pathname = usePathname();
   const { currentTheme } = useThemeAccent();
   const { openBooking } = useBooking();
@@ -165,44 +165,52 @@ export default function Footer() {
                 <span>Book 30-Min Discovery Call (In-Site)</span>
               </Link>
 
-              <a
-                href="mailto:rohanmia.org@gmail.com"
-                className="w-full py-2.5 px-4 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-mono text-foreground flex items-center justify-center gap-2 transition-colors"
-              >
-                <Mail size={13} className="text-muted-foreground" />
-                <span>rohanmia.org@gmail.com</span>
-              </a>
+              {socialMap.email && (
+                <a
+                  href={socialMap.email.startsWith('mailto:') ? socialMap.email : `mailto:${socialMap.email}`}
+                  className="w-full py-2.5 px-4 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-mono text-foreground flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Mail size={13} className="text-muted-foreground" />
+                  <span>{socialMap.email.replace(/^mailto:/, '')}</span>
+                </a>
+              )}
             </div>
 
             {/* Socials */}
             <div className="flex items-center gap-2 pt-1">
-              <a
-                href="https://github.com/rohan-bhau"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
-                title="GitHub @rohan-bhau"
-              >
-                <FaGithub size={15} />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/rohan-mia/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
-                title="LinkedIn"
-              >
-                <FaLinkedin size={15} />
-              </a>
-              <a
-                href="https://x.com/_Rohan_Bhau"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
-                title="Twitter / X"
-              >
-                <FaXTwitter size={15} />
-              </a>
+              {socialMap.github && (
+                <a
+                  href={socialMap.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
+                  title="GitHub"
+                >
+                  <FaGithub size={15} />
+                </a>
+              )}
+              {socialMap.linkedin && (
+                <a
+                  href={socialMap.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
+                  title="LinkedIn"
+                >
+                  <FaLinkedin size={15} />
+                </a>
+              )}
+              {socialMap.twitter && (
+                <a
+                  href={socialMap.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-muted-foreground hover:text-foreground transition-colors"
+                  title="Twitter / X"
+                >
+                  <FaXTwitter size={15} />
+                </a>
+              )}
             </div>
           </div>
         </div>

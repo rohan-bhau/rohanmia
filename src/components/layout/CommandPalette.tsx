@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -48,6 +48,8 @@ interface PageItem {
 const CLOUDINARY_PROFILE_IMAGE = "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png";
 
 export default function CommandPalette() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<PaletteView>('search');
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,7 +68,6 @@ export default function CommandPalette() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
   const { accent, setAccent, themes, currentTheme } = useThemeAccent();
 
   // 1. Listen for CMD+K / CTRL+K and Custom Events

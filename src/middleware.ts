@@ -4,7 +4,7 @@ const INTERNAL_ADMIN_PATH = "/control-room-internal";
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const secretPath = process.env.ADMIN_ENTRY_PATH || "/arronhaan1841";
+  const secretPath = process.env.ADMIN_ENTRY_PATH ;
 
   // Direct internal route access -> 404
   if (
@@ -17,8 +17,8 @@ export function middleware(request: NextRequest) {
 
   // Secret URL -> internally serve admin route
   if (
-    pathname === secretPath ||
-    pathname.startsWith(`${secretPath}/`)
+    secretPath &&
+    (pathname === secretPath || pathname.startsWith(`${secretPath}/`))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.replace(secretPath, INTERNAL_ADMIN_PATH);

@@ -72,11 +72,11 @@ export async function insertEntry(entry: {
  */
 export async function deleteEntryById(id: string, requesterEmail: string): Promise<boolean> {
   await ensureGuestbookTable();
-  const adminEmail = (process.env.ADMIN_EMAIL || 'rohanmia.org@gmail.com').trim().toLowerCase();
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const cleanEmail = requesterEmail.trim().toLowerCase();
   
   let query = '';
-  if (cleanEmail === adminEmail) {
+  if (adminEmail && cleanEmail === adminEmail) {
     query = `DELETE FROM guestbook_entries WHERE id = ${escapeSqlString(id)};`;
   } else {
     query = `DELETE FROM guestbook_entries WHERE id = ${escapeSqlString(id)} AND LOWER(TRIM(email)) = ${escapeSqlString(cleanEmail)};`;

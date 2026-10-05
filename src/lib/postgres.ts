@@ -1,4 +1,5 @@
 import https from 'https';
+import dns from 'dns';
 
 /**
  * SQL Escaping Utilities
@@ -38,11 +39,12 @@ async function runQuery<T>(query: string, useFamily4: boolean = true): Promise<{
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(postData)
       },
-      timeout: 10000,
+      timeout: 6000,
+      family: 4,
+      lookup: (hostname, options, callback) => {
+        dns.lookup(hostname, { family: 4 }, callback);
+      }
     };
-    if (useFamily4) {
-      opts.family = 4;
-    }
 
     const req = https.request(opts, (res) => {
       let body = '';
@@ -98,3 +100,4 @@ export * from './db/content';
 export * from './db/gallery';
 export * from './db/guestbook';
 export * from './db/contact';
+export * from './db/links';

@@ -273,7 +273,7 @@ export async function sendContactInquiryEmail({
   const safeEmail = escapeHtml(email);
   const safeTopic = escapeHtml(topic);
   const safeMessage = escapeHtml(message).replace(/\n/g, '<br/>');
-  const adminEmail = process.env.ADMIN_EMAIL || 'rohanmia.org@gmail.com';
+  const adminEmail = (process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || '').trim();
   const cleanPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
   const subject = `New Inquiry: ${name} [${topic}]`;
 
@@ -501,7 +501,7 @@ export async function sendMeetingBookingEmails(
   const meetLink = booking.meetLink || `https://meet.google.com/${meetCode}`;
   const duration = booking.duration || 30;
   const timezone = booking.timezone || 'Asia/Dhaka';
-  const adminEmail = process.env.ADMIN_EMAIL || 'rohanmia.org@gmail.com';
+  const adminEmail = (process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || '').trim();
   const cleanPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
 
   const siteUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://rohanmia.org').replace(/\/+$/, '');
@@ -840,7 +840,7 @@ export async function sendMeetingCancellationEmails({
   const currentYear = new Date().getFullYear();
   const duration = booking.duration || 30;
   const timezone = booking.timezone || 'Asia/Dhaka';
-  const adminEmail = process.env.ADMIN_EMAIL || 'rohanmia.org@gmail.com';
+  const adminEmail = (process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || '').trim();
   const cleanPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
   const rescheduleUrl = 'https://calendly.com/rohanmia/meeting';
 

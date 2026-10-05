@@ -27,10 +27,9 @@ function isLocalIp(clientIp: string): boolean {
   );
 }
 
-/**
- * Backward compatibility alias
- */
-export const loginToControlRoom = initiateAdminLogin;
+export async function loginToControlRoom(formData: FormData) {
+  return initiateAdminLogin(formData);
+}
 
 /**
  * Step 1: Validate Email + Password and dispatch 6-digit 2FA OTP to Admin Email

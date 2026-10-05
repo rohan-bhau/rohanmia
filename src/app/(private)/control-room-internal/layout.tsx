@@ -28,7 +28,10 @@ export default async function ControlRoomLayout({
     userEmail === adminEmail;
 
   // Server-only secret path passed into the shell so all links start with secretPath
-  const basePath = process.env.ADMIN_ENTRY_PATH || '/arronhaan1841';
+  const basePath = (process.env.ADMIN_ENTRY_PATH || '').trim();
+  if (!basePath) {
+    throw new Error('ADMIN_ENTRY_PATH is not configured in environment variables');
+  }
 
   return (
     <>

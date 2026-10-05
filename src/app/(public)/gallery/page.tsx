@@ -1,4 +1,4 @@
-import { getGalleryImages } from '@/actions/gallery';
+import { getGalleryImages } from '@/actions/adminGallery';
 import GalleryClient from '@/components/gallery/GalleryClient';
 
 export const dynamic = 'force-dynamic';

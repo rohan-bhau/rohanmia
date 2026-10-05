@@ -199,12 +199,54 @@ export function ensurePortfolioTables(): Promise<void> {
           social_links JSONB DEFAULT '{}'::jsonb,
           resume_url TEXT,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS links (
+          id VARCHAR(64) PRIMARY KEY,
+          title VARCHAR(128) NOT NULL,
+          handle VARCHAR(128),
+          href TEXT NOT NULL,
+          icon_name VARCHAR(64),
+          category VARCHAR(64) DEFAULT 'connect',
+          is_external BOOLEAN DEFAULT true,
+          color VARCHAR(32),
+          sort_order INT DEFAULT 0,
+          active BOOLEAN DEFAULT true,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS analytics_events (
+          id VARCHAR(64) PRIMARY KEY,
+          path TEXT,
+          visitor_id VARCHAR(128),
+          device VARCHAR(64),
+          browser VARCHAR(64),
+          location VARCHAR(128),
+          duration INT DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS ai_chat_logs (
+          id VARCHAR(64) PRIMARY KEY,
+          visitor_id VARCHAR(128) NOT NULL,
+          messages JSONB DEFAULT '[]'::jsonb,
+          last_interaction TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS leads (
+          id VARCHAR(64) PRIMARY KEY,
+          name VARCHAR(128),
+          email VARCHAR(255),
+          phone VARCHAR(64),
+          company VARCHAR(128),
+          notes TEXT,
+          source VARCHAR(64) DEFAULT 'chatbot',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`
       ];
 
       for (const sql of ddlStatements) {
         await executeSql(sql);
       }
+      // Ensure recently added columns exist
+      await executeSql(`ALTER TABLE about_content ADD COLUMN IF NOT EXISTS carousel_items JSONB DEFAULT '[]'::jsonb;`);
     })().catch((err) => {
       portfolioTablesReady = null;
       throw err;

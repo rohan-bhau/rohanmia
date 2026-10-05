@@ -2,25 +2,46 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 export default function Preloader() {
-  const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+  const [loading, setLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    // Lock scroll while loading
-    document.body.style.overflow = 'hidden';
-    const timer = setTimeout(() => {
+    // Never show preloader on sub-routes (/about, /links, etc.)
+    if (pathname !== '/') {
       setLoading(false);
-      document.body.style.overflow = 'unset';
-    }, 4500);
+      return;
+    }
 
-    return () => {
-      document.body.style.overflow = 'unset';
-      clearTimeout(timer);
-    };
-  }, []);
+    try {
+      const alreadyShown = sessionStorage.getItem('bhau_preloader_seen');
+      if (alreadyShown) {
+        setLoading(false);
+        return;
+      }
+      sessionStorage.setItem('bhau_preloader_seen', 'true');
+      setLoading(true);
+      document.body.style.overflow = 'hidden';
+
+      const timer = setTimeout(() => {
+        setLoading(false);
+        document.body.style.overflow = 'unset';
+      }, 900);
+
+      return () => {
+        document.body.style.overflow = 'unset';
+        clearTimeout(timer);
+      };
+    } catch {
+      setLoading(false);
+    }
+  }, [pathname]);
+
+  if (!loading) return null;
 
   return (
     <AnimatePresence>

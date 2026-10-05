@@ -42,9 +42,39 @@ export interface DbSiteSettingsRow {
   site_title: string;
   meta_description: string;
   contact_email: string;
-  social_links: Record<string, string>;
+  social_links: Record<string, any>;
   resume_url: string;
   updated_at: string;
+}
+
+// ---------------------------------------------------------------------------
+// Safe partial upsert helper
+// Only the keys present in `data` are written. Untouched columns are NEVER
+// overwritten, so saving one section can never wipe another section's data.
+// ---------------------------------------------------------------------------
+async function safePartialUpsert<T>(
+  table: string,
+  data: Record<string, any>,
+  allowed: { name: string; json: boolean }[]
+): Promise<T> {
+  const cols = allowed.filter((c) => data[c.name] !== undefined);
+  const toSql = (c: { name: string; json: boolean }) =>
+    c.json ? escapeSqlJson(data[c.name]) : escapeSqlString(data[c.name]);
+
+  // Ensure the row exists without touching any column values
+  await executeSql(
+    `INSERT INTO ${table} (id, updated_at) VALUES ('primary', CURRENT_TIMESTAMP) ON CONFLICT (id) DO NOTHING;`
+  );
+
+  const setClause = [
+    ...cols.map((c) => `${c.name} = ${toSql(c)}`),
+    'updated_at = CURRENT_TIMESTAMP',
+  ].join(', ');
+
+  const res = await executeSql<T>(
+    `UPDATE ${table} SET ${setClause} WHERE id = 'primary' RETURNING *;`
+  );
+  return res.rows[0];
 }
 
 // ---------------------------------------------------------------------------
@@ -60,35 +90,16 @@ export async function getHeroContentDb(): Promise<DbHeroContentRow | null> {
 
 export async function updateHeroContentDb(data: Partial<DbHeroContentRow>): Promise<DbHeroContentRow> {
   await ensurePortfolioTables();
-  const query = `
-    INSERT INTO hero_content (
-      id, greeting, name, surname, bio, profile_image, resume_url, rotating_roles, stats, updated_at
-    ) VALUES (
-      'primary',
-      ${escapeSqlString(data.greeting ?? "Hi, I'm")},
-      ${escapeSqlString(data.name ?? "Rohan")},
-      ${escapeSqlString(data.surname ?? "Mia")},
-      ${escapeSqlString(data.bio ?? "")},
-      ${escapeSqlString(data.profile_image ?? "")},
-      ${escapeSqlString(data.resume_url ?? "/resume.pdf")},
-      ${escapeSqlJson(data.rotating_roles ?? [])},
-      ${escapeSqlJson(data.stats ?? [])},
-      CURRENT_TIMESTAMP
-    )
-    ON CONFLICT (id) DO UPDATE SET
-      greeting = EXCLUDED.greeting,
-      name = EXCLUDED.name,
-      surname = EXCLUDED.surname,
-      bio = EXCLUDED.bio,
-      profile_image = EXCLUDED.profile_image,
-      resume_url = EXCLUDED.resume_url,
-      rotating_roles = EXCLUDED.rotating_roles,
-      stats = EXCLUDED.stats,
-      updated_at = CURRENT_TIMESTAMP
-    RETURNING *;
-  `;
-  const res = await executeSql<DbHeroContentRow>(query);
-  return res.rows[0];
+  return safePartialUpsert<DbHeroContentRow>('hero_content', data, [
+    { name: 'greeting', json: false },
+    { name: 'name', json: false },
+    { name: 'surname', json: false },
+    { name: 'bio', json: false },
+    { name: 'profile_image', json: false },
+    { name: 'resume_url', json: false },
+    { name: 'rotating_roles', json: true },
+    { name: 'stats', json: true },
+  ]);
 }
 
 // ---------------------------------------------------------------------------
@@ -104,27 +115,12 @@ export async function getBentoContentDb(): Promise<DbBentoContentRow | null> {
 
 export async function updateBentoContentDb(data: Partial<DbBentoContentRow>): Promise<DbBentoContentRow> {
   await ensurePortfolioTables();
-  const query = `
-    INSERT INTO bento_content (
-      id, badge, title, cards, tech_radar, updated_at
-    ) VALUES (
-      'primary',
-      ${escapeSqlString(data.badge ?? "At A Glance")},
-      ${escapeSqlString(data.title ?? "Overview & Work")},
-      ${escapeSqlJson(data.cards ?? {})},
-      ${escapeSqlJson(data.tech_radar ?? [])},
-      CURRENT_TIMESTAMP
-    )
-    ON CONFLICT (id) DO UPDATE SET
-      badge = EXCLUDED.badge,
-      title = EXCLUDED.title,
-      cards = EXCLUDED.cards,
-      tech_radar = EXCLUDED.tech_radar,
-      updated_at = CURRENT_TIMESTAMP
-    RETURNING *;
-  `;
-  const res = await executeSql<DbBentoContentRow>(query);
-  return res.rows[0];
+  return safePartialUpsert<DbBentoContentRow>('bento_content', data, [
+    { name: 'badge', json: false },
+    { name: 'title', json: false },
+    { name: 'cards', json: true },
+    { name: 'tech_radar', json: true },
+  ]);
 }
 
 // ---------------------------------------------------------------------------
@@ -140,39 +136,17 @@ export async function getAboutContentDb(): Promise<DbAboutContentRow | null> {
 
 export async function updateAboutContentDb(data: Partial<DbAboutContentRow>): Promise<DbAboutContentRow> {
   await ensurePortfolioTables();
-  const query = `
-    INSERT INTO about_content (
-      id, eyebrow, heading_title, heading_highlight,
-      bio_paragraphs, career_experiences, engineering_principles,
-      education, core_competencies, carousel_items, updated_at
-    ) VALUES (
-      'primary',
-      ${escapeSqlString(data.eyebrow ?? "MORE ABOUT ME")},
-      ${escapeSqlString(data.heading_title ?? "I'm Rohan, a")},
-      ${escapeSqlString(data.heading_highlight ?? "creative engineer")},
-      ${escapeSqlJson(data.bio_paragraphs ?? [])},
-      ${escapeSqlJson(data.career_experiences ?? [])},
-      ${escapeSqlJson(data.engineering_principles ?? [])},
-      ${escapeSqlJson(data.education ?? [])},
-      ${escapeSqlJson(data.core_competencies ?? [])},
-      ${escapeSqlJson(data.carousel_items ?? [])},
-      CURRENT_TIMESTAMP
-    )
-    ON CONFLICT (id) DO UPDATE SET
-      eyebrow = EXCLUDED.eyebrow,
-      heading_title = EXCLUDED.heading_title,
-      heading_highlight = EXCLUDED.heading_highlight,
-      bio_paragraphs = EXCLUDED.bio_paragraphs,
-      career_experiences = EXCLUDED.career_experiences,
-      engineering_principles = EXCLUDED.engineering_principles,
-      education = EXCLUDED.education,
-      core_competencies = EXCLUDED.core_competencies,
-      carousel_items = EXCLUDED.carousel_items,
-      updated_at = CURRENT_TIMESTAMP
-    RETURNING *;
-  `;
-  const res = await executeSql<DbAboutContentRow>(query);
-  return res.rows[0];
+  return safePartialUpsert<DbAboutContentRow>('about_content', data, [
+    { name: 'eyebrow', json: false },
+    { name: 'heading_title', json: false },
+    { name: 'heading_highlight', json: false },
+    { name: 'bio_paragraphs', json: true },
+    { name: 'career_experiences', json: true },
+    { name: 'engineering_principles', json: true },
+    { name: 'education', json: true },
+    { name: 'core_competencies', json: true },
+    { name: 'carousel_items', json: true },
+  ]);
 }
 
 // ---------------------------------------------------------------------------
@@ -188,27 +162,11 @@ export async function getSiteSettingsDb(): Promise<DbSiteSettingsRow | null> {
 
 export async function updateSiteSettingsDb(data: Partial<DbSiteSettingsRow>): Promise<DbSiteSettingsRow> {
   await ensurePortfolioTables();
-  const query = `
-    INSERT INTO site_settings (
-      id, site_title, meta_description, contact_email, social_links, resume_url, updated_at
-    ) VALUES (
-      'primary',
-      ${escapeSqlString(data.site_title ?? "MD Rohan Mia | Full-Stack Software Engineer")},
-      ${escapeSqlString(data.meta_description ?? "")},
-      ${escapeSqlString(data.contact_email ?? "rohanmia.org@gmail.com")},
-      ${escapeSqlJson(data.social_links ?? {})},
-      ${escapeSqlString(data.resume_url ?? "/resume.pdf")},
-      CURRENT_TIMESTAMP
-    )
-    ON CONFLICT (id) DO UPDATE SET
-      site_title = EXCLUDED.site_title,
-      meta_description = EXCLUDED.meta_description,
-      contact_email = EXCLUDED.contact_email,
-      social_links = EXCLUDED.social_links,
-      resume_url = EXCLUDED.resume_url,
-      updated_at = CURRENT_TIMESTAMP
-    RETURNING *;
-  `;
-  const res = await executeSql<DbSiteSettingsRow>(query);
-  return res.rows[0];
+  return safePartialUpsert<DbSiteSettingsRow>('site_settings', data, [
+    { name: 'site_title', json: false },
+    { name: 'meta_description', json: false },
+    { name: 'contact_email', json: false },
+    { name: 'social_links', json: true },
+    { name: 'resume_url', json: false },
+  ]);
 }

@@ -12,53 +12,28 @@ interface CarouselItem {
   alt: string;
 }
 
-// User's exact real images (Hero image + Gallery real images)
-const CAROUSEL_ITEMS: CarouselItem[] = [
-  {
-    id: 'rohan-hero',
-    title: "I'm Rohan",
-    subtitle: 'Full-Stack Developer & Builder',
-    image: '/images/about/hero-profile.png',
-    alt: 'MD Rohan Mia (Bhau)'
-  },
-  {
-    id: 'rohan-gallery-1',
-    title: 'I Travel',
-    subtitle: 'Natore Gonobhobon & Outdoors',
-    image: '/images/about/gallery-1.jpg',
-    alt: 'MD Rohan Mia at Natore Gonobhobon'
-  },
-  {
-    id: 'rohan-gallery-2',
-    title: 'I Explore',
-    subtitle: 'Moments & Continuous Growth',
-    image: '/images/about/gallery-2.jpg',
-    alt: 'MD Rohan Mia exploring'
-  },
-  {
-    id: 'rohan-gallery-3',
-    title: 'I Create',
-    subtitle: 'Crafting Dynamic Web Experiences',
-    image: '/images/about/gallery-3.jpg',
-    alt: 'MD Rohan Mia'
-  }
-];
-
 // Fast rotation interval as requested (2.5 seconds)
 const AUTO_ROTATE_INTERVAL = 2500;
 
-export default function StackedImageCarousel() {
+export default function StackedImageCarousel({ items = [] }: { items?: CarouselItem[] } = {}) {
+  const carouselItems = items;
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const nextSlide = useCallback(() => {
-    setActiveIndex((prev) => (prev + 1) % CAROUSEL_ITEMS.length);
-  }, []);
+    if (carouselItems.length === 0) return;
+    setActiveIndex((prev) => (prev + 1) % carouselItems.length);
+  }, [carouselItems.length]);
 
   const prevSlide = useCallback(() => {
-    setActiveIndex((prev) => (prev - 1 + CAROUSEL_ITEMS.length) % CAROUSEL_ITEMS.length);
-  }, []);
+    if (carouselItems.length === 0) return;
+    setActiveIndex((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+  }, [carouselItems.length]);
+
+  if (!carouselItems || carouselItems.length === 0) {
+    return null;
+  }
 
   // Auto rotation effect with fast timing
   useEffect(() => {
@@ -101,8 +76,8 @@ export default function StackedImageCarousel() {
     >
       {/* 3D Stack Container - Calibrated to card 4/5 aspect ratio to remove excess vertical gap */}
       <div className="relative h-[260px] sm:h-[320px] md:h-[345px] w-full flex items-center justify-center">
-        {CAROUSEL_ITEMS.map((item, index) => {
-          const total = CAROUSEL_ITEMS.length;
+        {carouselItems.map((item, index) => {
+          const total = carouselItems.length;
           const rawOffset = (index - activeIndex) % total;
           const normalizedOffset = (rawOffset + total) % total;
 
@@ -142,7 +117,7 @@ export default function StackedImageCarousel() {
 
           return (
             <motion.div
-              key={item.id}
+              key={item.id || index}
               drag={isCenter ? 'x' : false}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
@@ -172,7 +147,7 @@ export default function StackedImageCarousel() {
             >
               <Image
                 src={item.image}
-                alt={item.alt}
+                alt={item.alt || item.title}
                 fill
                 priority={index === 0}
                 className="object-cover object-center pointer-events-none select-none"
@@ -187,27 +162,31 @@ export default function StackedImageCarousel() {
       {/* Dynamic Text Below Cards with Smooth Fade */}
       <div className="text-center mt-3 h-14 flex flex-col items-center justify-center">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={CAROUSEL_ITEMS[activeIndex].id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-0.5"
-          >
-            <h3 className="font-serif text-xl sm:text-2xl text-white font-light tracking-wide">
-              {CAROUSEL_ITEMS[activeIndex].title}
-            </h3>
-            <p className="font-mono text-[11px] sm:text-xs text-neutral-400">
-              {CAROUSEL_ITEMS[activeIndex].subtitle}
-            </p>
-          </motion.div>
+          {carouselItems[activeIndex] && (
+            <motion.div
+              key={carouselItems[activeIndex].id || activeIndex}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-0.5"
+            >
+              <h3 className="font-serif text-xl sm:text-2xl text-white font-light tracking-wide">
+                {carouselItems[activeIndex].title}
+              </h3>
+              {carouselItems[activeIndex].subtitle && (
+                <p className="font-mono text-[11px] sm:text-xs text-neutral-400">
+                  {carouselItems[activeIndex].subtitle}
+                </p>
+              )}
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 
       {/* Subtle indicator dots */}
       <div className="flex items-center gap-1.5 mt-2">
-        {CAROUSEL_ITEMS.map((_, i) => (
+        {carouselItems.map((_, i) => (
           <button
             key={i}
             onClick={() => setActiveIndex(i)}

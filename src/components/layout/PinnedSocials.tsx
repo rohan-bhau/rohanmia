@@ -2,32 +2,41 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import { FaGithub, FaLinkedin, FaXTwitter, FaFacebook, FaInstagram } from 'react-icons/fa6';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 
-const SOCIALS = [
-  {
-    name: 'GitHub',
-    url: 'https://github.com/rohan-bhau',
-    icon: FaGithub,
-    handle: '@rohan-bhau'
-  },
-  {
-    name: 'LinkedIn',
-    url: 'https://www.linkedin.com/in/rohan-mia/',
-    icon: FaLinkedin,
-    handle: 'rohan-mia'
-  },
-  {
-    name: 'Twitter / X',
-    url: 'https://x.com/_Rohan_Bhau',
-    icon: FaXTwitter,
-    handle: '@_Rohan_Bhau'
-  }
-];
+interface PinnedSocialsProps {
+  socialMap?: Record<string, string>;
+}
 
-export default function PinnedSocials() {
+export default function PinnedSocials({ socialMap = {} }: PinnedSocialsProps) {
   const { currentTheme } = useThemeAccent();
+
+  const items: Array<{
+    name: string;
+    url: string;
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+  }> = [];
+
+  if (socialMap.github) {
+    items.push({ name: 'GitHub', url: socialMap.github, icon: FaGithub });
+  }
+  if (socialMap.linkedin) {
+    items.push({ name: 'LinkedIn', url: socialMap.linkedin, icon: FaLinkedin });
+  }
+  if (socialMap.twitter) {
+    items.push({ name: 'Twitter / X', url: socialMap.twitter, icon: FaXTwitter });
+  }
+  if (socialMap.facebook) {
+    items.push({ name: 'Facebook', url: socialMap.facebook, icon: FaFacebook });
+  }
+  if (socialMap.instagram) {
+    items.push({ name: 'Instagram', url: socialMap.instagram, icon: FaInstagram });
+  }
+
+  if (items.length === 0) {
+    return null;
+  }
 
   return (
     <div className="fixed left-6 top-1/2 -translate-y-1/2 z-40 hidden xl:flex flex-col items-center gap-4">
@@ -38,7 +47,7 @@ export default function PinnedSocials() {
 
       {/* Social Links */}
       <div className="flex flex-col gap-3">
-        {SOCIALS.map((social) => {
+        {items.map((social) => {
           const Icon = social.icon;
           return (
             <motion.a
@@ -46,7 +55,7 @@ export default function PinnedSocials() {
               href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              title={`${social.name} (${social.handle})`}
+              title={social.name}
               aria-label={social.name}
               whileHover={{ scale: 1.15, x: 2 }}
               whileTap={{ scale: 0.95 }}

@@ -12,13 +12,11 @@ To make your portfolio fully functional, you need to gather credentials from sev
 
 ---
 
-### 2. MongoDB URI (Database)
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
-2. Create a **Free Shared Cluster**.
-3. Create a **Database User** (keep the username and password).
-4. In "Network Access", allow access from `0.0.0.0/0` (for development).
-5. Click **Connect** > **Drivers** > **Node.js**.
-6. Copy the connection string and replace `<password>` with your database user password.
+### 2. PostgreSQL DATABASE_URL (Database)
+1. Go to [Neon PostgreSQL](https://neon.tech/).
+2. Create a free serverless project.
+3. Copy the Connection String (URI).
+4. Add it to `DATABASE_URL` in your `.env`.
 
 ---
 

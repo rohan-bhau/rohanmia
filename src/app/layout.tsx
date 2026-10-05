@@ -6,7 +6,7 @@ export const revalidate = 0;
 import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
 import { Toaster } from "sonner";
-import { getSettings } from "@/actions/settings";
+import { getSettings } from "@/actions/adminSettings";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -37,9 +37,9 @@ export async function generateMetadata() {
 
   return {
     metadataBase: new URL(baseUrl),
-    title: "Rohan Mia",
-    description: settings?.siteDescription || "Rohan Mia - Full Stack Developer & Creative Engineer.",
-    keywords: settings?.keywords?.split(',').map((k: string) => k.trim()) || ["Portfolio", "Developer"],
+    title: settings?.site_title || "MD Rohan Mia | Full-Stack Software Engineer",
+    description: settings?.meta_description || "Portfolio of MD Rohan Mia - Full Stack Developer & Creative Engineer.",
+    keywords: ["Portfolio", "Full-Stack Developer", "Next.js", "TypeScript", "PostgreSQL"],
 
     verification: {
       google: "yH9eJO5yYLc4wgh3jwtqR_QE28Vsc1SrST5teq331do",
@@ -48,21 +48,21 @@ export async function generateMetadata() {
     icons: {
       icon: [
         { url: "/favicon.png" },
-        { url: settings?.logoUrl || "/favicon.ico" }
+        { url: "/favicon.ico" }
       ],
       shortcut: "/favicon.png",
       apple: "/favicon.png",
     },
     openGraph: {
-      title: settings?.siteName,
-      description: settings?.siteDescription,
-      images: [settings?.logoUrl || "/profile.png"],
+      title: settings?.site_title || "MD Rohan Mia",
+      description: settings?.meta_description || "Full-Stack Developer",
+      images: ["/profile.png"],
     },
     twitter: {
       card: "summary_large_image",
-      title: settings?.siteName,
-      description: settings?.siteDescription,
-      images: [settings?.logoUrl || "/profile.png"],
+      title: settings?.site_title || "MD Rohan Mia",
+      description: settings?.meta_description || "Full-Stack Developer",
+      images: ["/profile.png"],
     },
   };
 }

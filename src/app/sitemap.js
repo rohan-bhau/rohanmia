@@ -1,11 +1,11 @@
-import { getProjects } from '@/actions/projects';
+import { getProjectsDb } from '@/lib/db/projects';
 
 export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://rohanmia.com';
 
-  const projects = await getProjects();
-  const projectUrls = projects.map((project) => ({
-    url: `${baseUrl}/projects/${project.title.toLowerCase().replace(/ /g, '-')}`,
+  const projects = await getProjectsDb().catch(() => []);
+  const projectUrls = (projects || []).map((project) => ({
+    url: `${baseUrl}/projects/${project.slug || project.title.toLowerCase().replace(/ /g, '-')}`,
     lastModified: new Date(),
   }));
 

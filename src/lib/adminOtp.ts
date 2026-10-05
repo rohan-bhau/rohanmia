@@ -31,7 +31,10 @@ export function generateAdminOtp(email: string): {
   challengeToken: string;
   expiresAt: number;
 } {
-  const secret = process.env.AUTH_SECRET || 'rohan_secret_fallback_key';
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    throw new Error('AUTH_SECRET is not configured in environment variables');
+  }
   const otp = crypto.randomInt(100000, 1000000).toString();
   const challengeId = crypto.randomBytes(20).toString('hex');
   const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
@@ -87,7 +90,10 @@ export function verifyAdminOtp(
     return { valid: false, error: 'Maximum attempts exceeded. Please restart login.' };
   }
 
-  const secret = process.env.AUTH_SECRET || 'rohan_secret_fallback_key';
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) {
+    return { valid: false, error: 'Server authentication configuration is missing.' };
+  }
   const cleanOtp = inputOtp.trim();
   const normalizedEmail = email.toLowerCase().trim();
 

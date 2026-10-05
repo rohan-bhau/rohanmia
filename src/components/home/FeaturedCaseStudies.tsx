@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ArrowUpRight, ExternalLink, Eye, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, ExternalLink, Eye, X, Pencil } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa6';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { FEATURED_CASE_STUDIES, CaseStudy } from '@/data/projects';
@@ -222,8 +222,24 @@ function FeaturedProjectCard({
   );
 }
 
-export default function FeaturedCaseStudies() {
+export default function FeaturedCaseStudies({ 
+  initialProjects, 
+  isAdmin = false 
+}: { 
+  initialProjects?: CaseStudy[]; 
+  isAdmin?: boolean; 
+}) {
   const { currentTheme } = useThemeAccent();
+  const [projectsList, setProjectsList] = useState<CaseStudy[]>(
+    initialProjects && initialProjects.length > 0 ? initialProjects : FEATURED_CASE_STUDIES
+  );
+
+  useEffect(() => {
+    if (initialProjects && initialProjects.length > 0) {
+      setProjectsList(initialProjects);
+    }
+  }, [initialProjects]);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [shiftY, setShiftY] = useState(0);
   const [githubModalProject, setGithubModalProject] = useState<CaseStudy | null>(null);
@@ -306,8 +322,8 @@ export default function FeaturedCaseStudies() {
     };
   }, [activeIndex]);
 
-  const activeProject = FEATURED_CASE_STUDIES[activeIndex] || FEATURED_CASE_STUDIES[0];
-  const activeAccent = activeProject.accentColor || currentTheme.primary;
+  const activeProject = projectsList[activeIndex] || projectsList[0];
+  const activeAccent = activeProject?.accentColor || currentTheme.primary;
 
   return (
     <section id="projects" className="py-20 sm:py-28 px-4 sm:px-6 relative">
@@ -323,21 +339,31 @@ export default function FeaturedCaseStudies() {
               <span
                 className="font-serif italic font-normal text-transparent bg-clip-text"
                 style={{
-                  backgroundImage:
-                    'linear-gradient(135deg, #d946ef 0%, #ec4899 50%, #f43f5e 100%)',
+                  backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`,
                 }}
               >
                 work
               </span>
             </h2>
 
-            <Link
-              href="/projects"
-              className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
-            >
-              <span>Explore All Archives</span>
-              <ArrowUpRight size={14} />
-            </Link>
+            <div className="flex items-center gap-2.5">
+              {isAdmin && (
+                <Link
+                  href="/control-room-internal/projects"
+                  className="inline-flex items-center gap-2 px-4 py-2 sm:py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.15] text-xs font-mono text-white transition-all shadow-sm"
+                >
+                  <Pencil size={13} style={{ color: currentTheme.primary }} />
+                  <span>Edit Projects</span>
+                </Link>
+              )}
+              <Link
+                href="/projects"
+                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
+              >
+                <span>Explore All Archives</span>
+                <ArrowUpRight size={14} />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -345,7 +371,7 @@ export default function FeaturedCaseStudies() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 items-start">
           {/* Left Column: Stack of Scrolling Project Cards */}
           <div className="lg:col-span-7 space-y-16 sm:space-y-20 lg:space-y-28">
-            {FEATURED_CASE_STUDIES.map((project, index) => {
+            {projectsList.map((project, index) => {
               const isCurrent = activeIndex === index;
               const indexNumber = String(index + 1).padStart(2, '0');
 
