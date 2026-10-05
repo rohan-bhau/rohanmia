@@ -203,6 +203,28 @@ export function ensurePortfolioTables(): Promise<void> {
           sort_order INT DEFAULT 0,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS featured_case_studies (
+          id VARCHAR(64) PRIMARY KEY,
+          slug VARCHAR(128) NOT NULL,
+          title VARCHAR(128) NOT NULL,
+          tagline VARCHAR(255) NOT NULL,
+          category VARCHAR(64) DEFAULT 'Full Stack',
+          year VARCHAR(32) DEFAULT '2026',
+          preview_image TEXT NOT NULL,
+          hover_image TEXT,
+          gradient TEXT DEFAULT 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)',
+          accent_color VARCHAR(32) DEFAULT '#6366f1',
+          overview TEXT NOT NULL,
+          key_features JSONB DEFAULT '[]'::jsonb,
+          tech_stack JSONB DEFAULT '[]'::jsonb,
+          live_url TEXT,
+          github_url TEXT,
+          client_url TEXT,
+          server_url TEXT,
+          sort_order INT DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
         `CREATE TABLE IF NOT EXISTS site_settings (
           id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
           site_title VARCHAR(255) DEFAULT 'MD Rohan Mia | Full-Stack Software Engineer',

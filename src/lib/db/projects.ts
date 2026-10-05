@@ -146,82 +146,141 @@ export async function deleteProjectDb(id: string): Promise<boolean> {
   return res.rows.length > 0;
 }
 
+export interface DbFeaturedCaseStudyRow {
+  id: string;
+  slug: string;
+  title: string;
+  tagline: string;
+  category: string;
+  year: string;
+  preview_image: string;
+  hover_image?: string;
+  gradient: string;
+  accent_color: string;
+  overview: string;
+  key_features: { title: string; description: string }[];
+  tech_stack: string[];
+  live_url?: string;
+  github_url?: string;
+  client_url?: string;
+  server_url?: string;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function getFeaturedCaseStudiesDb(): Promise<DbFeaturedCaseStudyRow[]> {
+  await ensurePortfolioTables();
+  const res = await executeSql<DbFeaturedCaseStudyRow>(
+    `SELECT * FROM featured_case_studies ORDER BY sort_order ASC, created_at ASC;`
+  );
+  return res.rows.map((row) => ({
+    ...row,
+    key_features: Array.isArray(row.key_features)
+      ? row.key_features
+      : (typeof row.key_features === 'string' ? JSON.parse(row.key_features) : []),
+    tech_stack: Array.isArray(row.tech_stack)
+      ? row.tech_stack
+      : (typeof row.tech_stack === 'string' ? JSON.parse(row.tech_stack) : []),
+  }));
+}
+
+export async function upsertFeaturedCaseStudyDb(f: Partial<DbFeaturedCaseStudyRow> & { id: string; title: string; tagline: string; overview: string }): Promise<DbFeaturedCaseStudyRow> {
+  await ensurePortfolioTables();
+  const query = `
+    INSERT INTO featured_case_studies (
+      id, slug, title, tagline, category, year, preview_image, hover_image,
+      gradient, accent_color, overview, key_features, tech_stack, live_url,
+      github_url, client_url, server_url, sort_order, updated_at
+    ) VALUES (
+      ${escapeSqlString(f.id)},
+      ${escapeSqlString(f.slug || f.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))},
+      ${escapeSqlString(f.title)},
+      ${escapeSqlString(f.tagline)},
+      ${escapeSqlString(f.category || 'Full Stack')},
+      ${escapeSqlString(f.year || '2026')},
+      ${escapeSqlString(f.preview_image || '')},
+      ${escapeSqlString(f.hover_image || '')},
+      ${escapeSqlString(f.gradient || 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)')},
+      ${escapeSqlString(f.accent_color || '#6366f1')},
+      ${escapeSqlString(f.overview)},
+      ${escapeSqlJson(f.key_features || [])},
+      ${escapeSqlJson(f.tech_stack || [])},
+      ${escapeSqlString(f.live_url || '')},
+      ${escapeSqlString(f.github_url || '')},
+      ${escapeSqlString(f.client_url || '')},
+      ${escapeSqlString(f.server_url || '')},
+      ${f.sort_order ?? 0},
+      CURRENT_TIMESTAMP
+    )
+    ON CONFLICT (id) DO UPDATE SET
+      slug = EXCLUDED.slug,
+      title = EXCLUDED.title,
+      tagline = EXCLUDED.tagline,
+      category = EXCLUDED.category,
+      year = EXCLUDED.year,
+      preview_image = EXCLUDED.preview_image,
+      hover_image = EXCLUDED.hover_image,
+      gradient = EXCLUDED.gradient,
+      accent_color = EXCLUDED.accent_color,
+      overview = EXCLUDED.overview,
+      key_features = EXCLUDED.key_features,
+      tech_stack = EXCLUDED.tech_stack,
+      live_url = EXCLUDED.live_url,
+      github_url = EXCLUDED.github_url,
+      client_url = EXCLUDED.client_url,
+      server_url = EXCLUDED.server_url,
+      sort_order = EXCLUDED.sort_order,
+      updated_at = CURRENT_TIMESTAMP
+    RETURNING *;
+  `;
+  const res = await executeSql<DbFeaturedCaseStudyRow>(query);
+  return res.rows[0];
+}
+
+export async function deleteFeaturedCaseStudyDb(id: string): Promise<boolean> {
+  await ensurePortfolioTables();
+  const res = await executeSql<{ id: string }>(
+    `DELETE FROM featured_case_studies WHERE id = ${escapeSqlString(id)} RETURNING id;`
+  );
+  return res.rows.length > 0;
+}
+
+export async function updateFeaturedCaseStudiesOrderDb(orderedIds: string[]): Promise<void> {
+  await ensurePortfolioTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    const id = orderedIds[i];
+    await executeSql(
+      `UPDATE featured_case_studies SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`
+    );
+  }
+}
+
+export async function updateProjectsOrderDb(orderedIds: string[]): Promise<void> {
+  await ensurePortfolioTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    const id = orderedIds[i];
+    await executeSql(
+      `UPDATE projects SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`
+    );
+  }
+}
+
 /**
  * Fetch featured projects directly from PostgreSQL for Homepage
- * If database table has no records, seed initial projects into PostgreSQL first.
  */
 export async function getFeaturedProjectsDb(): Promise<any[]> {
   await ensurePortfolioTables();
-
-  let res = await executeSql<DbProjectRow>(
-    `SELECT * FROM projects WHERE featured = true ORDER BY sort_order ASC, created_at DESC;`
-  );
-
-  // If table is completely empty, seed it from initial data into PostgreSQL
-  if (res.rows.length === 0) {
-    const countRes = await executeSql<{ count: string }>(
-      `SELECT COUNT(*) as count FROM projects;`
-    );
-    const count = parseInt(countRes.rows[0]?.count || '0', 10);
-
-    if (count === 0) {
-      try {
-        const { FEATURED_CASE_STUDIES } = await import('@/data/projects');
-        for (let i = 0; i < FEATURED_CASE_STUDIES.length; i++) {
-          const p = FEATURED_CASE_STUDIES[i];
-          await upsertProjectDb({
-            id: p.id,
-            slug: p.slug,
-            title: p.title,
-            tagline: p.tagline,
-            category: p.category,
-            featured: Boolean(p.featured),
-            role: p.role || 'Lead Engineer',
-            year: p.year || '2024',
-            target_audience: p.targetAudience || '',
-            overview: p.overview || '',
-            problem: p.problem || '',
-            solution: p.solution || '',
-            gradient: p.gradient || 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)',
-            accent_color: p.accentColor || '#6366f1',
-            preview_image: p.previewImage || '',
-            hover_image: p.hoverImage || '',
-            github_url: p.githubUrl || '',
-            client_url: p.clientUrl || '',
-            server_url: p.serverUrl || '',
-            live_url: p.liveUrl || '',
-            tech_stack: p.techStack || [],
-            architecture: p.architecture as any || {},
-            system_breakdown: p.systemBreakdown || [],
-            challenges: p.challenges || [],
-            technical_decisions: p.technicalDecisions || [],
-            key_features: p.keyFeatures || [],
-            metrics: p.metrics || [],
-            sort_order: i,
-          });
-        }
-        res = await executeSql<DbProjectRow>(
-          `SELECT * FROM projects WHERE featured = true ORDER BY sort_order ASC, created_at DESC;`
-        );
-      } catch (seedErr) {
-        console.error('Error seeding projects to DB:', seedErr);
-      }
-    }
-  }
-
-  return res.rows.map((row) => ({
+  const rows = await getFeaturedCaseStudiesDb();
+  return rows.map((row) => ({
     id: row.id,
     slug: row.slug,
     title: row.title,
     tagline: row.tagline,
     category: row.category,
-    featured: row.featured,
-    role: row.role,
+    featured: true,
     year: row.year,
-    targetAudience: row.target_audience,
     overview: row.overview,
-    problem: row.problem,
-    solution: row.solution,
     gradient: row.gradient,
     accentColor: row.accent_color,
     previewImage: row.preview_image,
@@ -230,26 +289,9 @@ export async function getFeaturedProjectsDb(): Promise<any[]> {
     clientUrl: row.client_url,
     serverUrl: row.server_url,
     liveUrl: row.live_url,
-    techStack: Array.isArray(row.tech_stack)
-      ? row.tech_stack
-      : (typeof row.tech_stack === 'string' ? JSON.parse(row.tech_stack) : []),
-    architecture: (typeof row.architecture === 'string' ? JSON.parse(row.architecture) : row.architecture) || {
-      frontend: [],
-      backend: [],
-      database: [],
-      infrastructure: [],
-    },
-    systemBreakdown: (typeof row.system_breakdown === 'string' ? JSON.parse(row.system_breakdown) : row.system_breakdown) || [],
-    challenges: (typeof row.challenges === 'string' ? JSON.parse(row.challenges) : row.challenges) || [],
-    technicalDecisions: (typeof row.technical_decisions === 'string' ? JSON.parse(row.technical_decisions) : row.technical_decisions) || [],
-    keyFeatures: (typeof row.key_features === 'string' ? JSON.parse(row.key_features) : row.key_features) || [],
-    metrics: (typeof row.metrics === 'string' ? JSON.parse(row.metrics) : row.metrics) || [],
-    directoryTree: row.directory_tree,
-    codeSnippet: row.code_snippet,
-    backendArchitecture: row.backend_architecture,
-    whatILearned: Array.isArray(row.what_i_learned)
-      ? row.what_i_learned
-      : (typeof row.what_i_learned === 'string' ? JSON.parse(row.what_i_learned) : []),
+    techStack: row.tech_stack || [],
+    keyFeatures: row.key_features || [],
   }));
 }
+
 

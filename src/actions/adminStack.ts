@@ -2,7 +2,15 @@
 
 import { assertAdmin } from '@/lib/admin';
 import { executeSql } from '@/lib/postgres';
-import { getTechStackDb, upsertTechItemDb, deleteTechItemDb, DbTechCategoryRow, DbTechItemRow } from '@/lib/db/stack';
+import {
+  getTechStackDb,
+  upsertTechItemDb,
+  deleteTechItemDb,
+  upsertTechCategoryDb,
+  deleteTechCategoryDb,
+  DbTechCategoryRow,
+  DbTechItemRow,
+} from '@/lib/db/stack';
 import { revalidatePath } from 'next/cache';
 
 export async function fetchAdminStack(): Promise<{ success: boolean; categories?: DbTechCategoryRow[]; error?: string }> {
@@ -10,6 +18,96 @@ export async function fetchAdminStack(): Promise<{ success: boolean; categories?
     await assertAdmin();
     const categories = await getTechStackDb();
     return { success: true, categories };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function createAdminTechCategory(categoryData: {
+  id?: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  philosophy?: string;
+  badge?: string;
+}): Promise<{ success: boolean; category?: DbTechCategoryRow; error?: string }> {
+  try {
+    await assertAdmin();
+
+    const title = categoryData.title.trim();
+    if (!title) {
+      return { success: false, error: 'Category title is required.' };
+    }
+
+    const existingCats = await getTechStackDb();
+    const nextNumber = String(existingCats.length + 1).padStart(2, '0');
+    const id = categoryData.id || `cat-${Date.now()}`;
+
+    const saved = await upsertTechCategoryDb({
+      id,
+      number: nextNumber,
+      title,
+      subtitle: categoryData.subtitle?.trim() || '',
+      description: categoryData.description?.trim() || '',
+      philosophy: categoryData.philosophy?.trim() || '',
+      badge: categoryData.badge?.trim() || '',
+      sort_order: existingCats.length + 1,
+    });
+
+    revalidatePath('/tech-stack');
+    revalidatePath('/stack');
+    return { success: true, category: saved };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function updateAdminTechCategory(categoryData: {
+  id: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+  philosophy?: string;
+  badge?: string;
+  sort_order?: number;
+}): Promise<{ success: boolean; category?: DbTechCategoryRow; error?: string }> {
+  try {
+    await assertAdmin();
+
+    const title = categoryData.title.trim();
+    if (!title) {
+      return { success: false, error: 'Category title is required.' };
+    }
+
+    const saved = await upsertTechCategoryDb({
+      id: categoryData.id,
+      title,
+      subtitle: categoryData.subtitle?.trim() || '',
+      description: categoryData.description?.trim() || '',
+      philosophy: categoryData.philosophy?.trim() || '',
+      badge: categoryData.badge?.trim() || '',
+      sort_order: categoryData.sort_order ?? 0,
+    });
+
+    revalidatePath('/tech-stack');
+    revalidatePath('/stack');
+    return { success: true, category: saved };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function removeAdminTechCategory(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await assertAdmin();
+    const deleted = await deleteTechCategoryDb(id);
+    if (!deleted) {
+      return { success: false, error: 'Failed to delete tech category.' };
+    }
+
+    revalidatePath('/tech-stack');
+    revalidatePath('/stack');
+    return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
