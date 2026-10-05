@@ -1,18 +1,35 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
+interface Particle {
+  x: number;
+  y: number;
+  duration: number;
+  moveY: number;
+}
+
+interface Star {
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  opacity: number;
+  duration: number;
+}
+
 export default function Background() {
   const [mounted, setMounted] = useState(false);
-  const [particles, setParticles] = useState([]);
-  const [stars, setStars] = useState([]);
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const [stars, setStars] = useState<Star[]>([]);
 
   useEffect(() => {
     setMounted(true);
     
     // Generate static particle data
-    const p = [...Array(20)].map(() => ({
+    const p: Particle[] = [...Array(20)].map(() => ({
       x: Math.random() * 100,
       y: Math.random() * 100,
       duration: Math.random() * 10 + 10,
@@ -21,7 +38,7 @@ export default function Background() {
     setParticles(p);
 
     // Generate static star data
-    const s = [...Array(50)].map(() => ({
+    const s: Star[] = [...Array(50)].map(() => ({
       width: Math.random() * 2,
       height: Math.random() * 2,
       left: Math.random() * 100,

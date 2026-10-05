@@ -2,8 +2,10 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import GitHub from 'next-auth/providers/github';
+import bcrypt from 'bcryptjs';
 import { authConfig } from './auth.config';
 import { z } from 'zod';
+import { verifyAdminOtp } from '@/lib/adminOtp';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
@@ -18,22 +20,35 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     }),
     Credentials({
       async authorize(credentials) {
+        // 2FA OTP verification required to authorize admin session
         const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
+          .object({
+            email: z.string().email(),
+            otp: z.string().length(6),
+            challengeToken: z.string().min(10),
+          })
           .safeParse(credentials);
 
         if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
-          
-          // Strict credentials matching
-          if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            return { 
-              id: 'admin', 
-              email, 
-              name: 'Admin', 
-              role: 'admin',
-              isAdmin: true 
-            };
+          const { email, otp, challengeToken } = parsedCredentials.data;
+          const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+
+          if (!adminEmail) {
+            return null;
+          }
+
+          const inputEmail = email.trim().toLowerCase();
+          if (inputEmail === adminEmail) {
+            const result = verifyAdminOtp(challengeToken, otp, adminEmail);
+            if (result.valid) {
+              return { 
+                id: 'admin', 
+                email: adminEmail, 
+                name: 'Admin', 
+                role: 'admin',
+                isAdmin: true 
+              };
+            }
           }
         }
 
@@ -80,12 +95,15 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
         if (token.email) session.user.email = token.email as string;
         if (token.name) session.user.name = token.name as string;
 
-        // Double verification: Must be credentials provider AND admin email
+        // Double verification: Must be credentials provider AND admin email from env
+        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+        const userEmail = (token.email as string || '').trim().toLowerCase();
         const isVerifiedAdmin = 
+          Boolean(adminEmail) &&
           token.provider === 'credentials' && 
           token.role === 'admin' && 
           token.isAdmin === true &&
-          token.email === process.env.ADMIN_EMAIL;
+          userEmail === adminEmail;
 
         session.user.role = isVerifiedAdmin ? 'admin' : 'user';
         session.user.isAdmin = isVerifiedAdmin;

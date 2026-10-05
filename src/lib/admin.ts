@@ -2,8 +2,17 @@ import { auth } from '@/auth';
 
 export async function assertAdmin() {
   const session = await auth();
-  const isAdmin = session?.user?.role === 'admin' || session?.user?.id === 'admin';
-  if (!isAdmin) {
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const user = session?.user as any;
+  const userEmail = (user?.email as string || '').trim().toLowerCase();
+
+  const isVerifiedAdmin = 
+    Boolean(adminEmail) &&
+    user?.role === 'admin' && 
+    user?.isAdmin === true && 
+    userEmail === adminEmail;
+
+  if (!isVerifiedAdmin) {
     throw new Error('Unauthorized: Admin access required.');
   }
   return session;
@@ -12,7 +21,16 @@ export async function assertAdmin() {
 export async function isAdminSession() {
   try {
     const session = await auth();
-    return session?.user?.role === 'admin' || session?.user?.id === 'admin';
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const user = session?.user as any;
+    const userEmail = (user?.email as string || '').trim().toLowerCase();
+
+    return (
+      Boolean(adminEmail) &&
+      user?.role === 'admin' && 
+      user?.isAdmin === true && 
+      userEmail === adminEmail
+    );
   } catch {
     return false;
   }

@@ -1,16 +1,12 @@
+import React from 'react';
 import { Outfit, Geist_Mono, Newsreader, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
-import Navbar from "@/components/layout/Navbar";
-import FloatingControls from "@/components/shared/FloatingControls";
-import Chatbot from "@/components/ai/Chatbot";
-import CustomCursor from "@/components/shared/CustomCursor";
-import ClickBurst from "@/components/shared/ClickBurst";
-import Footer from "@/components/layout/Footer";
-import Preloader from "@/components/shared/Preloader";
+import { Toaster } from "sonner";
+import { getSettings } from "@/actions/settings";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -35,9 +31,6 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
-import { getSettings } from "@/actions/settings";
-import { getContactData } from "@/actions/contact";
-
 export async function generateMetadata() {
   const settings = await getSettings();
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
@@ -46,7 +39,7 @@ export async function generateMetadata() {
     metadataBase: new URL(baseUrl),
     title: "Rohan Mia",
     description: settings?.siteDescription || "Rohan Mia - Full Stack Developer & Creative Engineer.",
-    keywords: settings?.keywords?.split(',').map(k => k.trim()) || ["Portfolio", "Developer"],
+    keywords: settings?.keywords?.split(',').map((k: string) => k.trim()) || ["Portfolio", "Developer"],
 
     verification: {
       google: "yH9eJO5yYLc4wgh3jwtqR_QE28Vsc1SrST5teq331do",
@@ -74,14 +67,13 @@ export async function generateMetadata() {
   };
 }
 
-import { Toaster } from "sonner";
-
-export default async function RootLayout({ children }) {
-  const settings = await getSettings();
-  const contactData = await getContactData();
-
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
       >
@@ -119,17 +111,9 @@ export default async function RootLayout({ children }) {
         />
 
         <Providers>
-          <Preloader />
-          <ClickBurst />
           <Background />
-          <Navbar settings={settings} />
-          <FloatingControls />
-          <Chatbot />
           <Toaster theme="dark" richColors position="top-right" />
-          <main className="relative z-10 min-h-screen">
-            {children}
-            <Footer contactData={contactData} settings={settings} />
-          </main>
+          {children}
         </Providers>
       </body>
     </html>
