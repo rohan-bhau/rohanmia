@@ -86,3 +86,32 @@ export async function deleteEntryById(id: string, requesterEmail: string): Promi
   invalidateEntriesCache();
   return res.rowCount > 0;
 }
+
+/**
+ * Update an existing entry by ID
+ */
+export async function updateEntry(id: string, updates: {
+  message?: string;
+  theme?: string;
+  avatar?: string;
+  name?: string;
+}): Promise<DbGuestbookRow | null> {
+  await ensureGuestbookTable();
+  const setClauses: string[] = [];
+  if (updates.message !== undefined) setClauses.push(`message = ${escapeSqlString(updates.message.trim())}`);
+  if (updates.theme !== undefined) setClauses.push(`theme = ${escapeSqlString(updates.theme)}`);
+  if (updates.avatar !== undefined) setClauses.push(`avatar = ${escapeSqlString(updates.avatar.trim())}`);
+  if (updates.name !== undefined) setClauses.push(`name = ${escapeSqlString(updates.name.trim())}`);
+  
+  if (setClauses.length === 0) return null;
+
+  const query = `
+    UPDATE guestbook_entries
+    SET ${setClauses.join(', ')}
+    WHERE id = ${escapeSqlString(id)}
+    RETURNING *;
+  `;
+  const res = await executeSql<DbGuestbookRow>(query);
+  invalidateEntriesCache();
+  return res.rows[0] || null;
+}

@@ -62,3 +62,14 @@ export async function cancelBookingAdmin(id: string, reason: string): Promise<{ 
     return { success: false, error: err.message };
   }
 }
+
+export async function deleteBookingAdmin(id: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    await assertAdmin();
+    await executeSql(`DELETE FROM meeting_bookings WHERE id = ${escapeSqlString(id)};`);
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+

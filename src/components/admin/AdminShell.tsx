@@ -28,6 +28,7 @@ import { ToastProvider } from './ui/Toast';
 import { AdminModeProvider, useAdminMode } from './AdminModeContext';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import ColorSwitcher from '@/components/theme/ColorSwitcher';
+import NotificationDropdown from './NotificationDropdown';
 import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface AdminShellProps {
@@ -269,16 +270,7 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
 
         <div className="flex items-center gap-2">
           <ColorSwitcher variant="dropdown" />
-          <button
-            className="p-2 rounded-xl bg-white/[0.03] text-neutral-400 hover:text-white relative cursor-pointer"
-            title="Notifications"
-          >
-            <Bell size={16} />
-            <span 
-              className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" 
-              style={{ backgroundColor: currentTheme.primary }} 
-            />
-          </button>
+          <NotificationDropdown basePath={basePath} />
           <button
             onClick={handleSignOut}
             className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400"
@@ -314,46 +306,50 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
             </div>
           </div>
 
-          {/* Middle: Mode Switcher (Surface Canvas vs Studio Engine) */}
-          <div className="flex items-center p-1 rounded-2xl bg-black/40 border border-white/[0.08] shadow-inner">
-            <button
-              type="button"
-              onClick={() => setMode('preview')}
-              style={mode === 'preview' ? {
-                backgroundColor: `${currentTheme.primary}20`,
-                borderColor: `${currentTheme.primary}45`,
-                color: '#ffffff'
-              } : undefined}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
-                mode === 'preview'
-                  ? 'font-medium shadow-xs'
-                  : 'border-transparent text-neutral-400 hover:text-white'
-              }`}
-            >
-              <Eye size={13} style={mode === 'preview' ? { color: currentTheme.primary } : undefined} />
-              <span className="hidden sm:inline">Surface Canvas</span>
-              <span className="sm:hidden">Canvas</span>
-            </button>
+          {/* Middle: Mode Switcher (Surface Canvas vs Studio Engine) - Hidden on Gallery, Guestbook, Contact */}
+          {(!pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact')) ? (
+            <div className="flex items-center p-1 rounded-2xl bg-black/40 border border-white/[0.08] shadow-inner">
+              <button
+                type="button"
+                onClick={() => setMode('preview')}
+                style={mode === 'preview' ? {
+                  backgroundColor: `${currentTheme.primary}20`,
+                  borderColor: `${currentTheme.primary}45`,
+                  color: '#ffffff'
+                } : undefined}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
+                  mode === 'preview'
+                    ? 'font-medium shadow-xs'
+                    : 'border-transparent text-neutral-400 hover:text-white'
+                }`}
+              >
+                <Eye size={13} style={mode === 'preview' ? { color: currentTheme.primary } : undefined} />
+                <span className="hidden sm:inline">Surface Canvas</span>
+                <span className="sm:hidden">Canvas</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={() => setMode('studio')}
-              style={mode === 'studio' ? {
-                backgroundColor: `${currentTheme.primary}20`,
-                borderColor: `${currentTheme.primary}45`,
-                color: '#ffffff'
-              } : undefined}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
-                mode === 'studio'
-                  ? 'font-medium shadow-xs'
-                  : 'border-transparent text-neutral-400 hover:text-white'
-              }`}
-            >
-              <SlidersHorizontal size={13} style={mode === 'studio' ? { color: currentTheme.primary } : undefined} />
-              <span className="hidden sm:inline">Studio Engine</span>
-              <span className="sm:hidden">Engine</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={() => setMode('studio')}
+                style={mode === 'studio' ? {
+                  backgroundColor: `${currentTheme.primary}20`,
+                  borderColor: `${currentTheme.primary}45`,
+                  color: '#ffffff'
+                } : undefined}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
+                  mode === 'studio'
+                    ? 'font-medium shadow-xs'
+                    : 'border-transparent text-neutral-400 hover:text-white'
+                }`}
+              >
+                <SlidersHorizontal size={13} style={mode === 'studio' ? { color: currentTheme.primary } : undefined} />
+                <span className="hidden sm:inline">Studio Engine</span>
+                <span className="sm:hidden">Engine</span>
+              </button>
+            </div>
+          ) : (
+            <div className="hidden sm:block" />
+          )}
 
           {/* Right: Theme Switcher + Quick Live Site + Notification Bell */}
           <div className="flex items-center gap-2.5 shrink-0">
@@ -372,19 +368,8 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
               <ExternalLink size={11} className="text-neutral-400" />
             </Link>
 
-            {/* Notification Bell Icon */}
-            <button
-              type="button"
-              className="relative p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] text-neutral-400 hover:text-white transition-all cursor-pointer group"
-              title="Notifications & System Activity"
-              onClick={() => {}}
-            >
-              <Bell size={15} className="group-hover:rotate-12 transition-transform duration-200" />
-              <span 
-                className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full animate-pulse" 
-                style={{ backgroundColor: currentTheme.primary }} 
-              />
-            </button>
+            {/* Notification Bell Dropdown */}
+            <NotificationDropdown basePath={basePath} />
           </div>
         </header>
 

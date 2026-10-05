@@ -81,3 +81,56 @@ export async function deleteGalleryPhotoDb(id: string): Promise<boolean> {
   );
   return res.rows.length > 0;
 }
+
+export async function updateGalleryPhotosOrderDb(orderedIds: string[]): Promise<void> {
+  await ensurePortfolioTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    const id = orderedIds[i];
+    await executeSql(
+      `UPDATE gallery_photos SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`
+    );
+  }
+}
+
+export interface DbGalleryCategoryRow {
+  id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export async function getGalleryCategoriesDb(): Promise<string[]> {
+  await ensurePortfolioTables();
+  const res = await executeSql<DbGalleryCategoryRow>(
+    `SELECT * FROM gallery_categories ORDER BY sort_order ASC, created_at ASC;`
+  );
+  if (res.rows.length === 0) {
+    // Seed default categories
+    const defaults = ['Personal', 'Travel', 'Work', 'Moments'];
+    for (let i = 0; i < defaults.length; i++) {
+      const name = defaults[i];
+      const id = `cat_${name.toLowerCase()}`;
+      await executeSql(`
+        INSERT INTO gallery_categories (id, name, sort_order) 
+        VALUES (${escapeSqlString(id)}, ${escapeSqlString(name)}, ${i + 1})
+        ON CONFLICT (name) DO NOTHING;
+      `);
+    }
+    return defaults;
+  }
+  return res.rows.map(r => r.name);
+}
+
+export async function insertGalleryCategoryDb(name: string): Promise<string> {
+  await ensurePortfolioTables();
+  const cleanName = name.trim();
+  const id = `cat_${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now().toString(36)}`;
+  await executeSql(`
+    INSERT INTO gallery_categories (id, name, sort_order) 
+    VALUES (${escapeSqlString(id)}, ${escapeSqlString(cleanName)}, 99)
+    ON CONFLICT (name) DO NOTHING;
+  `);
+  return cleanName;
+}
+
+

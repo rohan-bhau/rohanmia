@@ -270,7 +270,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 onSave={(val) => handleSaveField('resume_cta_text', val)}
               >
                 <a
-                  href={data.resume_url || "/api/download"}
+                  href={data.resume_url || "https://drive.google.com/file/d/1d1K3fJnkLDyc5ExLN8nYC_09e0e5ZCfi/view?usp=sharing"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-3.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/15 text-xs sm:text-sm font-mono text-muted-foreground hover:text-foreground flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap"

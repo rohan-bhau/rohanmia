@@ -54,6 +54,20 @@ export async function saveAdminSettings(data: Partial<DbSiteSettingsRow>): Promi
   try {
     await assertAdmin();
     const updated = await updateSiteSettingsDb(data);
+
+    if (data.resume_url) {
+      const { executeSql, escapeSqlString } = await import('@/lib/postgres');
+      await executeSql(`
+        UPDATE hero_content 
+        SET resume_url = ${escapeSqlString(data.resume_url.trim())}, updated_at = CURRENT_TIMESTAMP 
+        WHERE id = 'primary';
+      `);
+    }
+
+    const { revalidatePath } = await import('next/cache');
+    revalidatePath('/');
+    revalidatePath('/about');
+    revalidatePath('/contact');
     return { success: true, settings: updated };
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to save settings' };

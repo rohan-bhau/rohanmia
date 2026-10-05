@@ -109,7 +109,7 @@ const DEFAULT_FALLBACK_ITEMS: GalleryItem[] = [
 export function formatGalleryImages(rawImages: any[]): GalleryItem[] {
   if (Array.isArray(rawImages) && rawImages.length > 0) {
     return rawImages.map((img: any) => {
-      const cat = normalizeCategory(img.category, img.title);
+      const cat = img.category || 'Moments';
       const autoPos = cat === 'Personal' || cat === 'Travel' ? 'top' : 'center';
       return {
         _id: img._id?.toString() || img.id,
@@ -117,8 +117,8 @@ export function formatGalleryImages(rawImages: any[]): GalleryItem[] {
         src: img.src,
         title: img.title || 'Untitled Moment',
         category: cat,
-        caption: img.caption || 'Captured during travels, engineering workflows, and personal focus.',
-        date: img.createdAt ? new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '2026',
+        caption: img.caption ? img.caption.trim() : '',
+        date: img.date || (img.createdAt ? new Date(img.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '2026'),
         position: img.position || autoPos
       };
     });
@@ -143,10 +143,14 @@ export default function GalleryClient({ initialImages }: GalleryClientProps) {
     setIsMounted(true);
   }, []);
 
-  // Categories list: Fixed clean pills (All + Single Categories)
+  // Categories list: Core categories + any custom categories from database
   const categories = useMemo(() => {
-    return Array.from(GALLERY_CATEGORIES);
-  }, []);
+    const set = new Set<string>(['All', 'Personal', 'Travel', 'Work', 'Moments']);
+    items.forEach((i) => {
+      if (i.category) set.add(i.category);
+    });
+    return Array.from(set);
+  }, [items]);
 
   // Filter items by selected category
   const filteredItems = useMemo(() => {

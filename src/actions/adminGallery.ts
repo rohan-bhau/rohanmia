@@ -1,7 +1,14 @@
 'use server';
 
 import { assertAdmin } from '@/lib/admin';
-import { getGalleryPhotosDb, insertGalleryPhotoDb, updateGalleryPhotoDb, deleteGalleryPhotoDb, DbGalleryPhotoRow } from '@/lib/db/gallery';
+import { 
+  getGalleryPhotosDb, 
+  insertGalleryPhotoDb, 
+  updateGalleryPhotoDb, 
+  deleteGalleryPhotoDb, 
+  updateGalleryPhotosOrderDb,
+  DbGalleryPhotoRow 
+} from '@/lib/db/gallery';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -72,3 +79,46 @@ export async function removeAdminGalleryPhoto(id: string): Promise<{ success: bo
     return { success: false, error: err.message };
   }
 }
+
+export async function reorderAdminGalleryPhotos(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    await assertAdmin();
+    if (!orderedIds || orderedIds.length === 0) return { success: true };
+    await updateGalleryPhotosOrderDb(orderedIds);
+
+    revalidatePath('/gallery');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function fetchAdminGalleryCategories(): Promise<{ success: boolean; categories: string[]; error?: string }> {
+  try {
+    const { getGalleryCategoriesDb } = await import('@/lib/db/gallery');
+    const categories = await getGalleryCategoriesDb();
+    return { success: true, categories };
+  } catch (err: any) {
+    return { success: false, categories: ['Personal', 'Travel', 'Work', 'Moments'], error: err.message };
+  }
+}
+
+export async function createAdminGalleryCategory(name: string): Promise<{ success: boolean; category?: string; error?: string }> {
+  try {
+    await assertAdmin();
+    const cleanName = name.trim();
+    if (!cleanName) return { success: false, error: 'Category name cannot be empty.' };
+
+    const { insertGalleryCategoryDb } = await import('@/lib/db/gallery');
+    const cat = await insertGalleryCategoryDb(cleanName);
+
+    revalidatePath('/gallery');
+    revalidatePath('/');
+    return { success: true, category: cat };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+

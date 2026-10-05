@@ -20,9 +20,11 @@ export function ensureGuestbookTable(): Promise<void> {
           provider VARCHAR(32) DEFAULT 'google',
           theme VARCHAR(32) NOT NULL DEFAULT 'violet',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          likes INT DEFAULT 0
+          likes INT DEFAULT 0,
+          is_read BOOLEAN DEFAULT false
         );
       `);
+      await executeSql(`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`);
     })().catch((err) => {
       guestbookTableReady = null;
       throw err;
@@ -45,6 +47,7 @@ export function ensureContactAndBookingTables(): Promise<void> {
           topic VARCHAR(100) NOT NULL,
           message TEXT NOT NULL,
           status VARCHAR(32) DEFAULT 'unread',
+          is_read BOOLEAN DEFAULT false,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
@@ -63,9 +66,12 @@ export function ensureContactAndBookingTables(): Promise<void> {
           status VARCHAR(32) DEFAULT 'confirmed',
           meet_link TEXT,
           cancellation_reason TEXT,
+          is_read BOOLEAN DEFAULT false,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
+      await executeSql(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`);
+      await executeSql(`ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`);
     })().catch((err) => {
       contactBookingTablesReady = null;
       throw err;
@@ -190,6 +196,12 @@ export function ensurePortfolioTables(): Promise<void> {
           sort_order INT DEFAULT 0,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS gallery_categories (
+          id VARCHAR(64) PRIMARY KEY,
+          name VARCHAR(64) UNIQUE NOT NULL,
+          sort_order INT DEFAULT 0,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`,
         `CREATE TABLE IF NOT EXISTS site_settings (
           id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
