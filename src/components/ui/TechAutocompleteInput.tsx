@@ -144,7 +144,7 @@ export default function TechAutocompleteInput({
 
       {/* Autocomplete Dropdown */}
       {isOpen && filteredSuggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-[#0e1017]/95 backdrop-blur-xl border border-white/[0.12] shadow-2xl shadow-black/80 overflow-hidden max-h-64 overflow-y-auto">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-[70] rounded-2xl bg-[#0e1017]/95 backdrop-blur-xl border border-white/[0.12] shadow-2xl shadow-black/80 max-h-60 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="px-3 py-1.5 border-b border-white/[0.06] flex items-center justify-between text-[10px] font-mono text-neutral-400 bg-white/[0.02]">
             <span className="flex items-center gap-1.5">
               <Sparkles size={11} className="text-amber-400" />

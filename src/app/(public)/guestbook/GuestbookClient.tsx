@@ -246,8 +246,8 @@ export default function GuestbookClient({ initialEntries, initialOauthConfigured
   const devIdentityMode = !oauthConfigured.google && !oauthConfigured.github;
 
   // Optional custom dev identity when testing in dev mode
-  const [customName, setCustomName] = useState('Rohan Mia');
-  const [customEmail, setCustomEmail] = useState('rohanmia.org@gmail.com');
+  const [customName, setCustomName] = useState('Guest Contributor');
+  const [customEmail, setCustomEmail] = useState('visitor@community.dev');
   const [showDevCustomizer, setShowDevCustomizer] = useState(false);
 
   // Restore saved dev identity from localStorage (only when OAuth isn't configured)
@@ -329,8 +329,8 @@ export default function GuestbookClient({ initialEntries, initialOauthConfigured
     // immediately log in so the user can test the compose card, DB saving, and email confirmation right away!
     const isGh = provider === 'github';
     const activeDevUser = {
-      name: customName.trim() || (isGh ? 'GitHub Developer' : 'Rohan Mia'),
-      email: customEmail.trim() || 'rohanmia.org@gmail.com',
+      name: customName.trim() || (isGh ? 'GitHub Contributor' : 'Google Contributor'),
+      email: customEmail.trim() || (isGh ? 'visitor@github.local' : 'visitor@google.local'),
       avatar: isGh 
         ? 'https://avatars.githubusercontent.com/u/14985020?v=4' 
         : 'https://avatars.githubusercontent.com/u/45145892?v=4',

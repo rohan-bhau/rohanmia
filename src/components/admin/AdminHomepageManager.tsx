@@ -104,7 +104,7 @@ export default function AdminHomepageManager({
         /* ========================================================
             MODE 2: STUDIO ENGINE (Comprehensive Editing Dashboard)
            ======================================================== */
-        <div className="px-4 sm:px-8 max-w-6xl mx-auto space-y-10 animate-in fade-in duration-200">
+        <div className="px-4 sm:px-8 max-w-6xl mx-auto space-y-8 sm:space-y-10 pb-28 md:pb-12 animate-in fade-in duration-200">
           
           {/* 1. HERO SECTION EDITOR */}
           <form onSubmit={handleSaveHeroForm} className="p-6 sm:p-8 rounded-3xl bg-[#0d0f14]/90 border border-white/[0.08] backdrop-blur-xl shadow-2xl space-y-6">
@@ -160,13 +160,16 @@ export default function AdminHomepageManager({
                     <span>Upload & Square Crop</span>
                   </button>
                 </div>
-                <input
-                  type="text"
-                  value={heroForm.profile_image}
-                  onChange={(e) => setHeroForm({ ...heroForm, profile_image: e.target.value })}
-                  placeholder="https://res.cloudinary.com/..."
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/[0.08] text-xs font-mono text-neutral-300 focus:outline-none focus:border-white/30"
-                />
+                {heroForm.profile_image ? (
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-black/60 border border-white/[0.08] text-[11px] font-mono text-neutral-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                    <span className="truncate flex-1">{heroForm.profile_image}</span>
+                  </div>
+                ) : (
+                  <p className="text-[11px] font-mono text-neutral-500">
+                    No portrait uploaded yet. Click Upload &amp; Square Crop to add.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -218,10 +221,10 @@ export default function AdminHomepageManager({
             <div>
               <label className="block text-xs font-mono text-neutral-400 mb-1.5">Bio Paragraph</label>
               <textarea
-                rows={3}
+                rows={4}
                 value={heroForm.bio}
                 onChange={(e) => setHeroForm({ ...heroForm, bio: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] text-sm text-white focus:outline-none focus:border-white/30 leading-relaxed"
+                className="w-full min-h-[120px] px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/[0.1] text-sm text-white focus:outline-none focus:border-white/30 leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               />
             </div>
 
@@ -337,13 +340,13 @@ export default function AdminHomepageManager({
               <div>
                 <label className="block text-xs font-mono text-neutral-400 mb-1.5">Description</label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={bentoForm.card1.description}
                   onChange={(e) => setBentoForm({
                     ...bentoForm,
                     card1: { ...bentoForm.card1, description: e.target.value }
                   })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                  className="w-full min-h-[80px] px-3 py-2 rounded-xl bg-black/60 border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 />
               </div>
 
@@ -448,13 +451,13 @@ export default function AdminHomepageManager({
               <div>
                 <label className="block text-xs font-mono text-neutral-400 mb-1.5">Description</label>
                 <textarea
-                  rows={2}
+                  rows={3}
                   value={bentoForm.card2.description}
                   onChange={(e) => setBentoForm({
                     ...bentoForm,
                     card2: { ...bentoForm.card2, description: e.target.value }
                   })}
-                  className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                  className="w-full min-h-[80px] px-3 py-2 rounded-xl bg-black/60 border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 />
               </div>
 

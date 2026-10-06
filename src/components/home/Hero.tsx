@@ -46,6 +46,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [canType, setCanType] = useState(isAdmin);
 
   // Sync if initialData changes
   useEffect(() => {
@@ -54,30 +55,56 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
     }
   }, [initialData]);
 
-  // Roles typewriter effect
-  const roles = data.rotating_roles && data.rotating_roles.length > 0 ? data.rotating_roles : [];
+  // Wait for preloader entrance to finish before typing on public homepage
+  useEffect(() => {
+    if (isAdmin) {
+      setCanType(true);
+      return;
+    }
+    const handleDone = () => setCanType(true);
+    window.addEventListener('bhau-preloader-done', handleDone);
+    // Fallback: start typing after 2.8s entrance if event already fired
+    const fallback = setTimeout(() => setCanType(true), 2800);
+    return () => {
+      window.removeEventListener('bhau-preloader-done', handleDone);
+      clearTimeout(fallback);
+    };
+  }, [isAdmin]);
+
+  // Roles typewriter effect strictly from PostgreSQL database
+  const roles = React.useMemo(() => {
+    if (data?.rotating_roles && Array.isArray(data.rotating_roles)) {
+      return data.rotating_roles.filter((r) => typeof r === 'string' && r.trim().length > 0);
+    }
+    return [];
+  }, [data?.rotating_roles]);
 
   useEffect(() => {
-    if (roles.length === 0) return;
+    if (!canType || roles.length === 0) return;
     let timeout: NodeJS.Timeout;
     const current = roles[roleIndex % roles.length];
+    if (!current) return;
 
     if (!isDeleting && displayText === current) {
-      timeout = setTimeout(() => setIsDeleting(true), 2200);
+      timeout = setTimeout(() => setIsDeleting(true), 2000);
     } else if (isDeleting && displayText === '') {
       timeout = setTimeout(() => {
         setIsDeleting(false);
         setRoleIndex((prev) => (prev + 1) % roles.length);
-      }, 400);
+      }, 350);
     } else {
-      const speed = isDeleting ? 28 : 60;
+      const speed = isDeleting ? 30 : 60;
       timeout = setTimeout(() => {
-        setDisplayText(current.substring(0, isDeleting ? displayText.length - 1 : displayText.length + 1));
+        setDisplayText(
+          isDeleting
+            ? current.substring(0, displayText.length - 1)
+            : current.substring(0, displayText.length + 1)
+        );
       }, speed);
     }
 
     return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, roleIndex, roles]);
+  }, [canType, displayText, isDeleting, roleIndex, roles]);
 
   const handleSaveField = async (field: keyof HeroData, value: any) => {
     const updated = { ...data, [field]: value };
@@ -177,7 +204,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 <EditableElement
                   isAdmin={isAdmin}
                   label="Rotating Roles"
-                  value={data.rotating_roles.join(', ')}
+                  value={Array.isArray(data.rotating_roles) ? data.rotating_roles.join(', ') : ''}
                   type="tags"
                   onSave={(val) => {
                     const rolesArray = val.split(',').map(s => s.trim()).filter(Boolean);

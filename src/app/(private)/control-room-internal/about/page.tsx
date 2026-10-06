@@ -844,45 +844,45 @@ export default function AdminAboutPage() {
         title="Edit Biography Narrative"
         subtitle="Narrative bio paragraphs and headings"
       >
-        <form onSubmit={handleSaveBio} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <form onSubmit={handleSaveBio} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <div className="space-y-1">
-              <label className="text-xs font-mono text-neutral-400">Eyebrow</label>
+              <label className="text-[11px] font-mono text-neutral-400">Eyebrow</label>
               <input
                 type="text"
                 value={bioForm.eyebrow}
                 onChange={(e) => setBioForm({ ...bioForm, eyebrow: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-mono text-neutral-400">Title Prefix</label>
+              <label className="text-[11px] font-mono text-neutral-400">Title Prefix</label>
               <input
                 type="text"
                 value={bioForm.heading_title}
                 onChange={(e) => setBioForm({ ...bioForm, heading_title: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-mono text-neutral-400">Highlight</label>
+              <label className="text-[11px] font-mono text-neutral-400">Highlight</label>
               <input
                 type="text"
                 value={bioForm.heading_highlight}
                 onChange={(e) => setBioForm({ ...bioForm, heading_highlight: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                className="w-full px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <label className="text-xs font-mono text-neutral-400 block">
+          <div className="space-y-2">
+            <label className="text-[11px] font-mono text-neutral-400 block">
               Bio Story Paragraphs (1 to 3)
             </label>
             {bioForm.bio_paragraphs.map((p, idx) => (
               <textarea
                 key={idx}
-                rows={3}
+                rows={2}
                 value={p}
                 placeholder={`Paragraph ${idx + 1}...`}
                 onChange={(e) => {
@@ -890,7 +890,7 @@ export default function AdminAboutPage() {
                   newP[idx] = e.target.value;
                   setBioForm({ ...bioForm, bio_paragraphs: newP });
                 }}
-                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs sm:text-sm text-neutral-200 focus:outline-none focus:border-white/30"
+                className="w-full min-h-[58px] sm:min-h-[75px] px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-neutral-200 focus:outline-none focus:border-white/30 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden leading-relaxed"
               />
             ))}
           </div>
@@ -899,14 +899,14 @@ export default function AdminAboutPage() {
             <button
               type="button"
               onClick={() => setEditBioOpen(false)}
-              className="px-4 py-2 rounded-xl text-xs text-neutral-400 hover:text-white cursor-pointer"
+              className="px-3.5 py-2 rounded-xl text-xs text-neutral-400 hover:text-white cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
             >
               {isPending && <Loader2 size={13} className="animate-spin" />}
               <span>Save Biography</span>
@@ -1026,7 +1026,7 @@ export default function AdminAboutPage() {
                 value={editingExperience.description || ''}
                 onChange={(e) => setEditingExperience({ ...editingExperience, description: e.target.value })}
                 placeholder="Overview of your responsibilities and engineering achievements..."
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                className="w-full min-h-[85px] px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               />
             </div>
 
@@ -1037,7 +1037,7 @@ export default function AdminAboutPage() {
                 value={Array.isArray(editingExperience.achievements) ? editingExperience.achievements.join('\n') : editingExperience.achievements || ''}
                 onChange={(e) => setEditingExperience({ ...editingExperience, achievements: e.target.value })}
                 placeholder="Lead System Architecture: Scaled Next.js 16 platform&#10;Type Safety: Enforced end-to-end Zod schemas"
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30"
+                className="w-full min-h-[100px] px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               />
             </div>
 
@@ -1301,17 +1301,12 @@ export default function AdminAboutPage() {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-mono text-neutral-400">Cloudinary Image URL *</label>
-              <input
-                type="text"
-                required
-                value={editingCarouselItem.image || ''}
-                onChange={(e) => setEditingCarouselItem({ ...editingCarouselItem, image: e.target.value })}
-                placeholder="https://res.cloudinary.com/..."
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs text-white focus:outline-none focus:border-white/30 font-mono"
-              />
-            </div>
+            {editingCarouselItem.image ? (
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-[11px] font-mono text-neutral-400">
+                <Check size={13} className="text-emerald-400 shrink-0" />
+                <span className="truncate flex-1">{editingCarouselItem.image}</span>
+              </div>
+            ) : null}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">

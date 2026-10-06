@@ -8,7 +8,13 @@ import ProjectCard from '@/components/projects/ProjectCard';
 
 const CATEGORIES = ['All', 'Full Stack', 'Frontend', 'Backend', 'App'] as const;
 
-export default function ProjectsClientView({ initialProjects = [] }: { initialProjects: CaseStudy[] }) {
+export default function ProjectsClientView({ 
+  initialProjects = [],
+  compact = false
+}: { 
+  initialProjects: CaseStudy[];
+  compact?: boolean;
+}) {
   const { currentTheme } = useThemeAccent();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -39,7 +45,7 @@ export default function ProjectsClientView({ initialProjects = [] }: { initialPr
   }, [filteredProjects]);
 
   return (
-    <div className="pt-32 md:pt-36 pb-32 px-4 sm:px-6 min-h-screen relative overflow-hidden">
+    <div className={`${compact ? 'pt-2 sm:pt-4 pb-20' : 'pt-32 md:pt-36 pb-32'} px-4 sm:px-6 min-h-screen relative overflow-hidden`}>
       {/* Subtle Horizon Ambient Glow */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
         <div 
@@ -60,7 +66,7 @@ export default function ProjectsClientView({ initialProjects = [] }: { initialPr
       <div className="container mx-auto max-w-6xl relative z-10">
         
         {/* Page Header */}
-        <div className="max-w-3xl space-y-3 mb-12 sm:mb-14">
+        <div className={`max-w-3xl space-y-3 ${compact ? 'mb-6 sm:mb-8' : 'mb-12 sm:mb-14'}`}>
           <span className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-muted-foreground/80 block">
             SELECTED WORKS &amp; ARCHITECTURE
           </span>
@@ -83,7 +89,7 @@ export default function ProjectsClientView({ initialProjects = [] }: { initialPr
         </div>
 
         {/* Search & Category Filter Controls */}
-        <div className="flex flex-col md:flex-row gap-4 mb-16 items-stretch md:items-center justify-between pb-6 border-b border-white/[0.06]">
+        <div className={`flex flex-col md:flex-row gap-4 ${compact ? 'mb-8 sm:mb-10' : 'mb-16'} items-stretch md:items-center justify-between pb-6 border-b border-white/[0.06]`}>
           
           {/* Search Input Bar */}
           <div className="relative flex-1 max-w-md group">

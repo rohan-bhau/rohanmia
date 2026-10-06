@@ -47,7 +47,7 @@ export default function ConfirmModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overscroll-contain">
+      <div className="fixed inset-x-0 top-16 bottom-[88px] md:inset-0 md:left-64 md:top-16 md:bottom-0 z-50 flex items-center justify-center p-4 sm:p-6 overscroll-contain">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -62,7 +62,7 @@ export default function ConfirmModal({
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           onClick={(e) => e.stopPropagation()}
           onWheel={(e) => e.stopPropagation()}
-          className="relative w-full max-w-md rounded-2xl bg-[#0e1116] border border-white/[0.08] p-6 shadow-2xl z-10 space-y-4 max-h-[85vh] overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="relative w-full max-w-md rounded-2xl bg-[#0e1116] border border-white/[0.08] p-6 shadow-2xl z-10 space-y-4 max-h-full md:max-h-[85vh] overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           <div className="flex items-start gap-4">
             <div className={`p-3 rounded-xl ${isDanger ? 'bg-rose-500/10 text-rose-400' : 'bg-amber-500/10 text-amber-400'}`}>

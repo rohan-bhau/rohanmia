@@ -223,7 +223,7 @@ export default function Navbar({ settings }: { settings?: any }) {
               <motion.div
                 onMouseLeave={handleDesktopMouseLeave}
                 animate={{
-                  width: desktopMoreHovered ? 510 : 360,
+                  width: desktopMoreHovered ? 540 : 456,
                 }}
                 transition={{ type: 'spring', stiffness: 360, damping: 30 }}
                 className="absolute top-0 left-1/2 -translate-x-1/2 rounded-[24px] bg-[#0c0e13]/95 border border-white/[0.09] backdrop-blur-2xl shadow-2xl overflow-hidden z-50 flex flex-col"
@@ -237,6 +237,7 @@ export default function Navbar({ settings }: { settings?: any }) {
                 <div className="flex items-center justify-center gap-1 px-3 py-1.5 w-full">
                   {PRIMARY_LINKS.map((link) => {
                     const active = isLinkActive(link.href);
+                    const Icon = link.icon;
                     return (
                       <Link
                         key={link.href}
@@ -246,7 +247,7 @@ export default function Navbar({ settings }: { settings?: any }) {
                           setDesktopMoreHovered(false);
                         }}
                         onClick={() => setDesktopMoreHovered(false)}
-                        className={`relative px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
+                        className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                           active
                             ? 'text-white font-semibold'
                             : 'text-muted-foreground hover:text-foreground'
@@ -263,6 +264,13 @@ export default function Navbar({ settings }: { settings?: any }) {
                             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                           />
                         )}
+                        <Icon 
+                          size={13.5} 
+                          className={`relative z-10 transition-colors ${
+                            active ? 'text-white' : 'text-neutral-400 group-hover:text-white'
+                          }`}
+                          style={active ? { color: currentTheme.primary } : undefined}
+                        />
                         <span className="relative z-10">{link.name}</span>
                       </Link>
                     );
@@ -272,7 +280,7 @@ export default function Navbar({ settings }: { settings?: any }) {
                   <button
                     onMouseEnter={handleDesktopMouseEnter}
                     onClick={() => setDesktopMoreHovered(!desktopMoreHovered)}
-                    className={`relative flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                       desktopMoreHovered || isMoreActive
                         ? 'text-white font-semibold'
                         : 'text-muted-foreground hover:text-foreground'
@@ -290,6 +298,13 @@ export default function Navbar({ settings }: { settings?: any }) {
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
+                    <LayoutGrid 
+                      size={13.5} 
+                      className={`relative z-10 transition-colors ${
+                        desktopMoreHovered || isMoreActive ? 'text-white' : 'text-neutral-400'
+                      }`}
+                      style={(desktopMoreHovered || isMoreActive) ? { color: currentTheme.primary } : undefined}
+                    />
                     <span className="relative z-10">More</span>
                     <ChevronDown 
                       size={12} 

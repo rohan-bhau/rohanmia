@@ -3,7 +3,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ArrowUpRight, ExternalLink, Eye, X, Pencil } from 'lucide-react';
+import { 
+  ArrowRight, 
+  ArrowUpRight, 
+  ExternalLink, 
+  Eye, 
+  X, 
+  Pencil, 
+  GripVertical, 
+  ChevronUp, 
+  ChevronDown, 
+  Edit3, 
+  Trash2, 
+  Plus 
+} from 'lucide-react';
 import { FaGithub } from 'react-icons/fa6';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { FEATURED_CASE_STUDIES, CaseStudy } from '@/data/projects';
@@ -63,16 +76,18 @@ function FeaturedProjectCard({
   project,
   index,
   isActive,
+  onCardClick,
 }: {
   project: CaseStudy;
   index: number;
   isActive: boolean;
+  onCardClick?: () => void;
 }) {
-  const cardRef = useRef<HTMLAnchorElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHoveringImage, setIsHoveringImage] = useState(false);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     setMousePos({
@@ -81,7 +96,7 @@ function FeaturedProjectCard({
     });
   };
 
-  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       setMousePos({
@@ -97,9 +112,9 @@ function FeaturedProjectCard({
   };
 
   return (
-    <Link
+    <div
       ref={cardRef}
-      href={`/projects/${project.slug}`}
+      onClick={onCardClick}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -166,17 +181,18 @@ function FeaturedProjectCard({
                     href={`#featured-circle-${project.id}`}
                     startOffset="0%"
                   >
-                    DISCOVER • OPEN • EXPLORE •
+                    {onCardClick ? 'EDIT • OPEN • STUDIO •' : 'DISCOVER • OPEN • EXPLORE •'}
                   </textPath>
                 </text>
               </svg>
 
-              {/* 3. Solid Pure White Center Circle (Upright Eye Core) */}
+              {/* 3. Solid Pure White Center Circle */}
               <div className="relative z-10 size-9 sm:size-10 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center justify-center border border-black/[0.08]">
-                <Eye
-                  className="size-4.5 sm:size-5 text-black"
-                  strokeWidth={2.4}
-                />
+                {onCardClick ? (
+                  <Edit3 className="size-4.5 sm:size-5 text-black" strokeWidth={2.4} />
+                ) : (
+                  <Eye className="size-4.5 sm:size-5 text-black" strokeWidth={2.4} />
+                )}
               </div>
             </div>
           </div>
@@ -218,16 +234,28 @@ function FeaturedProjectCard({
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
 export default function FeaturedCaseStudies({ 
   initialProjects, 
-  isAdmin = false 
+  isAdmin = false,
+  compact = false,
+  onEdit,
+  onDelete,
+  onMove,
+  onDrop,
+  onAdd,
 }: { 
   initialProjects?: CaseStudy[]; 
   isAdmin?: boolean; 
+  compact?: boolean;
+  onEdit?: (project: CaseStudy) => void;
+  onDelete?: (projectId: string) => void;
+  onMove?: (projectId: string, direction: 'up' | 'down') => void;
+  onDrop?: (sourceIndex: number, targetIndex: number) => void;
+  onAdd?: () => void;
 }) {
   const { currentTheme } = useThemeAccent();
   const [projectsList, setProjectsList] = useState<CaseStudy[]>(
@@ -243,6 +271,8 @@ export default function FeaturedCaseStudies({
   const [activeIndex, setActiveIndex] = useState(0);
   const [shiftY, setShiftY] = useState(0);
   const [githubModalProject, setGithubModalProject] = useState<CaseStudy | null>(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -326,10 +356,10 @@ export default function FeaturedCaseStudies({
   const activeAccent = activeProject?.accentColor || currentTheme.primary;
 
   return (
-    <section id="projects" className="py-20 sm:py-28 px-4 sm:px-6 relative">
+    <section id="projects" className={`${compact ? 'pt-2 sm:pt-4 pb-20' : 'py-20 sm:py-28'} px-4 sm:px-6 relative`}>
       <div className="container mx-auto max-w-6xl">
         {/* Section Header: CASE STUDIES on top, Curated work and Explore Button on the EXACT same line */}
-        <div className="mb-14 sm:mb-20 space-y-2">
+        <div className={`${compact ? 'mb-6 sm:mb-8' : 'mb-14 sm:mb-20'} space-y-2`}>
           <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
             CASE STUDIES
           </p>
@@ -346,22 +376,23 @@ export default function FeaturedCaseStudies({
               </span>
             </h2>
 
-            <div className="flex items-center gap-2.5">
-              {isAdmin && (
-                <Link
-                  href="/control-room-internal/projects"
-                  className="inline-flex items-center gap-2 px-4 py-2 sm:py-2.5 rounded-full bg-white/[0.08] hover:bg-white/[0.15] border border-white/[0.15] text-xs font-mono text-white transition-all shadow-sm"
+            <div className="flex items-center gap-2 flex-wrap">
+              {isAdmin && onAdd && (
+                <button
+                  type="button"
+                  onClick={onAdd}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-[11px] sm:text-xs font-mono transition-all shadow-lg active:scale-95 cursor-pointer shrink-0"
                 >
-                  <Pencil size={13} style={{ color: currentTheme.primary }} />
-                  <span>Edit Projects</span>
-                </Link>
+                  <Plus size={13} />
+                  <span>+ Add Case Study</span>
+                </button>
               )}
               <Link
                 href="/projects"
-                className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-[11px] sm:text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
               >
-                <span>Explore All Archives</span>
-                <ArrowUpRight size={14} />
+                <span>All Archives</span>
+                <ArrowUpRight size={13} />
               </Link>
             </div>
           </div>
@@ -370,7 +401,7 @@ export default function FeaturedCaseStudies({
         {/* 2-Column Split: Left Scrolling Cards + Right Sticky Synchronized Details */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 xl:gap-16 items-start">
           {/* Left Column: Stack of Scrolling Project Cards */}
-          <div className="lg:col-span-7 space-y-16 sm:space-y-20 lg:space-y-28">
+          <div className="lg:col-span-7 space-y-20 sm:space-y-24 lg:space-y-28">
             {projectsList.map((project, index) => {
               const isCurrent = activeIndex === index;
               const indexNumber = String(index + 1).padStart(2, '0');
@@ -381,23 +412,79 @@ export default function FeaturedCaseStudies({
                   ref={(el) => {
                     cardRefs.current[index] = el;
                   }}
-                  className="space-y-3"
+                  draggable={isAdmin}
+                  onDragStart={() => isAdmin && setDraggedIdx(index)}
+                  onDragOver={(e) => {
+                    if (isAdmin) {
+                      e.preventDefault();
+                      setDragOverIdx(index);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    if (isAdmin) {
+                      e.preventDefault();
+                      if (draggedIdx !== null && draggedIdx !== index) {
+                        onDrop?.(draggedIdx, index);
+                      }
+                      setDraggedIdx(null);
+                      setDragOverIdx(null);
+                    }
+                  }}
+                  className={`space-y-4 pb-8 sm:pb-10 lg:pb-0 rounded-3xl p-1 -m-1 transition-all duration-300 ${
+                    dragOverIdx === index ? 'ring-2 ring-emerald-400 bg-emerald-500/10 scale-[1.01]' : ''
+                  }`}
                 >
-                  {/* Mobile & Tablet Meta Header Above Card (< lg) */}
-                  <div className="flex lg:hidden items-center justify-between gap-4 px-1 pb-1">
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-mono text-xs font-semibold text-neutral-400 tracking-wider">
+                  {/* Meta Header Above Card */}
+                  <div className={`flex items-center justify-between gap-3 px-1 pb-1 ${isAdmin ? '' : 'lg:hidden'}`}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {isAdmin && (
+                        <div className="flex items-center gap-1 bg-[#121316] px-2 py-1 rounded-xl border border-white/10 shadow-sm shrink-0">
+                          <div 
+                            className="cursor-grab active:cursor-grabbing p-0.5 text-neutral-400 hover:text-white transition-colors"
+                            title="Drag to reorder"
+                          >
+                            <GripVertical size={14} />
+                          </div>
+                          <button
+                            type="button"
+                            disabled={index === 0}
+                            onClick={(e) => { e.stopPropagation(); onMove?.(project.id, 'up'); }}
+                            className="p-1 text-neutral-400 hover:text-white disabled:opacity-20 hover:bg-white/10 rounded transition-colors cursor-pointer"
+                            title="Move Up"
+                          >
+                            <ChevronUp size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={index === projectsList.length - 1}
+                            onClick={(e) => { e.stopPropagation(); onMove?.(project.id, 'down'); }}
+                            className="p-1 text-neutral-400 hover:text-white disabled:opacity-20 hover:bg-white/10 rounded transition-colors cursor-pointer"
+                            title="Move Down"
+                          >
+                            <ChevronDown size={13} />
+                          </button>
+                        </div>
+                      )}
+
+                      <span className="font-mono text-xs font-semibold text-neutral-400 tracking-wider shrink-0">
                         {indexNumber}
                       </span>
-                      <div className="h-px w-6 bg-neutral-700" />
-                      <span className="font-mono text-[11px] text-neutral-400 uppercase tracking-widest">
+                      <div className="h-px w-6 bg-neutral-700 hidden sm:block shrink-0" />
+                      <span className="font-mono text-[11px] text-neutral-400 uppercase tracking-widest truncate hidden sm:inline">
                         {project.category}
                       </span>
+
+                      {/* Title beside number on mobile (and admin) */}
+                      <h3 className={`font-serif font-medium text-base sm:text-lg text-white tracking-tight leading-tight truncate ${isAdmin ? '' : 'lg:hidden'}`}>
+                        {project.title}
+                      </h3>
                     </div>
 
-                    <span className="shrink-0 rounded-full px-3 py-0.5 font-mono text-[10px] bg-[#121316] border border-white/10 text-neutral-400 font-medium tracking-wider">
-                      {project.year}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="shrink-0 rounded-full px-3 py-1 font-mono text-[10px] bg-[#121316] border border-white/10 text-neutral-400 font-medium tracking-wider">
+                        {project.year}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Card with Radiant Canvas, Dual-Image Hover Reveal & Circular Hover Badge */}
@@ -405,6 +492,7 @@ export default function FeaturedCaseStudies({
                     project={project}
                     index={index}
                     isActive={isCurrent}
+                    onCardClick={isAdmin ? () => onEdit?.(project) : undefined}
                   />
 
                   {/* Mobile & Tablet Action Row (< lg): Tech Stack + Action Buttons */}
@@ -466,15 +554,39 @@ export default function FeaturedCaseStudies({
               If content has overflow (e.g. 1 line): shiftY brings only that line into view, then locks! */}
           <div className="hidden lg:block lg:col-span-5 sticky top-28 lg:top-32 self-start pl-2">
             <div className="space-y-4">
-                {/* Title Row with Colored Dash - Strictly Fixed at Top */}
-                <div className="flex items-center gap-3">
-                  <span
-                    className="w-5 h-[2.5px] rounded-full shrink-0"
-                    style={{ backgroundColor: activeAccent }}
-                  />
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                    {activeProject.title}
-                  </h3>
+                {/* Title Row with Colored Dash */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className="w-5 h-[2.5px] rounded-full shrink-0"
+                      style={{ backgroundColor: activeAccent }}
+                    />
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">
+                      {activeProject.title}
+                    </h3>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => onEdit?.(activeProject)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white text-neutral-200 hover:text-black border border-white/15 transition-all text-xs font-mono font-medium cursor-pointer shadow-sm active:scale-95"
+                        title="Edit Active Case Study"
+                      >
+                        <Edit3 size={12} />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onDelete?.(activeProject.id)}
+                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 transition-all cursor-pointer shadow-sm active:scale-95"
+                        title="Delete Active Case Study"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Details Container with Safe Shift:

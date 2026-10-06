@@ -18,7 +18,7 @@ export default async function LinksPage() {
     roles: ['Developer', 'Freelancer'],
     avatar: heroData?.profile_image || 'https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png',
     location: 'Dhaka, Bangladesh',
-    email: socialMap?.email || settings?.contact_email || 'rohanmia.org@gmail.com'
+    email: socialMap?.email || settings?.contact_email || ''
   };
 
   return <LinksClient links={links} profileData={profileData} />;

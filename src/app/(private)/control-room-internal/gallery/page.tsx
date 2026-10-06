@@ -510,20 +510,20 @@ export default function AdminGalleryPage() {
                 <button
                   type="button"
                   onClick={() => setIsCropOpen(true)}
-                  className="w-full h-36 rounded-2xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center gap-2 cursor-pointer group"
+                  className="w-full h-24 sm:h-32 rounded-2xl border-2 border-dashed border-white/20 hover:border-white/40 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer group"
                 >
-                  <div className="p-3 rounded-full bg-white/[0.05] group-hover:scale-110 transition-transform">
-                    <UploadCloud size={22} style={{ color: currentTheme.primary }} />
+                  <div className="p-2.5 rounded-full bg-white/[0.05] group-hover:scale-110 transition-transform">
+                    <UploadCloud size={20} style={{ color: currentTheme.primary }} />
                   </div>
-                  <span className="text-xs font-medium text-white">Click to Upload &amp; Crop Photograph</span>
-                  <span className="text-[11px] font-mono text-neutral-500">Supports JPG, PNG, WebP up to 10MB</span>
+                  <span className="text-xs font-medium text-white">Upload &amp; Crop Photograph</span>
+                  <span className="text-[10px] font-mono text-neutral-500">JPG, PNG, WebP up to 10MB</span>
                 </button>
               )}
             </div>
 
             {/* Title & Category */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
                 <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block font-medium">
                   Title *
                 </label>
@@ -533,18 +533,18 @@ export default function AdminGalleryPage() {
                   value={editingPhoto.title || ''}
                   onChange={(e) => setEditingPhoto({ ...editingPhoto, title: e.target.value })}
                   placeholder="e.g. Engineering Desk Setup"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white placeholder:text-neutral-600 font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white placeholder:text-neutral-600 font-mono"
                 />
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block font-medium">
                   Category
                 </label>
                 <select
                   value={editingPhoto.category || categories[0] || 'Moments'}
                   onChange={(e) => setEditingPhoto({ ...editingPhoto, category: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0c0e14] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white font-mono"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0c0e14] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white font-mono"
                 >
                   {categories.map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -554,7 +554,7 @@ export default function AdminGalleryPage() {
             </div>
 
             {/* Date / Year */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block font-medium">
                 Date / Year
               </label>
@@ -563,21 +563,21 @@ export default function AdminGalleryPage() {
                 value={editingPhoto.date || '2026'}
                 onChange={(e) => setEditingPhoto({ ...editingPhoto, date: e.target.value })}
                 placeholder="e.g. Autumn 2026"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white placeholder:text-neutral-600 font-mono"
+                className="w-full px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white placeholder:text-neutral-600 font-mono"
               />
             </div>
 
             {/* Caption / Story */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block font-medium">
                 Caption / Narrative (Optional)
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={editingPhoto.caption || ''}
                 onChange={(e) => setEditingPhoto({ ...editingPhoto, caption: e.target.value })}
                 placeholder="Leave blank if no narrative is needed..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white placeholder:text-neutral-600 font-mono resize-none leading-relaxed"
+                className="w-full min-h-[55px] px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] focus:border-white/30 focus:outline-none text-xs text-white placeholder:text-neutral-600 font-mono resize-none leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               />
             </div>
 
@@ -586,16 +586,16 @@ export default function AdminGalleryPage() {
               <button
                 type="button"
                 onClick={() => setEditingPhoto(null)}
-                className="px-4 py-2 rounded-xl text-xs font-mono text-neutral-400 hover:text-white"
+                className="px-3.5 py-2 rounded-xl text-xs font-mono text-neutral-400 hover:text-white cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isPending}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs tracking-tight transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs tracking-tight transition-all cursor-pointer disabled:opacity-50"
               >
-                {isPending ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                {isPending ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
                 <span>Save Photograph</span>
               </button>
             </div>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaGithub, FaLinkedin, FaXTwitter, FaFacebook, FaInstagram } from 'react-icons/fa6';
+import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 
 interface PinnedSocialsProps {
@@ -18,20 +18,14 @@ export default function PinnedSocials({ socialMap = {} }: PinnedSocialsProps) {
     icon: React.ComponentType<{ size?: number; className?: string }>;
   }> = [];
 
+  if (socialMap.twitter) {
+    items.push({ name: 'Twitter / X', url: socialMap.twitter, icon: FaXTwitter });
+  }
   if (socialMap.github) {
     items.push({ name: 'GitHub', url: socialMap.github, icon: FaGithub });
   }
   if (socialMap.linkedin) {
     items.push({ name: 'LinkedIn', url: socialMap.linkedin, icon: FaLinkedin });
-  }
-  if (socialMap.twitter) {
-    items.push({ name: 'Twitter / X', url: socialMap.twitter, icon: FaXTwitter });
-  }
-  if (socialMap.facebook) {
-    items.push({ name: 'Facebook', url: socialMap.facebook, icon: FaFacebook });
-  }
-  if (socialMap.instagram) {
-    items.push({ name: 'Instagram', url: socialMap.instagram, icon: FaInstagram });
   }
 
   if (items.length === 0) {

@@ -70,6 +70,26 @@ export default function CommandPalette() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { accent, setAccent, themes, currentTheme } = useThemeAccent();
 
+  const [dynamicEmail, setDynamicEmail] = useState('');
+  const [socials, setSocials] = useState<{ linkedin?: string; github?: string; twitter?: string }>({});
+
+  useEffect(() => {
+    if (open) {
+      import('@/actions/adminSettings').then((m) => m.getSettings()).then((s) => {
+        if (s?.contact_email) setDynamicEmail(s.contact_email);
+      }).catch(() => {});
+      import('@/actions/adminLinks').then((m) => m.getPublicLinks()).then((l) => {
+        if (l?.socialMap) {
+          setSocials({
+            linkedin: l.socialMap.linkedin,
+            github: l.socialMap.github,
+            twitter: l.socialMap.twitter || l.socialMap.x,
+          });
+        }
+      }).catch(() => {});
+    }
+  }, [open]);
+
   // 1. Listen for CMD+K / CTRL+K and Custom Events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -164,10 +184,14 @@ export default function CommandPalette() {
 
   // Copy Email handler
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('rohanmia.org@gmail.com');
-    toast.success('Direct email copied: rohanmia.org@gmail.com', {
-      duration: 2500,
-    });
+    if (dynamicEmail) {
+      navigator.clipboard.writeText(dynamicEmail);
+      toast.success(`Direct email copied: ${dynamicEmail}`, {
+        duration: 2500,
+      });
+    } else {
+      navigateTo('/contact');
+    }
   };
 
   // Transition from quick message draft to full contact form
@@ -746,8 +770,8 @@ export default function CommandPalette() {
                         <div className="font-semibold text-xs sm:text-sm text-white group-hover:text-theme transition-colors">
                           Email me
                         </div>
-                        <div className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                          rohanmia.org@gmail.com
+                        <div className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[140px]">
+                          {dynamicEmail || 'Direct Email'}
                         </div>
                       </button>
                     </div>
@@ -755,9 +779,9 @@ export default function CommandPalette() {
                     {/* Bottom Row: Social Links */}
                     <div className="grid grid-cols-3 gap-2">
                       <a
-                        href="https://www.linkedin.com/in/rohan-mia/"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={socials.linkedin || '/links'}
+                        target={socials.linkedin ? '_blank' : undefined}
+                        rel={socials.linkedin ? 'noopener noreferrer' : undefined}
                         className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                       >
                         <FaLinkedin size={13} className="group-hover:text-theme transition-colors" />
@@ -765,9 +789,9 @@ export default function CommandPalette() {
                       </a>
 
                       <a
-                        href="https://x.com/_Rohan_Bhau"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={socials.twitter || '/links'}
+                        target={socials.twitter ? '_blank' : undefined}
+                        rel={socials.twitter ? 'noopener noreferrer' : undefined}
                         className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                       >
                         <FaXTwitter size={12} className="group-hover:text-theme transition-colors" />
@@ -775,9 +799,9 @@ export default function CommandPalette() {
                       </a>
 
                       <a
-                        href="https://github.com/rohan-bhau"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={socials.github || '/links'}
+                        target={socials.github ? '_blank' : undefined}
+                        rel={socials.github ? 'noopener noreferrer' : undefined}
                         className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                       >
                         <FaGithub size={13} className="group-hover:text-theme transition-colors" />

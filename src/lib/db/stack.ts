@@ -84,10 +84,22 @@ export async function upsertTechCategoryDb(cat: Partial<DbTechCategoryRow> & { i
 
 export async function deleteTechCategoryDb(id: string): Promise<boolean> {
   await ensurePortfolioTables();
+  await executeSql(`DELETE FROM tech_items WHERE category_id = ${escapeSqlString(id)};`);
   const res = await executeSql<{ id: string }>(
     `DELETE FROM tech_categories WHERE id = ${escapeSqlString(id)} RETURNING id;`
   );
   return res.rows.length > 0;
+}
+
+export async function updateTechCategoriesOrderDb(orderedIds: string[]): Promise<void> {
+  await ensurePortfolioTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    const id = orderedIds[i];
+    const num = String(i + 1).padStart(2, '0');
+    await executeSql(
+      `UPDATE tech_categories SET sort_order = ${i + 1}, number = ${escapeSqlString(num)} WHERE id = ${escapeSqlString(id)};`
+    );
+  }
 }
 
 export async function upsertTechItemDb(item: Partial<DbTechItemRow> & { id: string; category_id: string; name: string }): Promise<DbTechItemRow> {
@@ -138,4 +150,14 @@ export async function deleteTechItemDb(id: string): Promise<boolean> {
     `DELETE FROM tech_items WHERE id = ${escapeSqlString(id)} RETURNING id;`
   );
   return res.rows.length > 0;
+}
+
+export async function updateTechItemsOrderDb(orderedIds: string[]): Promise<void> {
+  await ensurePortfolioTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    const id = orderedIds[i];
+    await executeSql(
+      `UPDATE tech_items SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`
+    );
+  }
 }

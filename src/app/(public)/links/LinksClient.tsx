@@ -61,7 +61,7 @@ export default function LinksClient({
     : ['Developer', 'Freelancer'];
   const displayAvatar = profileData.avatar || 'https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png';
   const displayLocation = profileData.location || 'Dhaka, Bangladesh';
-  const displayEmail = profileData.email || 'rohanmia.org@gmail.com';
+  const displayEmail = profileData.email || '';
 
   const renderLinkCard = (item: AdminCustomLink) => {
     const Icon = resolveIcon(item.iconName, item.title);
@@ -176,12 +176,14 @@ export default function LinksClient({
                 <MapPin size={13} className="text-zinc-500 shrink-0" />
                 <span className="truncate">{displayLocation}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Mail size={13} className="text-zinc-500 shrink-0" />
-                <a href={`mailto:${displayEmail.replace(/^mailto:/, '')}`} className="hover:text-white transition-colors truncate">
-                  {displayEmail.replace(/^mailto:/, '')}
-                </a>
-              </div>
+              {displayEmail && (
+                <div className="flex items-center gap-2">
+                  <Mail size={13} className="text-zinc-500 shrink-0" />
+                  <a href={`mailto:${displayEmail.replace(/^mailto:/, '')}`} className="hover:text-white transition-colors truncate">
+                    {displayEmail.replace(/^mailto:/, '')}
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -207,7 +209,7 @@ export default function LinksClient({
                 </Link>
 
                 <a
-                  href={`mailto:${displayEmail.replace(/^mailto:/, '')}`}
+                  href={displayEmail ? `mailto:${displayEmail.replace(/^mailto:/, '')}` : '/contact'}
                   className="py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Mail size={13} />

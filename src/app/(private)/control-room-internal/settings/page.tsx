@@ -326,11 +326,11 @@ export default function AdminSettingsPage() {
                 <span>SEO Meta Description</span>
               </label>
               <textarea
-                rows={3}
+                rows={4}
                 value={formData.meta_description}
                 onChange={(e) => setFormData({ ...formData, meta_description: e.target.value })}
                 placeholder="Personal portfolio and engineering chronicle of MD Rohan Mia. Specializing in high-performance Next.js systems, distributed architectures, and bespoke interactive web experiences."
-                className="w-full px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xs sm:text-sm text-neutral-200 focus:outline-none focus:border-white/30 transition-colors resize-none leading-relaxed font-mono"
+                className="w-full min-h-[120px] px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xs sm:text-sm text-neutral-200 focus:outline-none focus:border-white/30 transition-colors resize-none leading-relaxed font-mono [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               />
               <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono">
                 <span>Recommended search length: 140 - 160 characters</span>

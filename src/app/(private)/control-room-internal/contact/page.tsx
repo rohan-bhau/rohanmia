@@ -489,9 +489,9 @@ export default function AdminContactPage() {
         maxWidth="max-w-xl"
       >
         {selectedBooking && (
-          <div className="space-y-5">
+          <div className="space-y-3 sm:space-y-4">
             {/* Booking Summary Box */}
-            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between gap-4">
+            <div className="p-3 sm:p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <p className="text-sm font-semibold text-white">{selectedBooking.name}</p>
                 <a
@@ -503,7 +503,7 @@ export default function AdminContactPage() {
                 </a>
               </div>
 
-              <div className="text-right space-y-1">
+              <div className="text-right space-y-0.5">
                 <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono border ${
                   selectedBooking.status === 'confirmed'
                     ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
@@ -518,36 +518,36 @@ export default function AdminContactPage() {
             </div>
 
             {/* Time Slot & Timezone */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-0.5">
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-0.5">
                 <span className="text-[10px] font-mono uppercase text-neutral-500">Time Slot</span>
                 <p className="text-xs font-mono text-white font-medium">{selectedBooking.time_slot}</p>
               </div>
 
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-0.5">
+              <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-0.5">
                 <span className="text-[10px] font-mono uppercase text-neutral-500">Timezone</span>
                 <p className="text-xs font-mono text-white font-medium">
-                  {selectedBooking.timezone || 'Asia/Dhaka'} ({selectedBooking.duration || 30} mins)
+                  {selectedBooking.timezone || 'Asia/Dhaka'} ({selectedBooking.duration || 30}m)
                 </p>
               </div>
             </div>
 
             {/* Topic & Notes */}
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 block">
+            <div className="space-y-1">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500 block">
                 Meeting Topic
               </span>
-              <p className="text-xs font-medium text-white px-3.5 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <p className="text-xs font-medium text-white px-3 py-1.5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
                 {selectedBooking.topic}
               </p>
             </div>
 
             {selectedBooking.additional_notes && (
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 block">
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-500 block">
                   Additional Notes
                 </span>
-                <p className="text-xs text-neutral-300 px-3.5 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06] whitespace-pre-wrap leading-relaxed">
+                <p className="text-xs text-neutral-300 px-3 py-2 rounded-xl bg-white/[0.02] border border-white/[0.06] whitespace-pre-wrap leading-relaxed max-h-24 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   {selectedBooking.additional_notes}
                 </p>
               </div>
@@ -555,16 +555,16 @@ export default function AdminContactPage() {
 
             {/* Join Room Link */}
             {selectedBooking.meet_link ? (
-              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-mono text-sky-300">
-                  <Video size={14} />
-                  <span>Google Meet Room Active</span>
+              <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-mono text-sky-300">
+                  <Video size={13} />
+                  <span>Google Meet Room</span>
                 </div>
                 <a
                   href={selectedBooking.meet_link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-black font-semibold text-xs font-mono transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-black font-semibold text-xs font-mono transition-colors"
                 >
                   Join Meeting
                 </a>
@@ -577,7 +577,7 @@ export default function AdminContactPage() {
                 <button
                   type="button"
                   onClick={() => setCancellingBookingId(selectedBooking.id)}
-                  className="px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-mono transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-mono transition-colors cursor-pointer"
                 >
                   Cancel Call
                 </button>
@@ -588,7 +588,7 @@ export default function AdminContactPage() {
               <button
                 type="button"
                 onClick={() => setDeletingBookingId(selectedBooking.id)}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.04] hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 border border-white/[0.08] text-xs font-mono transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-rose-500/20 text-neutral-400 hover:text-rose-300 border border-white/[0.08] text-xs font-mono transition-colors cursor-pointer"
               >
                 <Trash2 size={13} />
                 <span>Delete Record</span>

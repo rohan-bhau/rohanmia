@@ -67,13 +67,23 @@ export async function generateMetadata() {
   };
 }
 
+import { cookies } from "next/headers";
+import { AccentColor } from "@/types/theme";
+
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const cookieAccent = cookieStore.get('rohan_portfolio_accent')?.value as AccentColor;
+  const initialAccent: AccentColor = 
+    (cookieAccent && ['cyan', 'violet', 'emerald', 'rose', 'amber', 'mono'].includes(cookieAccent))
+      ? cookieAccent
+      : 'cyan';
+
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="dark" data-accent={initialAccent} suppressHydrationWarning>
       <body
         className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
       >
@@ -110,7 +120,7 @@ export default async function RootLayout({
           }}
         />
 
-        <Providers>
+        <Providers initialAccent={initialAccent}>
           <Background />
           <Toaster theme="dark" richColors position="top-right" />
           {children}

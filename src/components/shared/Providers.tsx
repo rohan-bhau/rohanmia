@@ -10,10 +10,18 @@ import BookingModal from '@/components/booking/BookingModal';
 import CommandPalette from '@/components/layout/CommandPalette';
 import { ToastProvider } from '@/components/admin/ui/Toast';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+import { AccentColor } from '@/types/theme';
+
+export default function Providers({ 
+  children,
+  initialAccent = 'cyan'
+}: { 
+  children: React.ReactNode;
+  initialAccent?: AccentColor;
+}) {
   return (
     <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
-      <ThemeProvider>
+      <ThemeProvider initialAccent={initialAccent}>
         <BookingProvider>
           <ToastProvider>
             <AnalyticsTracker />

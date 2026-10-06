@@ -8,6 +8,8 @@ import {
   deleteTechItemDb,
   upsertTechCategoryDb,
   deleteTechCategoryDb,
+  updateTechCategoriesOrderDb,
+  updateTechItemsOrderDb,
   DbTechCategoryRow,
   DbTechItemRow,
 } from '@/lib/db/stack';
@@ -113,6 +115,18 @@ export async function removeAdminTechCategory(id: string): Promise<{ success: bo
   }
 }
 
+export async function reorderAdminTechCategories(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    await assertAdmin();
+    await updateTechCategoriesOrderDb(orderedIds);
+    revalidatePath('/tech-stack');
+    revalidatePath('/stack');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
 export async function saveAdminTechItem(data: Partial<DbTechItemRow> & { name: string; category_id: string }): Promise<{ success: boolean; item?: DbTechItemRow; error?: string }> {
   try {
     await assertAdmin();
@@ -176,6 +190,19 @@ export async function removeAdminTechItem(id: string): Promise<{ success: boolea
       return { success: false, error: 'Failed to delete tech item.' };
     }
 
+    revalidatePath('/tech-stack');
+    revalidatePath('/stack');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function reorderAdminTechItems(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+  try {
+    await assertAdmin();
+    await updateTechItemsOrderDb(orderedIds);
     revalidatePath('/tech-stack');
     revalidatePath('/stack');
     revalidatePath('/');
