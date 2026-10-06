@@ -206,7 +206,7 @@ export default function TechStackClientView({ categories = [] }: TechStackClient
                       return (
                         <a
                           key={item.id || itemIdx}
-                          href={item.docs_url || 'https://github.com/rohan-mia'}
+                          href={item.docs_url || ''}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group relative p-6 rounded-2xl bg-transparent border border-transparent hover:bg-[#0d1017]/90 hover:border-white/15 hover:backdrop-blur-md transition-all duration-400 ease-out hover:-translate-y-1.5 flex flex-col items-center justify-center text-center min-h-[130px] sm:min-h-[145px] cursor-pointer overflow-hidden shadow-none hover:shadow-[0_16px_40px_rgba(0,0,0,0.75)] select-none"

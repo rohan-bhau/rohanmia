@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
@@ -83,8 +83,9 @@ const getCurvedNavPath = (index?: number) => {
   return `M 0 50 L 0 ${topY} L ${p1} ${topY} C ${cp1_x} ${topY}, ${cp2_x} ${dipY}, ${cx} ${dipY} C ${cp3_x} ${dipY}, ${cp4_x} ${topY}, ${p2} ${topY} L 100 ${topY} L 100 50 Q 100 ${bottomY} 86 ${bottomY} L 14 ${bottomY} Q 0 ${bottomY} 0 50 Z`;
 };
 
-export default function Navbar({ settings }: { settings?: any }) {
+export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
   const [desktopMoreHovered, setDesktopMoreHovered] = useState(false);
@@ -95,6 +96,8 @@ export default function Navbar({ settings }: { settings?: any }) {
 
   const { currentTheme } = useThemeAccent();
   const { openBooking } = useBooking();
+
+  const prefetchRoute = (href: string) => router.prefetch(href);
 
   const handleDesktopMouseEnter = () => {
     if (hoverTimeoutRef.current) {
@@ -267,6 +270,24 @@ export default function Navbar({ settings }: { settings?: any }) {
             : "py-4 sm:py-5 bg-transparent"
         }`}
       >
+        <div className="hidden" aria-hidden="true">
+          <Image
+            src="/images/about/guestbook-cover-menu.webp"
+            alt=""
+            width={360}
+            height={360}
+            loading="eager"
+            unoptimized
+          />
+          <Image
+            src="/images/about/gallery-1-menu.webp"
+            alt=""
+            width={360}
+            height={360}
+            loading="eager"
+            unoptimized
+          />
+        </div>
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
           <div className="flex items-center justify-between">
             {/* Left: Brand Identity */}
@@ -279,7 +300,7 @@ export default function Navbar({ settings }: { settings?: any }) {
                 />
                 <div className="flex flex-col">
                   <span className="text-sm sm:text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-tight">
-                    {settings?.siteName || "Rohan Mia"}
+                    Rohan Mia
                   </span>
                   <span className="text-[11px] text-muted-foreground font-mono leading-none pt-0.5">
                     Software Engineer
@@ -312,11 +333,14 @@ export default function Navbar({ settings }: { settings?: any }) {
                       <Link
                         key={link.href}
                         href={link.href}
+                        prefetch={true}
                         onMouseEnter={() => {
+                          prefetchRoute(link.href);
                           if (hoverTimeoutRef.current)
                             clearTimeout(hoverTimeoutRef.current);
                           setDesktopMoreHovered(false);
                         }}
+                        onFocus={() => prefetchRoute(link.href)}
                         onClick={() => setDesktopMoreHovered(false)}
                         className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                           active
@@ -418,13 +442,17 @@ export default function Navbar({ settings }: { settings?: any }) {
                           {/* Card 1: Guestbook */}
                           <Link
                             href="/guestbook"
+                            prefetch={true}
+                            onMouseEnter={() => prefetchRoute("/guestbook")}
+                            onFocus={() => prefetchRoute("/guestbook")}
                             onClick={() => setDesktopMoreHovered(false)}
                             className="group relative h-[134px] rounded-xl overflow-hidden border border-white/[0.08] bg-[#14161b] flex flex-col justify-end p-2.5 transition-all duration-300 hover:border-white/25"
                           >
                             <Image
-                              src="/images/about/guestbook-cover.png"
+                              src="/images/about/guestbook-cover-menu.webp"
                               alt="Guestbook"
                               fill
+                              unoptimized
                               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-80 group-hover:opacity-95"
                               sizes="120px"
                             />
@@ -442,13 +470,17 @@ export default function Navbar({ settings }: { settings?: any }) {
                           {/* Card 2: Gallery */}
                           <Link
                             href="/gallery"
+                            prefetch={true}
+                            onMouseEnter={() => prefetchRoute("/gallery")}
+                            onFocus={() => prefetchRoute("/gallery")}
                             onClick={() => setDesktopMoreHovered(false)}
                             className="group relative h-[134px] rounded-xl overflow-hidden border border-white/[0.08] bg-[#14161b] flex flex-col justify-end p-2.5 transition-all duration-300 hover:border-white/25"
                           >
                             <Image
-                              src="/images/about/gallery-1.jpg"
+                              src="/images/about/gallery-1-menu.webp"
                               alt="Gallery"
                               fill
+                              unoptimized
                               className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-75 group-hover:opacity-90"
                               sizes="120px"
                             />
@@ -469,6 +501,9 @@ export default function Navbar({ settings }: { settings?: any }) {
                           {/* Link 1: Links */}
                           <Link
                             href="/links"
+                            prefetch={true}
+                            onMouseEnter={() => prefetchRoute("/links")}
+                            onFocus={() => prefetchRoute("/links")}
                             onClick={() => setDesktopMoreHovered(false)}
                             className="flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/15 transition-all group"
                           >
@@ -496,6 +531,9 @@ export default function Navbar({ settings }: { settings?: any }) {
                           {/* Link 2: Tech Stack */}
                           <Link
                             href="/tech-stack"
+                            prefetch={true}
+                            onMouseEnter={() => prefetchRoute("/tech-stack")}
+                            onFocus={() => prefetchRoute("/tech-stack")}
                             onClick={() => setDesktopMoreHovered(false)}
                             className="flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/15 transition-all group"
                           >
@@ -523,6 +561,9 @@ export default function Navbar({ settings }: { settings?: any }) {
                           {/* Link 3: Contact */}
                           <Link
                             href="/contact"
+                            prefetch={true}
+                            onMouseEnter={() => prefetchRoute("/contact")}
+                            onFocus={() => prefetchRoute("/contact")}
                             onClick={() => setDesktopMoreHovered(false)}
                             className="flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/15 transition-all group"
                           >
@@ -698,6 +739,9 @@ export default function Navbar({ settings }: { settings?: any }) {
                     <Link
                       key={link.href}
                       href={link.href}
+                      prefetch={true}
+                      onTouchStart={() => prefetchRoute(link.href)}
+                      onFocus={() => prefetchRoute(link.href)}
                       onClick={() => setMobileMoreDrawerOpen(false)}
                       className={`relative flex flex-col p-3 rounded-2xl border transition-all duration-200 group overflow-hidden ${
                         isCurrent
@@ -904,6 +948,9 @@ export default function Navbar({ settings }: { settings?: any }) {
                 <Link
                   key={tab.name}
                   href={tab.href}
+                  prefetch={true}
+                  onTouchStart={() => prefetchRoute(tab.href)}
+                  onFocus={() => prefetchRoute(tab.href)}
                   onClick={() => setMobileMoreDrawerOpen(false)}
                   className="relative flex items-center justify-center w-full h-full group"
                 >

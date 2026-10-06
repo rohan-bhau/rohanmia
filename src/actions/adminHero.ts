@@ -1,10 +1,11 @@
-'use server';
+"use server";
 
-import { executeSql, escapeSqlString, escapeSqlJson } from '@/lib/postgres';
-import { ensurePortfolioTables } from '@/lib/db/schema';
-import { assertAdmin } from '@/lib/admin';
-import { revalidatePath } from 'next/cache';
-import { v2 as cloudinary } from 'cloudinary';
+import { executeSql, escapeSqlString, escapeSqlJson } from "@/lib/postgres";
+import { ensurePortfolioTables } from "@/lib/db/schema";
+import { assertAdmin } from "@/lib/admin";
+import { revalidatePath, updateTag } from "next/cache";
+import { v2 as cloudinary } from "cloudinary";
+import { getCachedHeroContent, PUBLIC_DATA_TAGS } from "@/lib/publicData";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,58 +13,56 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-import { HeroData } from '@/lib/constants/homepage';
+import { HeroData } from "@/lib/constants/homepage";
 
 /**
  * Fetch Hero Data from PostgreSQL
  */
 export async function getHeroData(): Promise<HeroData> {
   try {
-    await ensurePortfolioTables();
-    const res = await executeSql<any>(
-      `SELECT * FROM hero_content WHERE id = 'primary' LIMIT 1;`
-    );
-
-    if (res.rows.length === 0) {
+    const row = await getCachedHeroContent();
+    if (!row) {
       return {
-        greeting: '',
-        name: '',
-        surname: '',
-        bio: '',
-        profile_image: '',
-        resume_url: '',
+        greeting: "",
+        name: "",
+        surname: "",
+        bio: "",
+        profile_image: "",
+        resume_url: "",
         rotating_roles: [],
-        projects_cta_text: 'View Projects',
-        resume_cta_text: 'View Resume',
+        projects_cta_text: "View Projects",
+        resume_cta_text: "View Resume",
       };
     }
 
-    const row = res.rows[0];
-    const statsObj = typeof row.stats === 'object' && row.stats !== null ? row.stats : {};
+    const statsObj: Record<string, any> =
+      typeof row.stats === "object" && row.stats !== null ? row.stats : {};
 
     return {
-      greeting: row.greeting || '',
-      name: row.name || '',
-      surname: row.surname || '',
-      bio: row.bio || '',
-      profile_image: row.profile_image || '',
-      resume_url: row.resume_url || '',
-      rotating_roles: Array.isArray(row.rotating_roles) ? row.rotating_roles : [],
-      projects_cta_text: statsObj.projects_cta_text || 'View Projects',
-      resume_cta_text: statsObj.resume_cta_text || 'View Resume',
+      greeting: row.greeting || "",
+      name: row.name || "",
+      surname: row.surname || "",
+      bio: row.bio || "",
+      profile_image: row.profile_image || "",
+      resume_url: row.resume_url || "",
+      rotating_roles: Array.isArray(row.rotating_roles)
+        ? row.rotating_roles
+        : [],
+      projects_cta_text: statsObj.projects_cta_text || "View Projects",
+      resume_cta_text: statsObj.resume_cta_text || "View Resume",
     };
   } catch (error) {
-    console.error('getHeroData error:', error);
+    console.error("getHeroData error:", error);
     return {
-      greeting: '',
-      name: '',
-      surname: '',
-      bio: '',
-      profile_image: '',
-      resume_url: '',
+      greeting: "",
+      name: "",
+      surname: "",
+      bio: "",
+      profile_image: "",
+      resume_url: "",
       rotating_roles: [],
-      projects_cta_text: 'View Projects',
-      resume_cta_text: 'View Resume',
+      projects_cta_text: "View Projects",
+      resume_cta_text: "View Resume",
     };
   }
 }
@@ -78,19 +77,24 @@ export async function saveHeroData(data: Partial<HeroData>) {
 
     // Strict read: if the current row cannot be loaded, abort instead of
     // merging into empty values (which would wipe existing data).
-    const curRes = await executeSql<any>(`SELECT * FROM hero_content WHERE id = 'primary' LIMIT 1;`);
+    const curRes = await executeSql<any>(
+      `SELECT * FROM hero_content WHERE id = 'primary' LIMIT 1;`,
+    );
     const row = curRes.rows[0] || {};
-    const statsObj = typeof row.stats === 'object' && row.stats !== null ? row.stats : {};
+    const statsObj =
+      typeof row.stats === "object" && row.stats !== null ? row.stats : {};
     const current: HeroData = {
-      greeting: row.greeting || '',
-      name: row.name || '',
-      surname: row.surname || '',
-      bio: row.bio || '',
-      profile_image: row.profile_image || '',
-      resume_url: row.resume_url || '',
-      rotating_roles: Array.isArray(row.rotating_roles) ? row.rotating_roles : [],
-      projects_cta_text: statsObj.projects_cta_text || '',
-      resume_cta_text: statsObj.resume_cta_text || '',
+      greeting: row.greeting || "",
+      name: row.name || "",
+      surname: row.surname || "",
+      bio: row.bio || "",
+      profile_image: row.profile_image || "",
+      resume_url: row.resume_url || "",
+      rotating_roles: Array.isArray(row.rotating_roles)
+        ? row.rotating_roles
+        : [],
+      projects_cta_text: statsObj.projects_cta_text || "",
+      resume_cta_text: statsObj.resume_cta_text || "",
     };
     const updated: HeroData = {
       ...current,
@@ -111,7 +115,7 @@ export async function saveHeroData(data: Partial<HeroData>) {
         ${escapeSqlJson(updated.rotating_roles)},
         ${escapeSqlJson({
           projects_cta_text: updated.projects_cta_text,
-          resume_cta_text: updated.resume_cta_text
+          resume_cta_text: updated.resume_cta_text,
         })},
         CURRENT_TIMESTAMP
       )
@@ -129,12 +133,16 @@ export async function saveHeroData(data: Partial<HeroData>) {
     `;
 
     await executeSql(query);
-    revalidatePath('/');
-    revalidatePath('/control-room-internal');
+    updateTag(PUBLIC_DATA_TAGS.hero);
+    revalidatePath("/");
+    revalidatePath("/control-room-internal");
     return { success: true, hero: updated };
   } catch (error: any) {
-    console.error('saveHeroData error:', error);
-    return { success: false, error: error.message || 'Failed to save hero content' };
+    console.error("saveHeroData error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to save hero content",
+    };
   }
 }
 
@@ -144,36 +152,45 @@ export async function saveHeroData(data: Partial<HeroData>) {
 export async function uploadHeroProfileImage(formData: FormData) {
   try {
     await assertAdmin();
-    const file = formData.get('file') as File | null;
-    if (!file) throw new Error('No image file provided');
+    const file = formData.get("file") as File | null;
+    if (!file) throw new Error("No image file provided");
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const uploadRes = await new Promise<{ url: string; public_id: string }>((resolve, reject) => {
-      cloudinary.uploader.upload_stream(
-        {
-          folder: 'portfolio_cms',
-          transformation: [
-            { width: 900, height: 900, crop: 'fill', gravity: 'face' },
-            { quality: 'auto:best', fetch_format: 'auto' }
-          ]
-        },
-        (error, result) => {
-          if (error || !result) reject(error || new Error('Cloudinary upload failed'));
-          else resolve({ url: result.secure_url, public_id: result.public_id });
-        }
-      ).end(buffer);
-    });
+    const uploadRes = await new Promise<{ url: string; public_id: string }>(
+      (resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              folder: "portfolio_cms",
+              transformation: [
+                { width: 900, height: 900, crop: "fill", gravity: "face" },
+                { quality: "auto:best", fetch_format: "auto" },
+              ],
+            },
+            (error, result) => {
+              if (error || !result)
+                reject(error || new Error("Cloudinary upload failed"));
+              else
+                resolve({
+                  url: result.secure_url,
+                  public_id: result.public_id,
+                });
+            },
+          )
+          .end(buffer);
+      },
+    );
 
     // Update in database
     await saveHeroData({ profile_image: uploadRes.url });
 
-    revalidatePath('/');
-    revalidatePath('/control-room-internal');
+    revalidatePath("/");
+    revalidatePath("/control-room-internal");
     return { success: true, url: uploadRes.url };
   } catch (error: any) {
-    console.error('uploadHeroProfileImage error:', error);
-    return { success: false, error: error.message || 'Upload failed' };
+    console.error("uploadHeroProfileImage error:", error);
+    return { success: false, error: error.message || "Upload failed" };
   }
 }

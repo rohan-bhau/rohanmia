@@ -1,21 +1,28 @@
-'use server';
+"use server";
 
-import { executeSql, escapeSqlString, escapeSqlJson } from '@/lib/postgres';
-import { ensurePortfolioTables } from '@/lib/db/schema';
-import { assertAdmin } from '@/lib/admin';
-import { revalidatePath } from 'next/cache';
-import { updateBentoContentDb } from '@/lib/db/content';
+import { executeSql, escapeSqlString, escapeSqlJson } from "@/lib/postgres";
+import { ensurePortfolioTables } from "@/lib/db/schema";
+import { assertAdmin } from "@/lib/admin";
+import { revalidatePath, updateTag } from "next/cache";
+import { updateBentoContentDb } from "@/lib/db/content";
+import { getCachedBentoContent, PUBLIC_DATA_TAGS } from "@/lib/publicData";
 
-import { BentoCardsData } from '@/lib/constants/homepage';
+import { BentoCardsData } from "@/lib/constants/homepage";
 
 const emptyBentoData: BentoCardsData = {
-  badge: '',
-  title_prefix: '',
-  title_suffix: '',
-  card1: { tag: '', headline: '', description: '', points: [] },
-  card2: { tag: '', project_title: '', description: '', link_url: '', tech_stack: [] },
-  card4: { tag: '', title: '', description: '', tools: [] },
-  card5: { tag: '', location: '', description: '', timezone: '' },
+  badge: "",
+  title_prefix: "",
+  title_suffix: "",
+  card1: { tag: "", headline: "", description: "", points: [] },
+  card2: {
+    tag: "",
+    project_title: "",
+    description: "",
+    link_url: "",
+    tech_stack: [],
+  },
+  card4: { tag: "", title: "", description: "", tools: [] },
+  card5: { tag: "", location: "", description: "", timezone: "" },
 };
 
 /**
@@ -23,29 +30,25 @@ const emptyBentoData: BentoCardsData = {
  */
 export async function getBentoData(): Promise<BentoCardsData> {
   try {
-    await ensurePortfolioTables();
-    const res = await executeSql<any>(
-      `SELECT * FROM bento_content WHERE id = 'primary' LIMIT 1;`
-    );
-
-    if (res.rows.length === 0) {
+    const row = await getCachedBentoContent();
+    if (!row) {
       return emptyBentoData;
     }
 
-    const row = res.rows[0];
-    const cards = typeof row.cards === 'object' && row.cards !== null ? row.cards : {};
+    const cards =
+      typeof row.cards === "object" && row.cards !== null ? row.cards : {};
 
     return {
-      badge: row.badge || '',
-      title_prefix: cards.title_prefix || '',
-      title_suffix: cards.title_suffix || '',
+      badge: row.badge || "",
+      title_prefix: cards.title_prefix || "",
+      title_suffix: cards.title_suffix || "",
       card1: cards.card1 || emptyBentoData.card1,
       card2: cards.card2 || emptyBentoData.card2,
       card4: cards.card4 || emptyBentoData.card4,
       card5: cards.card5 || emptyBentoData.card5,
     };
   } catch (error) {
-    console.error('getBentoData error:', error);
+    console.error("getBentoData error:", error);
     return emptyBentoData;
   }
 }
@@ -59,13 +62,18 @@ export async function saveBentoData(data: Partial<BentoCardsData>) {
     await ensurePortfolioTables();
 
     // Strict read: throws on DB failure so we never merge into empty values
-    const curRes = await executeSql<any>(`SELECT * FROM bento_content WHERE id = 'primary' LIMIT 1;`);
+    const curRes = await executeSql<any>(
+      `SELECT * FROM bento_content WHERE id = 'primary' LIMIT 1;`,
+    );
     const curRow = curRes.rows[0] || {};
-    const curCards = typeof curRow.cards === 'object' && curRow.cards !== null ? curRow.cards : {};
+    const curCards =
+      typeof curRow.cards === "object" && curRow.cards !== null
+        ? curRow.cards
+        : {};
     const current: BentoCardsData = {
-      badge: curRow.badge || '',
-      title_prefix: curCards.title_prefix || '',
-      title_suffix: curCards.title_suffix || '',
+      badge: curRow.badge || "",
+      title_prefix: curCards.title_prefix || "",
+      title_suffix: curCards.title_suffix || "",
       card1: curCards.card1 || emptyBentoData.card1,
       card2: curCards.card2 || emptyBentoData.card2,
       card4: curCards.card4 || emptyBentoData.card4,
@@ -85,11 +93,15 @@ export async function saveBentoData(data: Partial<BentoCardsData>) {
       title: `${updated.title_prefix} ${updated.title_suffix}`.trim(),
       cards: updated,
     });
-    revalidatePath('/');
-    revalidatePath('/control-room-internal');
+    updateTag(PUBLIC_DATA_TAGS.bento);
+    revalidatePath("/");
+    revalidatePath("/control-room-internal");
     return { success: true, bento: updated };
   } catch (error: any) {
-    console.error('saveBentoData error:', error);
-    return { success: false, error: error.message || 'Failed to save bento content' };
+    console.error("saveBentoData error:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to save bento content",
+    };
   }
 }

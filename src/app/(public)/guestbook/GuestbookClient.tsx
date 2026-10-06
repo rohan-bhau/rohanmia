@@ -272,7 +272,46 @@ async function readJson(res: Response): Promise<any> {
 
 interface GuestbookClientProps {
   initialEntries: GuestbookEntry[];
-  initialOauthConfigured: { google: boolean; github: boolean };
+  initialOauthConfigured: {
+    google: boolean;
+    github: boolean;
+    devIdentityMode: boolean;
+  };
+}
+
+function GuestbookAvatarImage({ src, name }: { src: string; name: string }) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+
+  if (!src || failedSrc === src) {
+    return (
+      <span
+        role="img"
+        aria-label={`${name} avatar`}
+        className="absolute inset-0 flex items-center justify-center bg-zinc-800 font-mono text-[10px] font-semibold text-white"
+      >
+        {initials}
+      </span>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt=""
+      fill
+      unoptimized
+      className="object-cover"
+      onError={() => setFailedSrc(src)}
+    />
+  );
 }
 
 export default function GuestbookClient({
@@ -300,9 +339,7 @@ export default function GuestbookClient({
     ? {
         name: session.user.name || "Guest",
         email: session.user.email || "",
-        avatar:
-          session.user.image ||
-          `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(session.user.name || "Guest")}`,
+        avatar: session.user.image || "",
         provider: "oauth",
       }
     : localUser;
@@ -315,7 +352,7 @@ export default function GuestbookClient({
 
   // OAuth provider configuration status (resolved on the server)
   const oauthConfigured = initialOauthConfigured;
-  const devIdentityMode = !oauthConfigured.google && !oauthConfigured.github;
+  const devIdentityMode = oauthConfigured.devIdentityMode;
 
   // Optional custom dev identity when testing in dev mode
   const [customName, setCustomName] = useState("Guest Contributor");
@@ -768,25 +805,10 @@ export default function GuestbookClient({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="relative size-9 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-sm shadow-md overflow-hidden border border-white/20">
-                        {activeUser.avatar ? (
-                          <Image
-                            src={activeUser.avatar}
-                            alt={activeUser.name}
-                            fill
-                            unoptimized
-                            className="size-full object-cover"
-                            onError={(event) => {
-                              const target =
-                                event.currentTarget as HTMLImageElement;
-                              const nextUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(activeUser.name)}`;
-                              if (target.src !== nextUrl) {
-                                target.src = nextUrl;
-                              }
-                            }}
-                          />
-                        ) : (
-                          activeUser.name[0]
-                        )}
+                        <GuestbookAvatarImage
+                          src={activeUser.avatar}
+                          name={activeUser.name}
+                        />
                       </div>
                       <div className="flex flex-col text-left">
                         <span className="font-semibold text-sm text-white leading-tight">
@@ -905,27 +927,10 @@ export default function GuestbookClient({
                   {/* Left: Author Avatar + Name + Date (NO Google/GitHub Icon as requested) */}
                   <div className="flex min-w-0 items-center gap-2.5">
                     <div className="relative size-7 rounded-full overflow-hidden border border-white/20 shrink-0 bg-zinc-800">
-                      {entry.avatar ? (
-                        <Image
-                          src={entry.avatar}
-                          alt={entry.name}
-                          fill
-                          unoptimized
-                          className="size-full object-cover"
-                          onError={(event) => {
-                            const target =
-                              event.currentTarget as HTMLImageElement;
-                            const nextUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(entry.name)}`;
-                            if (target.src !== nextUrl) {
-                              target.src = nextUrl;
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="size-full flex items-center justify-center font-mono text-xs text-white">
-                          {entry.name[0]}
-                        </div>
-                      )}
+                      <GuestbookAvatarImage
+                        src={entry.avatar}
+                        name={entry.name}
+                      />
                     </div>
 
                     <div className="flex min-w-0 flex-col text-left">

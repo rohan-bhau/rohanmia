@@ -247,6 +247,7 @@ function AdminShellContent({
               <Link
                 key={item.name}
                 href={item.href}
+                prefetch={true}
                 style={
                   active
                     ? {
@@ -628,6 +629,7 @@ function AdminShellContent({
                     <Link
                       key={item.name}
                       href={item.href}
+                      prefetch={true}
                       onClick={() => setMobileDrawerOpen(false)}
                       className={`relative flex flex-col p-3 rounded-2xl border transition-all duration-200 group overflow-hidden ${
                         active
@@ -828,6 +830,7 @@ function AdminShellContent({
                 <Link
                   key={tab.name}
                   href={tab.href}
+                  prefetch={true}
                   onClick={() => setMobileDrawerOpen(false)}
                   className="group relative flex flex-col items-center justify-center w-full h-full cursor-pointer focus:outline-none"
                 >
