@@ -1,7 +1,7 @@
 'use server';
 
-import connectDB from '@/lib/db';
-import mongoose from 'mongoose';
+import { executeSql, escapeSqlString, escapeSqlJson } from '@/lib/postgres';
+import { ensurePortfolioTables } from '@/lib/db/schema';
 
 const SYSTEM_PROMPT = `
 You are Aru, the sophisticated AI concierge for Rohan Mia, a Senior Frontend Architect.
@@ -91,25 +91,23 @@ export async function chatWithAru(history, message, visitorId) {
 async function saveAIChatLog(visitorId, userMsg, botMsg) {
   try {
     const vid = visitorId || 'anonymous_subject';
-    await connectDB();
-    if (mongoose.connection.readyState === 1) {
-      const col = mongoose.connection.db.collection('aichatlogs');
-      await col.updateOne(
-        { visitorId: vid },
-        { 
-          $push: { 
-            messages: { 
-              $each: [
-                { role: 'user', content: userMsg, timestamp: new Date() },
-                { role: 'assistant', content: botMsg, timestamp: new Date() }
-              ]
-            } 
-          },
-          $set: { lastInteraction: new Date() }
-        },
-        { upsert: true }
-      );
-    }
+    await ensurePortfolioTables();
+    const newItems = [
+      { role: 'user', content: userMsg, timestamp: new Date().toISOString() },
+      { role: 'assistant', content: botMsg, timestamp: new Date().toISOString() }
+    ];
+    await executeSql(`
+      INSERT INTO ai_chat_logs (id, visitor_id, messages, last_interaction)
+      VALUES (
+        ${escapeSqlString(vid)},
+        ${escapeSqlString(vid)},
+        ${escapeSqlJson(newItems)},
+        CURRENT_TIMESTAMP
+      )
+      ON CONFLICT (id) DO UPDATE SET
+        messages = ai_chat_logs.messages || EXCLUDED.messages,
+        last_interaction = CURRENT_TIMESTAMP;
+    `);
   } catch (err) {
     console.error('Archive Failed:', err);
   }
@@ -117,13 +115,9 @@ async function saveAIChatLog(visitorId, userMsg, botMsg) {
 
 export async function deleteAIChatLog(id) {
   try {
-    await connectDB();
-    if (mongoose.connection.readyState === 1) {
-      const col = mongoose.connection.db.collection('aichatlogs');
-      await col.deleteOne({ _id: new mongoose.Types.ObjectId(id) });
-      return { success: true };
-    }
-    return { success: false };
+    await ensurePortfolioTables();
+    await executeSql(`DELETE FROM ai_chat_logs WHERE id = ${escapeSqlString(id)};`);
+    return { success: true };
   } catch (err) {
     console.error('Delete Archive Failed:', err);
     return { success: false };

@@ -1,6 +1,6 @@
 # 🚀 Portfolio
 
-A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**, **MongoDB**, and **Framer Motion**. This project features a sophisticated administrative dashboard (CMS), real-time data synchronization, and a cinematic UI design.
+A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 16**, **PostgreSQL (Neon)**, and **Framer Motion**. This project features a sophisticated administrative dashboard (CMS), real-time data synchronization, and a cinematic UI design.
 
 ## ✨ Key Features
 
@@ -13,9 +13,9 @@ A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**,
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: Next.js 15 (App Router), Tailwind CSS, Framer Motion, Lucide React.
-- **Backend**: Next.js Server Actions, MongoDB with Mongoose ODM.
-- **Authentication**: NextAuth.js / BetterAuth.
+- **Frontend**: Next.js 16 (App Router), Tailwind CSS, Framer Motion, Lucide React.
+- **Backend**: Next.js Server Actions, Neon PostgreSQL.
+- **Authentication**: Stealth Auth / Admin Gate.
 - **Styling**: Vanilla CSS with Tailwind utilities, Glassmorphism design system.
 - **Deployment**: Optimized for Vercel.
 
@@ -24,7 +24,7 @@ A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**,
 ### Prerequisites
 
 - Node.js 18.0 or later
-- MongoDB Database (Local or Atlas)
+- PostgreSQL Database (Neon or Local)
 
 ### Installation
 
@@ -42,7 +42,7 @@ A high-fidelity, cyber-futuristic portfolio ecosystem built with **Next.js 15**,
 3. **Environment Variables**:
    Create a `.env` file in the root directory and add your credentials:
    ```env
-   MONGODB_URI=your_mongodb_uri
+   DATABASE_URL=your_postgresql_database_url
    NEXTAUTH_SECRET=your_secret
    NEXT_PUBLIC_BASE_URL=http://localhost:3000
    ```
