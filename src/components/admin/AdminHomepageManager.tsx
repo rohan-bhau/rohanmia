@@ -46,7 +46,7 @@ export default function AdminHomepageManager({
 }: AdminHomepageManagerProps) {
   const { currentTheme } = useThemeAccent();
   const { toast } = useToast();
-  const { mode: activeMode } = useAdminMode();
+  const { mode: activeMode, basePath } = useAdminMode();
 
   // Form states for Studio Engine
   const [heroForm, setHeroForm] = useState<HeroData>(heroData);
@@ -648,7 +648,7 @@ export default function AdminHomepageManager({
               </div>
 
               <Link
-                href="/control-room-internal/projects"
+                href={`${basePath}/projects`}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono font-medium text-white transition-all shadow-md cursor-pointer hover:opacity-90"
                 style={{ backgroundColor: currentTheme.primary }}
               >
@@ -742,7 +742,7 @@ export default function AdminHomepageManager({
                       </div>
 
                       <Link
-                        href="/control-room-internal/projects"
+                        href={`${basePath}/projects`}
                         className="text-neutral-400 hover:text-white p-1"
                         title="Update in Projects Studio"
                       >

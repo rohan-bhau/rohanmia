@@ -18,6 +18,7 @@ import { BentoCardsData } from '@/lib/constants/homepage';
 import { saveBentoData } from '@/actions/adminBento';
 import EditableElement from '@/components/admin/ui/EditableElement';
 import { useToast } from '@/components/admin/ui/Toast';
+import { useAdminMode } from '@/components/admin/AdminModeContext';
 
 interface BentoGridProps {
   initialData?: BentoCardsData;
@@ -36,6 +37,7 @@ const emptyBentoData: BentoCardsData = {
 
 export default function BentoGrid({ initialData, isAdmin = false }: BentoGridProps) {
   const { currentTheme } = useThemeAccent();
+  const { basePath } = useAdminMode();
   const toastContext = useToast();
   const showToast = toastContext?.showToast || ((_msg: string, _type?: any) => {});
 
@@ -203,7 +205,7 @@ export default function BentoGrid({ initialData, isAdmin = false }: BentoGridPro
                 </EditableElement>
 
                 <Link
-                  href={data.card2.link_url || '/projects'}
+                  href={basePath ? `${basePath}/projects` : (data.card2.link_url || '/projects')}
                   className="p-1 rounded-full bg-white/[0.05] border border-white/10 text-muted-foreground group-hover:text-foreground transition-colors"
                 >
                   <ArrowUpRight size={13} />
@@ -279,7 +281,7 @@ export default function BentoGrid({ initialData, isAdmin = false }: BentoGridPro
                 </EditableElement>
 
                 <Link
-                  href="/tech-stack"
+                  href={basePath ? `${basePath}/tech-stack` : '/tech-stack'}
                   className="text-[10px] font-mono text-muted-foreground group-hover:text-foreground flex items-center gap-0.5"
                 >
                   View All <ArrowUpRight size={11} />
@@ -332,7 +334,7 @@ export default function BentoGrid({ initialData, isAdmin = false }: BentoGridPro
             </div>
 
             <Link
-              href="/tech-stack"
+              href={basePath ? `${basePath}/tech-stack` : '/tech-stack'}
               className="pt-4 text-[11px] font-mono text-muted-foreground/70 group-hover:text-primary transition-colors flex items-center gap-1"
             >
               <span>Explore tech stack page</span>

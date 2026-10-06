@@ -117,7 +117,12 @@ export default function StealthLoginGate() {
     startTransition(async () => {
       const res = await verifyOtpAndLogin(formData);
       if (res.success) {
-        window.location.reload();
+        const cleanPath = window.location.pathname.replace(/\/$/, '');
+        if (!cleanPath.includes('/overview') && !cleanPath.includes('/projects') && !cleanPath.includes('/homepage') && !cleanPath.includes('/tech-stack')) {
+          window.location.href = `${cleanPath}/overview`;
+        } else {
+          window.location.reload();
+        }
       } else {
         setError(res.error || 'Invalid verification code.');
       }

@@ -3,10 +3,29 @@
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
+// Strictly track authentic public portfolio destinations
+function isPublicDestination(pathname: string | null): boolean {
+  if (!pathname) return false;
+  if (pathname === '/') return true;
+  if (pathname.startsWith('/about')) return true;
+  if (pathname.startsWith('/projects')) return true;
+  if (pathname.startsWith('/tech-stack')) return true;
+  if (pathname.startsWith('/gallery')) return true;
+  if (pathname.startsWith('/guestbook')) return true;
+  if (pathname.startsWith('/links')) return true;
+  if (pathname.startsWith('/contact')) return true;
+  return false;
+}
+
 export default function AnalyticsTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Strictly track only public visitor routes - never track private admin or API paths
+    if (!isPublicDestination(pathname)) {
+      return;
+    }
+
     const visitorId = localStorage.getItem('visitor_id') || Math.random().toString(36).substring(7);
     
     if (!localStorage.getItem('visitor_id')) {
@@ -51,4 +70,3 @@ export default function AnalyticsTracker() {
 
   return null;
 }
-

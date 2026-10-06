@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -21,7 +22,8 @@ import {
   X,
   Bell,
   Eye,
-  SlidersHorizontal
+  SlidersHorizontal,
+  BarChart3
 } from 'lucide-react';
 import AnimatedLogo from '@/components/shared/AnimatedLogo';
 import { logoutFromControlRoom } from '@/actions/stealthAuth';
@@ -55,10 +57,11 @@ interface AdminShellProps {
     name?: string;
     email?: string;
   };
+  avatarUrl?: string;
   children: React.ReactNode;
 }
 
-function AdminShellContent({ basePath, user, children }: AdminShellProps) {
+function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellProps) {
   const pathname = usePathname();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { currentTheme } = useThemeAccent();
@@ -92,7 +95,8 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
   }, []);
 
   const NAV_ITEMS = [
-    { name: 'Home', href: basePath, icon: Home },
+    { name: 'Overview', href: `${basePath}/overview`, icon: BarChart3 },
+    { name: 'Homepage', href: `${basePath}/homepage`, icon: Home },
     { name: 'About', href: `${basePath}/about`, icon: User2 },
     { name: 'Projects', href: `${basePath}/projects`, icon: FolderGit2 },
     { name: 'Stack', href: `${basePath}/tech-stack`, icon: Cpu },
@@ -104,15 +108,13 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
   ];
 
   const isLinkActive = (href: string) => {
-    if (href === basePath) {
-      return pathname === basePath || pathname === '/control-room-internal';
-    }
     const cleanHref = href.replace(basePath, '/control-room-internal');
-    return pathname === href || pathname === cleanHref || pathname.startsWith(`${cleanHref}/`);
+    return pathname === href || pathname === cleanHref || pathname.startsWith(`${cleanHref}/`) || pathname.startsWith(`${href}/`);
   };
 
   const getPageTitle = () => {
-    if (pathname === basePath || pathname === '/control-room-internal') return 'Homepage';
+    if (pathname.includes('/overview')) return 'Overview & Analytics';
+    if (pathname.includes('/homepage') || pathname === basePath || pathname === '/control-room-internal') return 'Homepage';
     if (pathname.includes('/about')) return 'About Me';
     if (pathname.includes('/projects')) return 'Case Studies';
     if (pathname.includes('/tech-stack')) return 'Tech Stack';
@@ -130,8 +132,8 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
   };
 
   const ADMIN_MOBILE_TABS = [
-    { name: 'Home', href: basePath, icon: Home },
-    { name: 'About', href: `${basePath}/about`, icon: User2 },
+    { name: 'Overview', href: `${basePath}/overview`, icon: BarChart3 },
+    { name: 'Home', href: `${basePath}/homepage`, icon: Home },
     { name: 'Work', href: `${basePath}/projects`, icon: FolderGit2 },
     { name: 'Stack', href: `${basePath}/tech-stack`, icon: Cpu },
     { name: 'More', href: '#more', icon: LayoutGrid, isMore: true },
@@ -139,8 +141,8 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
 
   const getAdminActiveIndex = () => {
     if (mobileDrawerOpen) return 4;
-    if (pathname === basePath || pathname === '/control-room-internal') return 0;
-    if (pathname.includes('/about')) return 1;
+    if (pathname.includes('/overview')) return 0;
+    if (pathname.includes('/homepage') || pathname === basePath || pathname === '/control-room-internal') return 1;
     if (pathname.includes('/projects')) return 2;
     if (pathname.includes('/tech-stack')) return 3;
     return 4;
@@ -174,7 +176,7 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
       >
         {/* 1. FIXED TOP HEADER WITH BORDER BELOW (Exact h-16 matching right top header) */}
         <div className="h-16 shrink-0 px-4 border-b border-white/[0.08] flex items-center justify-between bg-[#08090d]/80">
-          <Link href={basePath} className="flex items-center gap-2.5 group">
+          <Link href={`${basePath}/overview`} className="flex items-center gap-2.5 group">
             <AnimatedLogo size={32} animated={true} glow={true} />
             <div className="flex flex-col">
               <span className="font-serif text-base font-medium text-white group-hover:text-white transition-colors leading-tight">
@@ -271,12 +273,22 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
           {/* Profile & Sign Out Bar */}
           <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.02] border border-white/[0.06]">
             <div className="flex items-center gap-2 min-w-0 pr-2">
-              <div 
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-bold text-white shrink-0"
-                style={{ backgroundColor: `${currentTheme.primary}30`, borderColor: `${currentTheme.primary}50` }}
-              >
-                RM
-              </div>
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt={user.name || 'Admin'}
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 rounded-lg object-cover shrink-0 border border-white/10"
+                />
+              ) : (
+                <div 
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-bold text-white shrink-0"
+                  style={{ backgroundColor: `${currentTheme.primary}30`, borderColor: `${currentTheme.primary}50` }}
+                >
+                  RM
+                </div>
+              )}
               <div className="truncate">
                 <p className="text-xs font-medium text-white truncate leading-tight">
                   {user.name || 'Admin'}
@@ -316,7 +328,7 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
 
         <div className="flex items-center gap-2">
           {/* Mode Switcher (Surface Canvas vs Studio Engine) on Mobile */}
-          {(!pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact') && !pathname.includes('/tech-stack') && !pathname.includes('/projects')) && (
+          {(!pathname.includes('/overview') && !pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact') && !pathname.includes('/tech-stack') && !pathname.includes('/projects')) && (
             <div className="flex items-center p-0.5 rounded-xl border border-white/[0.12] bg-white/[0.04]">
               <button
                 type="button"
@@ -391,7 +403,7 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
           </div>
 
           {/* Middle: Mode Switcher (Surface Canvas vs Studio Engine) */}
-          {(!pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact') && !pathname.includes('/tech-stack') && !pathname.includes('/projects')) ? (
+          {(!pathname.includes('/overview') && !pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact') && !pathname.includes('/tech-stack') && !pathname.includes('/projects')) ? (
             <div className="flex items-center p-1 rounded-2xl border border-white/[0.12] bg-white/[0.03] backdrop-blur-md">
               <button
                 type="button"
@@ -508,7 +520,7 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
 
               {/* Studio Panels Grid */}
               <div className="grid grid-cols-2 gap-2">
-                {NAV_ITEMS.slice(4).map((item) => {
+                {NAV_ITEMS.filter((item) => !['Overview', 'Homepage', 'Projects', 'Stack'].includes(item.name)).map((item) => {
                   const Icon = item.icon;
                   const active = isLinkActive(item.href);
                   return (
@@ -723,7 +735,7 @@ function AdminShellContent({ basePath, user, children }: AdminShellProps) {
 export default function AdminShell(props: AdminShellProps) {
   return (
     <ToastProvider>
-      <AdminModeProvider>
+      <AdminModeProvider basePath={props.basePath}>
         <AdminShellContent {...props} />
       </AdminModeProvider>
     </ToastProvider>

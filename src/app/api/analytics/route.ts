@@ -7,8 +7,18 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     await ensurePortfolioTables();
 
+    const rawPath = String(body.path || '/');
+    const adminEntry = (process.env.ADMIN_ENTRY_PATH || '').trim();
+    if (
+      rawPath.startsWith('/control-room') || 
+      rawPath.startsWith('/api') || 
+      (adminEntry && rawPath.startsWith(adminEntry))
+    ) {
+      return NextResponse.json({ success: true });
+    }
+
     const id = `evt_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const path = escapeSqlString(body.path || '/');
+    const path = escapeSqlString(rawPath);
     const visitorId = escapeSqlString(body.visitorId || 'anonymous');
     const device = escapeSqlString(body.device || 'desktop');
     const browser = escapeSqlString(body.browser || 'unknown');

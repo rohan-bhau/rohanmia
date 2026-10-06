@@ -10,234 +10,408 @@ import {
   Mail, 
   User, 
   Settings, 
-  Link2,
+  Globe,
   ArrowUpRight,
-  Plus,
-  ExternalLink,
+  Eye,
+  Users,
+  Calendar,
+  Sparkles,
+  Laptop,
+  Smartphone,
+  Flame,
+  Layers,
+  Star
 } from 'lucide-react';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
+import { OverviewAnalyticsData } from '@/actions/adminOverview';
 
 interface ControlRoomOverviewClientProps {
   basePath: string;
-  projectCount: number;
-  stackCount: number;
-  galleryCount: number;
-  guestbookCount: number;
-  inquiryCount: number;
-  bookingCount: number;
-  recentGuestbook: any[];
-  recentInquiries: any[];
+  data: OverviewAnalyticsData;
 }
 
 export default function ControlRoomOverviewClient({
   basePath,
-  projectCount,
-  stackCount,
-  galleryCount,
-  guestbookCount,
-  inquiryCount,
-  bookingCount,
-  recentGuestbook,
-  recentInquiries,
+  data,
 }: ControlRoomOverviewClientProps) {
   const { currentTheme } = useThemeAccent();
+  const { visitorStats, resourceCounts, recentActivity } = data;
 
   const sections = [
     {
+      name: 'Homepage',
+      route: `${basePath}/homepage`,
+      count: 'Hero & Bento',
+      label: 'Visitor Landing',
+      icon: Sparkles,
+      desc: 'Interactive hero bio, avatar cropping, curated work, and bento layout configuration.'
+    },
+    {
       name: 'Projects',
       route: `${basePath}/projects`,
-      publicRoute: '/projects',
-      count: projectCount,
+      count: `${resourceCounts.projects} Projects`,
+      badge: `${resourceCounts.featuredProjects} Featured`,
       label: 'Production Case Studies',
       icon: FolderGit2,
-      desc: 'Selected works, architecture breakdown, tech tags, and live deployment links.'
+      desc: 'Deep architecture breakdown, metrics, tech tags, drag-to-reorder, and live URLs.'
     },
     {
       name: 'Tech Stack',
       route: `${basePath}/tech-stack`,
-      publicRoute: '/tech-stack',
-      count: stackCount,
+      count: `${resourceCounts.stackItems} Technologies`,
       label: 'Engineered Arsenal',
       icon: Cpu,
-      desc: 'Categorized technologies, frameworks, proficiency ratings, and documentation.'
+      desc: 'Categorized technologies, frameworks, proficiency sliders, and official docs links.'
+    },
+    {
+      name: 'About Me',
+      route: `${basePath}/about`,
+      count: 'Bio & Principles',
+      label: 'Career Chronicle',
+      icon: User,
+      desc: 'Biography narrative, engineering journey, core competencies, and principles.'
     },
     {
       name: 'Gallery',
       route: `${basePath}/gallery`,
-      publicRoute: '/gallery',
-      count: galleryCount,
+      count: `${resourceCounts.gallery} Photos`,
       label: 'Visual Archive',
       icon: ImageIcon,
-      desc: 'Curated photography, moments, travel archives, and focal point adjustments.'
-    },
-    {
-      name: 'About',
-      route: `${basePath}/about`,
-      publicRoute: '/about',
-      count: 4,
-      label: 'Career Chronicle',
-      icon: User,
-      desc: 'Biography narrative, engineering journey, principles, and academic background.'
+      desc: 'Curated photography, captures, visual travel moments, and focal alignment.'
     },
     {
       name: 'Guestbook',
       route: `${basePath}/guestbook`,
-      publicRoute: '/guestbook',
-      count: guestbookCount,
+      count: `${resourceCounts.guestbook} Entries`,
       label: 'Community Ledger',
       icon: BookOpen,
       desc: 'Visitor signatures, community moderation, sentiment review, and entry deletion.'
     },
     {
-      name: 'Contact',
+      name: 'Contact & Inquiries',
       route: `${basePath}/contact`,
-      publicRoute: '/contact',
-      count: inquiryCount + bookingCount,
+      count: `${resourceCounts.inquiries} Inquiries`,
+      badge: resourceCounts.unreadInquiries > 0 ? `${resourceCounts.unreadInquiries} New` : undefined,
       label: 'Inquiries & Meetings',
       icon: Mail,
-      desc: 'Direct client inquiries, message status workflow, and scheduled discovery sessions.'
+      desc: 'Direct client inquiries, conversation statuses, and discovery meeting bookings.'
     },
     {
-      name: 'Links',
+      name: 'Social Links',
       route: `${basePath}/links`,
-      publicRoute: '/links',
-      count: 6,
+      count: `${resourceCounts.links} Links`,
       label: 'Direct Tree',
-      icon: Link2,
+      icon: Globe,
       desc: 'Curated social profiles, developer hubs, and public resume download link.'
     },
     {
-      name: 'Settings',
+      name: 'Site Settings',
       route: `${basePath}/settings`,
-      publicRoute: '/',
-      count: 1,
+      count: 'Config',
       label: 'Studio Preferences',
       icon: Settings,
-      desc: 'Site title, SEO meta description, contact email, and global availability status.'
+      desc: 'Global title, meta description, contact email, and availability status.'
     },
   ];
 
+  // Calculate percentage of mobile vs desktop
+  const totalDeviceLogs = visitorStats.devices.reduce((acc, d) => acc + d.count, 0) || 1;
+  const desktopCount = visitorStats.devices.find(d => d.device.toLowerCase().includes('desktop'))?.count || 0;
+  const mobileCount = visitorStats.devices.find(d => d.device.toLowerCase().includes('mobile'))?.count || 0;
+  const desktopPct = Math.round((desktopCount / totalDeviceLogs) * 100);
+  const mobilePct = Math.max(0, 100 - desktopPct);
+
+  // Maximum view count for progress bar scaling
+  const maxPathViews = Math.max(...visitorStats.topPaths.map(p => p.count), 1);
+
   return (
-    <div className="space-y-12 max-w-6xl pb-16">
+    <div className="space-y-10 max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pb-20 animate-in fade-in duration-300">
       
-      {/* Hero Header matching visitor aesthetic */}
-      <div className="relative rounded-[32px] bg-[#0c0e14]/75 border border-white/[0.08] backdrop-blur-2xl p-8 sm:p-12 shadow-2xl overflow-hidden">
-        {/* Subtle Horizon line reacting to current theme */}
-        <div 
-          className="absolute top-0 left-0 right-0 h-px opacity-40 transition-colors duration-700" 
-          style={{
-            background: `linear-gradient(90deg, transparent, ${currentTheme.primary}, transparent)`
-          }}
-        />
-        
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-          <div className="space-y-4 max-w-2xl">
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-xs uppercase tracking-[0.25em] text-neutral-400">
-                OVERVIEW
-              </span>
-              <span className="text-neutral-600">•</span>
-              <div className="inline-flex items-center gap-1.5 font-mono text-[11px] text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
-                <span>Synchronized with Neon PostgreSQL</span>
+      {/* 1. TITLE ONLY */}
+      <div className="pt-2 pb-1">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-white tracking-tight leading-[1.15]">
+          System{' '}
+          <span 
+            className="font-serif italic font-normal text-transparent bg-clip-text"
+            style={{
+              backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`
+            }}
+          >
+            Telemetry
+          </span>
+        </h1>
+      </div>
+
+      {/* ========================================================
+          2. VISITOR ANALYTICS METRICS (REAL DATA FROM POSTGRESQL)
+         ======================================================== */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 block">
+              TRAFFIC INTELLIGENCE
+            </span>
+            <h2 className="text-xl sm:text-2xl font-serif font-normal text-white tracking-tight mt-0.5">
+              Visitor Insights
+            </h2>
+          </div>
+          <span className="text-xs font-mono text-neutral-500">Autonomous Server Telemetry</span>
+        </div>
+
+        {/* 4 Core Metric Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Card 1: Total Page Views */}
+          <div className="p-5 rounded-2xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl relative overflow-hidden space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-neutral-400">Total Page Views</span>
+              <div 
+                className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10"
+                style={{ backgroundColor: `${currentTheme.primary}18`, color: currentTheme.primary }}
+              >
+                <Eye size={15} />
               </div>
             </div>
-
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-normal text-white tracking-tight leading-[1.12]">
-              Control{' '}
-              <span 
-                className="font-serif italic font-normal text-transparent bg-clip-text"
-                style={{
-                  backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`
-                }}
-              >
-                Room
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-mono font-bold text-white tracking-tight">
+                {visitorStats.totalViews}
               </span>
-            </h1>
-
-            <p className="text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
-              Curate, edit, and publish content across every section of your portfolio in real time. The public visitor interface remains frozen and pristine.
+              <span className="text-[11px] font-mono text-neutral-500">hits</span>
+            </div>
+            <p className="text-[11px] font-mono text-neutral-400 pt-1 border-t border-white/[0.05]">
+              Aggregate public route requests
             </p>
           </div>
 
-          {/* Quick Action Hub */}
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Link
-              href={`${basePath}/projects`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition-all shadow-md cursor-pointer"
-            >
-              <Plus size={14} />
-              <span>New Project</span>
-            </Link>
-
-            <Link
-              href={`${basePath}/gallery`}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.1] text-white text-xs font-medium transition-all cursor-pointer"
-            >
-              <ImageIcon size={14} />
-              <span>Add Photo</span>
-            </Link>
-
-            <Link
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-neutral-300 hover:text-white text-xs font-mono transition-colors"
-            >
-              <span>Public Site</span>
-              <ExternalLink size={13} />
-            </Link>
+          {/* Card 2: Unique Visitors */}
+          <div className="p-5 rounded-2xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl relative overflow-hidden space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-neutral-400">Unique Visitors</span>
+              <div 
+                className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10"
+                style={{ backgroundColor: `${currentTheme.primary}18`, color: currentTheme.primary }}
+              >
+                <Users size={15} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-mono font-bold text-white tracking-tight">
+                {visitorStats.uniqueVisitors}
+              </span>
+              <span className="text-[11px] font-mono text-neutral-500">devices</span>
+            </div>
+            <p className="text-[11px] font-mono text-neutral-400 pt-1 border-t border-white/[0.05]">
+              Distinct client fingerprint IDs
+            </p>
           </div>
+
+          {/* Card 3: Views Today */}
+          <div className="p-5 rounded-2xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl relative overflow-hidden space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-neutral-400">Views Today</span>
+              <div 
+                className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10"
+                style={{ backgroundColor: `${currentTheme.primary}18`, color: currentTheme.primary }}
+              >
+                <Flame size={15} />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-mono font-bold text-white tracking-tight">
+                {visitorStats.viewsToday}
+              </span>
+              <span className="text-[11px] font-mono text-emerald-400">active</span>
+            </div>
+            <p className="text-[11px] font-mono text-neutral-400 pt-1 border-t border-white/[0.05]">
+              Since midnight UTC
+            </p>
+          </div>
+
+          {/* Card 4: Device Split */}
+          <div className="p-5 rounded-2xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl relative overflow-hidden space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-neutral-400">Platform Split</span>
+              <div 
+                className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10"
+                style={{ backgroundColor: `${currentTheme.primary}18`, color: currentTheme.primary }}
+              >
+                <Laptop size={15} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between pt-1 text-xs font-mono">
+              <div className="flex items-center gap-1.5 text-neutral-200">
+                <Laptop size={13} className="text-neutral-400" />
+                <span>{desktopPct}% Desktop</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-neutral-300">
+                <Smartphone size={13} className="text-neutral-400" />
+                <span>{mobilePct}% Mobile</span>
+              </div>
+            </div>
+            <div className="w-full bg-white/[0.08] h-1.5 rounded-full overflow-hidden flex mt-2">
+              <div 
+                className="h-full transition-all duration-500" 
+                style={{ width: `${desktopPct}%`, backgroundColor: currentTheme.primary }} 
+              />
+              <div 
+                className="h-full bg-neutral-600 transition-all duration-500" 
+                style={{ width: `${mobilePct}%` }} 
+              />
+            </div>
+          </div>
+
+        </div>
+
+        {/* Top Visited Pages & Recent Log Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          
+          {/* Top Visited Routes */}
+          <div className="p-6 rounded-3xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+              <div>
+                <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-400 block">
+                  ROUTE POPULARITY
+                </span>
+                <h3 className="font-serif text-lg text-white font-normal mt-0.5">
+                  Most Viewed Destinations
+                </h3>
+              </div>
+              <span className="text-xs font-mono text-neutral-500">Hits</span>
+            </div>
+
+            <div className="space-y-3">
+              {visitorStats.topPaths.length === 0 ? (
+                <p className="text-xs font-mono text-neutral-500 py-6 text-center">
+                  No page views recorded yet.
+                </p>
+              ) : (
+                visitorStats.topPaths.map((item) => {
+                  const pct = Math.round((item.count / maxPathViews) * 100);
+                  const isHome = item.path === '/';
+                  const label = isHome ? '/ (Home)' : item.path;
+
+                  return (
+                    <div key={item.path} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="text-neutral-300 font-medium truncate max-w-[260px]">
+                          {label}
+                        </span>
+                        <span className="text-white font-bold">{item.count}</span>
+                      </div>
+                      <div className="w-full bg-white/[0.04] h-2 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: currentTheme.primary,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Recent Visitor Streams */}
+          <div className="p-6 rounded-3xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+              <div>
+                <span className="font-mono text-[11px] uppercase tracking-wider text-neutral-400 block">
+                  REAL-TIME TELEMETRY
+                </span>
+                <h3 className="font-serif text-lg text-white font-normal mt-0.5">
+                  Recent Visitor Stream
+                </h3>
+              </div>
+              <span className="text-xs font-mono text-neutral-500">Active</span>
+            </div>
+
+            <div className="space-y-2.5">
+              {visitorStats.recentVisitors.length === 0 ? (
+                <p className="text-xs font-mono text-neutral-500 py-6 text-center">
+                  No recent visitor logs.
+                </p>
+              ) : (
+                visitorStats.recentVisitors.map((v, i) => (
+                  <div 
+                    key={i} 
+                    className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-between text-xs font-mono"
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                      <span className="text-neutral-200 truncate">{v.path}</span>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0 text-[11px] text-neutral-400">
+                      <span>{v.device}</span>
+                      <time className="text-neutral-500">
+                        {v.created_at ? new Date(v.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now'}
+                      </time>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
         </div>
       </div>
 
-      {/* Page Sections Grid matching visitor page names */}
-      <div className="space-y-6">
+      {/* ========================================================
+          3. EDITORIAL PANELS SUMMARY (SHORT PORTFOLIO OVERVIEW)
+         ======================================================== */}
+      <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
           <div>
-            <span className="font-mono text-xs uppercase tracking-widest text-neutral-400 block">
-              PORTFOLIO SECTIONS
+            <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 block">
+              PORTFOLIO ARCHITECTURE
             </span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-normal text-white tracking-tight mt-1">
-              Editorial{' '}
-              <span 
-                className="font-serif italic font-normal text-transparent bg-clip-text"
-                style={{
-                  backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`
-                }}
-              >
-                Panels
-              </span>
+            <h2 className="text-xl sm:text-2xl font-serif font-normal text-white tracking-tight mt-0.5">
+              Studio Sections
             </h2>
           </div>
-          <span className="text-xs font-mono text-neutral-500">8 Sections Available</span>
+          <span className="text-xs font-mono text-neutral-500">9 Editorial Modules</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sections.map((sec) => {
             const Icon = sec.icon;
             return (
               <Link
                 key={sec.name}
                 href={sec.route}
-                className="group p-6 rounded-3xl bg-[#0c0e14]/75 border border-white/[0.08] hover:border-white/25 hover:bg-[#121622]/80 transition-all duration-300 flex flex-col justify-between min-h-[220px] backdrop-blur-xl shadow-lg relative overflow-hidden"
+                className="group p-5 rounded-3xl bg-[#0c0e14]/80 border border-white/[0.08] hover:border-white/25 hover:bg-[#121622]/90 transition-all duration-300 flex flex-col justify-between min-h-[190px] backdrop-blur-xl shadow-lg relative overflow-hidden"
               >
                 <div>
                   <div className="flex items-start justify-between">
                     <div 
-                      className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-neutral-300 group-hover:text-white transition-all"
+                      className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-neutral-300 group-hover:text-white transition-all"
                     >
-                      <Icon size={18} />
+                      <Icon size={16} />
                     </div>
-                    <span 
-                      className="font-mono text-xl sm:text-2xl font-bold text-white tracking-tight group-hover:scale-105 transition-transform origin-right"
-                    >
-                      {sec.count}
-                    </span>
+                    
+                    <div className="flex flex-col items-end">
+                      <span className="font-mono text-sm font-semibold text-white tracking-tight">
+                        {sec.count}
+                      </span>
+                      {sec.badge && (
+                        <span 
+                          className="text-[10px] font-mono px-2 py-0.5 rounded-full mt-1 border"
+                          style={{
+                            backgroundColor: `${currentTheme.primary}18`,
+                            borderColor: `${currentTheme.primary}35`,
+                            color: currentTheme.primary
+                          }}
+                        >
+                          {sec.badge}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="mt-5 space-y-1.5">
-                    <h3 className="font-serif text-xl text-white group-hover:text-white transition-colors tracking-tight">
+                  <div className="mt-4 space-y-1">
+                    <h3 className="font-serif text-lg text-white group-hover:text-white transition-colors tracking-tight">
                       {sec.name}
                     </h3>
                     <p className="text-xs text-neutral-400 font-light leading-relaxed line-clamp-2">
@@ -246,9 +420,9 @@ export default function ControlRoomOverviewClient({
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-neutral-400 group-hover:text-white transition-colors">
-                  <span>Edit {sec.name}</span>
-                  <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <div className="pt-3 mt-3 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-neutral-400 group-hover:text-white transition-colors">
+                  <span>Open {sec.name}</span>
+                  <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </div>
               </Link>
             );
@@ -256,39 +430,41 @@ export default function ControlRoomOverviewClient({
         </div>
       </div>
 
-      {/* Communications & Inquiries Stream */}
+      {/* ========================================================
+          4. COMMUNICATIONS & COMMUNITY RECENT ACTIVITY
+         ======================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Recent Guestbook Signatures */}
-        <div className="p-7 rounded-3xl bg-[#0c0e14]/75 border border-white/[0.08] backdrop-blur-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+        <div className="p-6 sm:p-7 rounded-3xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
             <div>
               <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 block">
-                RECENT SIGNATURES
+                COMMUNITY LEDGER
               </span>
               <h3 className="font-serif text-xl text-white font-normal mt-0.5">
-                The Guestbook
+                Recent Signatures
               </h3>
             </div>
             <Link
               href={`${basePath}/guestbook`}
               className="text-xs font-mono text-neutral-400 hover:text-white flex items-center gap-1 transition-colors"
             >
-              <span>View All ({guestbookCount})</span>
+              <span>View All ({resourceCounts.guestbook})</span>
               <ArrowUpRight size={12} />
             </Link>
           </div>
 
-          <div className="space-y-3">
-            {recentGuestbook.length === 0 ? (
-              <p className="text-xs text-neutral-500 font-mono py-6 text-center">
+          <div className="space-y-2.5">
+            {recentActivity.guestbook.length === 0 ? (
+              <p className="text-xs text-neutral-500 font-mono py-8 text-center">
                 No guestbook signatures recorded yet.
               </p>
             ) : (
-              recentGuestbook.map((entry) => (
+              recentActivity.guestbook.map((entry) => (
                 <div
                   key={entry.id}
-                  className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/10 transition-colors space-y-2"
+                  className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-1.5"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-white">
@@ -307,36 +483,36 @@ export default function ControlRoomOverviewClient({
           </div>
         </div>
 
-        {/* Recent Contact Inquiries */}
-        <div className="p-7 rounded-3xl bg-[#0c0e14]/75 border border-white/[0.08] backdrop-blur-xl space-y-6">
-          <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+        {/* Recent Client Inquiries */}
+        <div className="p-6 sm:p-7 rounded-3xl bg-[#0c0e14]/80 border border-white/[0.08] backdrop-blur-xl space-y-4">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
             <div>
               <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-400 block">
-                INCOMING MESSAGES
+                CLIENT PIPELINE
               </span>
               <h3 className="font-serif text-xl text-white font-normal mt-0.5">
-                Client Inquiries
+                Incoming Inquiries
               </h3>
             </div>
             <Link
               href={`${basePath}/contact`}
               className="text-xs font-mono text-neutral-400 hover:text-white flex items-center gap-1 transition-colors"
             >
-              <span>Inbox ({inquiryCount})</span>
+              <span>Inbox ({resourceCounts.inquiries})</span>
               <ArrowUpRight size={12} />
             </Link>
           </div>
 
-          <div className="space-y-3">
-            {recentInquiries.length === 0 ? (
-              <p className="text-xs text-neutral-500 font-mono py-6 text-center">
+          <div className="space-y-2.5">
+            {recentActivity.inquiries.length === 0 ? (
+              <p className="text-xs text-neutral-500 font-mono py-8 text-center">
                 Inbox is clear. No direct messages received yet.
               </p>
             ) : (
-              recentInquiries.map((inq) => (
+              recentActivity.inquiries.map((inq) => (
                 <div
                   key={inq.id}
-                  className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/10 transition-colors space-y-2"
+                  className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-1.5"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -347,9 +523,14 @@ export default function ControlRoomOverviewClient({
                         {inq.sender_email}
                       </span>
                     </div>
-                    <time className="text-[10px] font-mono text-neutral-500">
-                      {new Date(inq.created_at).toLocaleDateString()}
-                    </time>
+                    <div className="flex items-center gap-2">
+                      {!inq.is_read && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                      )}
+                      <time className="text-[10px] font-mono text-neutral-500">
+                        {new Date(inq.created_at).toLocaleDateString()}
+                      </time>
+                    </div>
                   </div>
                   <p className="text-xs text-neutral-300 font-light leading-relaxed truncate">
                     {inq.message}

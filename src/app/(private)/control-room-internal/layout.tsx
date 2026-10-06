@@ -33,12 +33,24 @@ export default async function ControlRoomLayout({
     throw new Error('ADMIN_ENTRY_PATH is not configured in environment variables');
   }
 
+  // Fetch admin avatar dynamically from PostgreSQL hero_content
+  let avatarUrl = (user?.image as string) || '';
+  try {
+    const { executeSql } = await import('@/lib/postgres');
+    const heroRes = await executeSql<any>(`SELECT profile_image FROM hero_content WHERE id = 'primary' LIMIT 1;`);
+    if (heroRes.rows[0]?.profile_image) {
+      avatarUrl = heroRes.rows[0].profile_image;
+    }
+  } catch (err) {
+    console.error('Error fetching admin avatar:', err);
+  }
+
   return (
     <>
       {!isAdmin ? (
         <StealthLoginGate />
       ) : (
-        <AdminShell basePath={basePath} user={user}>
+        <AdminShell basePath={basePath} user={user} avatarUrl={avatarUrl}>
           {children}
         </AdminShell>
       )}

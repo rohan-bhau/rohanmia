@@ -21,6 +21,7 @@ import { FaGithub } from 'react-icons/fa6';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { FEATURED_CASE_STUDIES, CaseStudy } from '@/data/projects';
 import TechBadge from '@/components/ui/TechBadge';
+import { useAdminMode } from '@/components/admin/AdminModeContext';
 
 /**
  * ============================================================================
@@ -258,6 +259,7 @@ export default function FeaturedCaseStudies({
   onAdd?: () => void;
 }) {
   const { currentTheme } = useThemeAccent();
+  const { basePath } = useAdminMode();
   const [projectsList, setProjectsList] = useState<CaseStudy[]>(
     initialProjects && initialProjects.length > 0 ? initialProjects : FEATURED_CASE_STUDIES
   );
@@ -388,7 +390,7 @@ export default function FeaturedCaseStudies({
                 </button>
               )}
               <Link
-                href="/projects"
+                href={basePath ? `${basePath}/projects` : '/projects'}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-[11px] sm:text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
               >
                 <span>All Archives</span>
