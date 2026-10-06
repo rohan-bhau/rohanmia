@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AccentColor, THEME_OPTIONS, ThemeOption } from '@/types/theme';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { AccentColor, THEME_OPTIONS, ThemeOption } from "@/types/theme";
 
 interface ThemeContextType {
   accent: AccentColor;
@@ -12,17 +12,17 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'rohan_portfolio_accent';
+const STORAGE_KEY = "rohan_portfolio_accent";
 
-export function ThemeProvider({ 
+export function ThemeProvider({
   children,
-  initialAccent = 'cyan'
-}: { 
+  initialAccent = "cyan",
+}: {
   children: React.ReactNode;
   initialAccent?: AccentColor;
 }) {
   const [accent, setAccentState] = useState<AccentColor>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem(STORAGE_KEY) as AccentColor;
         if (saved && THEME_OPTIONS.some((t) => t.id === saved)) {
@@ -34,37 +34,44 @@ export function ThemeProvider({
   });
 
   useEffect(() => {
+    let accentTimer: number | undefined;
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as AccentColor;
       if (saved && THEME_OPTIONS.some((t) => t.id === saved)) {
         if (saved !== accent) {
-          setAccentState(saved);
+          accentTimer = window.setTimeout(() => setAccentState(saved), 0);
         }
-        document.documentElement.setAttribute('data-accent', saved);
+        document.documentElement.setAttribute("data-accent", saved);
         document.cookie = `${STORAGE_KEY}=${saved}; path=/; max-age=31536000; SameSite=Lax`;
       } else {
-        document.documentElement.setAttribute('data-accent', initialAccent);
+        document.documentElement.setAttribute("data-accent", initialAccent);
       }
     } catch {
-      document.documentElement.setAttribute('data-accent', initialAccent);
+      document.documentElement.setAttribute("data-accent", initialAccent);
     }
-  }, [initialAccent]);
+    return () => {
+      if (accentTimer !== undefined) window.clearTimeout(accentTimer);
+    };
+  }, [accent, initialAccent]);
 
   const setAccent = (newAccent: AccentColor) => {
     setAccentState(newAccent);
     try {
       localStorage.setItem(STORAGE_KEY, newAccent);
       document.cookie = `${STORAGE_KEY}=${newAccent}; path=/; max-age=31536000; SameSite=Lax`;
-      document.documentElement.setAttribute('data-accent', newAccent);
+      document.documentElement.setAttribute("data-accent", newAccent);
     } catch {
       // ignore storage failure
     }
   };
 
-  const currentTheme = THEME_OPTIONS.find((t) => t.id === accent) || THEME_OPTIONS[0];
+  const currentTheme =
+    THEME_OPTIONS.find((t) => t.id === accent) || THEME_OPTIONS[0];
 
   return (
-    <ThemeContext.Provider value={{ accent, setAccent, themes: THEME_OPTIONS, currentTheme }}>
+    <ThemeContext.Provider
+      value={{ accent, setAccent, themes: THEME_OPTIONS, currentTheme }}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -73,7 +80,7 @@ export function ThemeProvider({
 export function useThemeAccent() {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useThemeAccent must be used within a ThemeProvider');
+    throw new Error("useThemeAccent must be used within a ThemeProvider");
   }
   return context;
 }

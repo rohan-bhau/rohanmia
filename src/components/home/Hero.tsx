@@ -1,22 +1,16 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { 
-  ArrowUpRight, 
-  Layers, 
-  FileText,
-  Camera,
-  Pencil
-} from 'lucide-react';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import { HeroData } from '@/lib/constants/homepage';
-import { saveHeroData } from '@/actions/adminHero';
-import EditableElement from '@/components/admin/ui/EditableElement';
-import ImageCropModal from '@/components/admin/ui/ImageCropModal';
-import { useToast } from '@/components/admin/ui/Toast';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { ArrowUpRight, Layers, FileText, Camera, Pencil } from "lucide-react";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
+import { HeroData } from "@/lib/constants/homepage";
+import { saveHeroData } from "@/actions/adminHero";
+import EditableElement from "@/components/admin/ui/EditableElement";
+import ImageCropModal from "@/components/admin/ui/ImageCropModal";
+import { useToast } from "@/components/admin/ui/Toast";
 
 interface HeroProps {
   initialData?: HeroData;
@@ -25,61 +19,58 @@ interface HeroProps {
 }
 
 const emptyHeroData: HeroData = {
-  greeting: '',
-  name: '',
-  surname: '',
-  bio: '',
-  profile_image: '',
-  resume_url: '',
+  greeting: "",
+  name: "",
+  surname: "",
+  bio: "",
+  profile_image: "",
+  resume_url: "",
   rotating_roles: [],
-  projects_cta_text: 'View Projects',
-  resume_cta_text: 'View Resume'
+  projects_cta_text: "View Projects",
+  resume_cta_text: "View Resume",
 };
 
-export default function Hero({ initialData, isAdmin = false, compactTop = false }: HeroProps) {
+export default function Hero({
+  initialData,
+  isAdmin = false,
+  compactTop = false,
+}: HeroProps) {
   const { currentTheme } = useThemeAccent();
   const toastContext = useToast();
-  const showToast = toastContext?.showToast || ((_msg: string, _type?: any) => {});
+  const showToast =
+    toastContext?.showToast || ((_msg: string, _type?: any) => {});
 
   const [data, setData] = useState<HeroData>(initialData || emptyHeroData);
   const [roleIndex, setRoleIndex] = useState(0);
-  const [displayText, setDisplayText] = useState('');
+  const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [canType, setCanType] = useState(isAdmin);
-
-  // Sync if initialData changes
-  useEffect(() => {
-    if (initialData) {
-      setData(initialData);
-    }
-  }, [initialData]);
+  const displayData = !isAdmin && initialData ? initialData : data;
 
   // Wait for preloader entrance to finish before typing on public homepage
   useEffect(() => {
-    if (isAdmin) {
-      setCanType(true);
-      return;
-    }
+    if (isAdmin) return;
+
+    if (typeof window === "undefined") return;
+
     const handleDone = () => setCanType(true);
-    window.addEventListener('bhau-preloader-done', handleDone);
+    window.addEventListener("bhau-preloader-done", handleDone);
     // Fallback: start typing after 2.8s entrance if event already fired
     const fallback = setTimeout(() => setCanType(true), 2800);
     return () => {
-      window.removeEventListener('bhau-preloader-done', handleDone);
+      window.removeEventListener("bhau-preloader-done", handleDone);
       clearTimeout(fallback);
     };
   }, [isAdmin]);
 
   // Roles typewriter effect strictly from PostgreSQL database
-  const roles = React.useMemo(() => {
-    if (data?.rotating_roles && Array.isArray(data.rotating_roles)) {
-      return data.rotating_roles.filter((r) => typeof r === 'string' && r.trim().length > 0);
-    }
-    return [];
-  }, [data?.rotating_roles]);
-
   useEffect(() => {
+    const roles = Array.isArray(displayData?.rotating_roles)
+      ? displayData.rotating_roles.filter(
+          (r) => typeof r === "string" && r.trim().length > 0,
+        )
+      : [];
     if (!canType || roles.length === 0) return;
     let timeout: NodeJS.Timeout;
     const current = roles[roleIndex % roles.length];
@@ -87,7 +78,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
 
     if (!isDeleting && displayText === current) {
       timeout = setTimeout(() => setIsDeleting(true), 2000);
-    } else if (isDeleting && displayText === '') {
+    } else if (isDeleting && displayText === "") {
       timeout = setTimeout(() => {
         setIsDeleting(false);
         setRoleIndex((prev) => (prev + 1) % roles.length);
@@ -98,39 +89,47 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
         setDisplayText(
           isDeleting
             ? current.substring(0, displayText.length - 1)
-            : current.substring(0, displayText.length + 1)
+            : current.substring(0, displayText.length + 1),
         );
       }, speed);
     }
 
     return () => clearTimeout(timeout);
-  }, [canType, displayText, isDeleting, roleIndex, roles]);
+  }, [
+    canType,
+    displayData?.rotating_roles,
+    displayText,
+    isDeleting,
+    roleIndex,
+  ]);
 
   const handleSaveField = async (field: keyof HeroData, value: any) => {
     const updated = { ...data, [field]: value };
     setData(updated);
     const res = await saveHeroData({ [field]: value });
     if (res.success) {
-      showToast('Updated successfully', 'success');
+      showToast("Updated successfully", "success");
       return { success: true };
     } else {
-      showToast(res.error || 'Failed to update', 'error');
+      showToast(res.error || "Failed to update", "error");
       return { success: false, error: res.error };
     }
   };
 
   return (
-    <section className={`relative ${compactTop ? 'pt-2 md:pt-4' : (isAdmin ? 'pt-4 md:pt-6' : 'pt-32 md:pt-40')} pb-20 px-6 overflow-hidden`}>
+    <section
+      className={`relative ${compactTop ? "pt-2 md:pt-4" : isAdmin ? "pt-4 md:pt-6" : "pt-32 md:pt-40"} pb-20 px-6 overflow-hidden`}
+    >
       {/* Horizon Accent Beam */}
       <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div 
+        <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-4/5 max-w-5xl h-px opacity-50"
           style={{
             background: `linear-gradient(90deg, transparent, ${currentTheme.primary}, transparent)`,
           }}
         />
 
-        <div 
+        <div
           className="absolute -top-40 left-1/2 -translate-x-1/2 w-[850px] h-[450px] opacity-25 blur-[120px] transition-all duration-1000"
           style={{
             background: `radial-gradient(50% 50% at 50% 25%, ${currentTheme.primary} 0%, transparent 80%)`,
@@ -142,10 +141,8 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
 
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-14 items-center">
-          
           {/* Left Column: Big Name, Title, Bio, Action Buttons */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-
             {/* Name and Greeting */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -157,11 +154,11 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 <EditableElement
                   isAdmin={isAdmin}
                   label="Greeting"
-                  value={data.greeting}
-                  onSave={(val) => handleSaveField('greeting', val)}
+                  value={displayData.greeting}
+                  onSave={(val) => handleSaveField("greeting", val)}
                 >
                   <span className="text-sm sm:text-base font-mono text-muted-foreground block font-normal tracking-wide">
-                    {data.greeting}
+                    {displayData.greeting}
                   </span>
                 </EditableElement>
 
@@ -169,29 +166,28 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                   <EditableElement
                     isAdmin={isAdmin}
                     label="First Name"
-                    value={data.name}
-                    onSave={(val) => handleSaveField('name', val)}
+                    value={displayData.name}
+                    onSave={(val) => handleSaveField("name", val)}
                   >
-                    <span>{data.name}</span>
-                  </EditableElement>{' '}
-                  
+                    <span>{displayData.name}</span>
+                  </EditableElement>{" "}
                   <EditableElement
                     isAdmin={isAdmin}
                     label="Surname"
-                    value={data.surname}
-                    onSave={(val) => handleSaveField('surname', val)}
+                    value={displayData.surname}
+                    onSave={(val) => handleSaveField("surname", val)}
                   >
-                    <span 
+                    <span
                       className="relative inline-block font-serif italic text-transparent bg-clip-text transition-all duration-700"
                       style={{
                         backgroundImage: `linear-gradient(135deg, #ffffff 35%, ${currentTheme.primary} 100%)`,
                       }}
                     >
-                      {data.surname}
-                      <span 
+                      {displayData.surname}
+                      <span
                         className="absolute -bottom-1 left-0 right-0 h-[2.5px] rounded-full opacity-60 transition-colors duration-500"
                         style={{
-                          background: `linear-gradient(90deg, ${currentTheme.primary}, transparent)`
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, transparent)`,
                         }}
                       />
                     </span>
@@ -204,21 +200,28 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 <EditableElement
                   isAdmin={isAdmin}
                   label="Rotating Roles"
-                  value={Array.isArray(data.rotating_roles) ? data.rotating_roles.join(', ') : ''}
+                  value={
+                    Array.isArray(displayData.rotating_roles)
+                      ? displayData.rotating_roles.join(", ")
+                      : ""
+                  }
                   type="tags"
                   onSave={(val) => {
-                    const rolesArray = val.split(',').map(s => s.trim()).filter(Boolean);
-                    return handleSaveField('rotating_roles', rolesArray);
+                    const rolesArray = val
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                    return handleSaveField("rotating_roles", rolesArray);
                   }}
                 >
                   <div className="flex items-center text-sm sm:text-base font-mono tracking-tight font-medium">
-                    <span 
+                    <span
                       className="font-bold mr-2 select-none text-base transition-colors duration-500"
                       style={{ color: currentTheme.primary }}
                     >
                       ~&gt;
                     </span>
-                    <span 
+                    <span
                       className="font-semibold tracking-tight transition-all duration-500 text-transparent bg-clip-text"
                       style={{
                         backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`,
@@ -226,13 +229,17 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                     >
                       {displayText}
                     </span>
-                    <motion.span 
+                    <motion.span
                       animate={{ opacity: [1, 0, 1] }}
-                      transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                      transition={{
+                        duration: 0.8,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                       className="w-[2px] h-4 sm:h-5 ml-1.5 inline-block rounded-full"
-                      style={{ 
+                      style={{
                         backgroundColor: currentTheme.primary,
-                        boxShadow: `0 0 8px ${currentTheme.glow}`
+                        boxShadow: `0 0 8px ${currentTheme.glow}`,
                       }}
                     />
                   </div>
@@ -251,7 +258,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 label="Bio Description"
                 value={data.bio}
                 type="textarea"
-                onSave={(val) => handleSaveField('bio', val)}
+                onSave={(val) => handleSaveField("bio", val)}
                 className="w-full"
               >
                 <p className="text-sm sm:text-base text-muted-foreground max-w-xl leading-relaxed mx-auto lg:mx-0 font-normal">
@@ -272,7 +279,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 isAdmin={isAdmin}
                 label="Primary Button Text"
                 value={data.projects_cta_text}
-                onSave={(val) => handleSaveField('projects_cta_text', val)}
+                onSave={(val) => handleSaveField("projects_cta_text", val)}
               >
                 <Link
                   href="#projects"
@@ -294,10 +301,13 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 isAdmin={isAdmin}
                 label="Resume Button Text"
                 value={data.resume_cta_text}
-                onSave={(val) => handleSaveField('resume_cta_text', val)}
+                onSave={(val) => handleSaveField("resume_cta_text", val)}
               >
                 <a
-                  href={data.resume_url || "https://drive.google.com/file/d/1d1K3fJnkLDyc5ExLN8nYC_09e0e5ZCfi/view?usp=sharing"}
+                  href={
+                    data.resume_url ||
+                    "https://drive.google.com/file/d/1d1K3fJnkLDyc5ExLN8nYC_09e0e5ZCfi/view?usp=sharing"
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-3.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/15 text-xs sm:text-sm font-mono text-muted-foreground hover:text-foreground flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap"
@@ -307,7 +317,6 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                 </a>
               </EditableElement>
             </motion.div>
-
           </div>
 
           {/* Right Column: Clean, Elegant Portrait Showcase with Square Crop Upload */}
@@ -317,36 +326,36 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
             transition={{ duration: 0.7, delay: 0.2 }}
             className="lg:col-span-5 flex justify-center relative"
           >
-            <motion.div 
-              animate={{ 
+            <motion.div
+              animate={{
                 y: [0, -10, 0],
-                rotate: [0, 0.3, 0, -0.3, 0]
+                rotate: [0, 0.3, 0, -0.3, 0],
               }}
-              transition={{ 
-                duration: 6, 
-                repeat: Infinity, 
-                ease: 'easeInOut' 
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut",
               }}
               className="relative w-full max-w-sm sm:max-w-md group"
             >
               {/* Soft Ambient Halo */}
-              <div 
+              <div
                 className="absolute -inset-2 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none"
                 style={{ backgroundColor: currentTheme.primary }}
               />
 
               {/* Portrait Container Frame */}
-              <div 
+              <div
                 onClick={isAdmin ? () => setCropModalOpen(true) : undefined}
                 className={`relative rounded-[2.5rem] bg-[#0d0f14] border border-white/[0.12] group-hover:border-white/30 p-3 sm:p-4 shadow-2xl backdrop-blur-xl transition-all duration-500 ${
-                  isAdmin ? 'cursor-pointer' : ''
+                  isAdmin ? "cursor-pointer" : ""
                 }`}
               >
                 <div className="relative h-[400px] sm:h-[460px] w-full rounded-[2rem] overflow-hidden bg-[#08090a]">
                   {data.profile_image ? (
                     <Image
                       src={data.profile_image}
-                      alt={`${data.name} ${data.surname}`.trim() || 'Profile'}
+                      alt={`${data.name} ${data.surname}`.trim() || "Profile"}
                       fill
                       className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                       priority
@@ -357,14 +366,14 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
                       No Profile Image
                     </div>
                   )}
-                  
+
                   {/* Subtle bottom vignette gradient for depth */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#08090a]/75 via-transparent to-transparent opacity-60" />
 
                   {/* Admin Upload Prompt Overlay */}
                   {isAdmin && (
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-xs">
-                      <div 
+                      <div
                         className="p-3.5 rounded-full bg-white/10 border border-white/20 text-white shadow-2xl scale-90 group-hover:scale-100 transition-transform"
                         style={{ backgroundColor: `${currentTheme.primary}40` }}
                       >
@@ -379,7 +388,6 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
               </div>
             </motion.div>
           </motion.div>
-
         </div>
       </div>
 
@@ -391,7 +399,7 @@ export default function Hero({ initialData, isAdmin = false, compactTop = false 
           onSuccess={async (newUrl) => {
             setData((prev: HeroData) => ({ ...prev, profile_image: newUrl }));
             await saveHeroData({ profile_image: newUrl });
-            showToast('Hero portrait updated successfully', 'success');
+            showToast("Hero portrait updated successfully", "success");
           }}
         />
       )}

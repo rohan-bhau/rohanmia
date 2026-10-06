@@ -1,39 +1,40 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useTransition } from 'react';
-import Link from 'next/link';
-import { 
-  Trash2, 
-  Loader2, 
-  ArrowUpRight, 
+import React, { useState, useEffect, useTransition, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Trash2,
+  Loader2,
+  ArrowUpRight,
   Pencil,
   ArrowRight,
   Sparkles,
   Camera,
-  Check
-} from 'lucide-react';
-import { 
-  fetchAdminGuestbook, 
-  createAdminGuestbookEntry, 
+  Check,
+} from "lucide-react";
+import {
+  fetchAdminGuestbook,
+  createAdminGuestbookEntry,
   updateAdminGuestbookEntry,
-  removeAdminGuestbookEntry 
-} from '@/actions/adminGuestbook';
-import { DbGuestbookRow } from '@/lib/db/guestbook';
-import { useToast } from '@/components/admin/ui/Toast';
-import ConfirmModal from '@/components/admin/ui/ConfirmModal';
-import AdminModal from '@/components/admin/ui/AdminModal';
-import ImageCropModal from '@/components/admin/ui/ImageCropModal';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
+  removeAdminGuestbookEntry,
+} from "@/actions/adminGuestbook";
+import { DbGuestbookRow } from "@/lib/db/guestbook";
+import { useToast } from "@/components/admin/ui/Toast";
+import ConfirmModal from "@/components/admin/ui/ConfirmModal";
+import AdminModal from "@/components/admin/ui/AdminModal";
+import ImageCropModal from "@/components/admin/ui/ImageCropModal";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
 
 // =========================================================================
 // PLAYFUL DOODLE ACCENTS & SCALLOPED DIVIDERS (Exact Match to Public Guestbook)
 // =========================================================================
 const SparkleStarDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 100 100" fill="none" className={className}>
-    <path 
-      d="M50 0 C52 35 65 48 100 50 C65 52 52 65 50 100 C48 65 35 52 0 50 C35 48 48 35 50 0 Z" 
-      fill="currentColor" 
-      opacity="0.85" 
+    <path
+      d="M50 0 C52 35 65 48 100 50 C65 52 52 65 50 100 C48 65 35 52 0 50 C35 48 48 35 50 0 Z"
+      fill="currentColor"
+      opacity="0.85"
     />
   </svg>
 );
@@ -46,48 +47,65 @@ const LightningDoodle = ({ className = "" }: { className?: string }) => (
 
 const SmileyDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 126 138" fill="none" className={className}>
-    <path 
-      d="M 41.415 66.638 C 41.415 67.654 41.122 69.39 42.621 69.39 C 43.635 69.39 45.145 68.037 45.203 66.982 M 76.202 63.541 C 76.202 65.768 75.913 67.317 78.767 66.561 C 80.82 66.019 83.436 64.364 83.436 61.993 M 24.537 86.593 C 30.682 92.172 36.278 98.044 44.209 101.158 C 49.42 103.205 55.301 102.764 60.779 102.764 C 67.156 102.764 72.485 100.923 77.963 97.68 C 88.004 91.734 98.735 83.23 104.522 72.87" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeWidth="4.5" 
+    <path
+      d="M 41.415 66.638 C 41.415 67.654 41.122 69.39 42.621 69.39 C 43.635 69.39 45.145 68.037 45.203 66.982 M 76.202 63.541 C 76.202 65.768 75.913 67.317 78.767 66.561 C 80.82 66.019 83.436 64.364 83.436 61.993 M 24.537 86.593 C 30.682 92.172 36.278 98.044 44.209 101.158 C 49.42 103.205 55.301 102.764 60.779 102.764 C 67.156 102.764 72.485 100.923 77.963 97.68 C 88.004 91.734 98.735 83.23 104.522 72.87"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="4.5"
     />
-    <path 
-      d="M 47.084 36.922 C 35.57 36.922 28.438 39.099 19.85 47.626 C 9.976 57.432 4.786 69.445 3.23 83.019 C 1.745 95.976 2.049 107.71 11.267 117.63 C 25.85 133.321 50.781 136.794 71.119 134.896 C 88.897 133.236 107.063 122.271 115.52 106.105 C 125.151 87.696 125.797 62.476 118.563 43.251 C 114.57 32.64 107.572 23.551 99.055 16.14 C 89.728 8.025 78.284 5.146 66.241 3.639" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeWidth="4.5" 
+    <path
+      d="M 47.084 36.922 C 35.57 36.922 28.438 39.099 19.85 47.626 C 9.976 57.432 4.786 69.445 3.23 83.019 C 1.745 95.976 2.049 107.71 11.267 117.63 C 25.85 133.321 50.781 136.794 71.119 134.896 C 88.897 133.236 107.063 122.271 115.52 106.105 C 125.151 87.696 125.797 62.476 118.563 43.251 C 114.57 32.64 107.572 23.551 99.055 16.14 C 89.728 8.025 78.284 5.146 66.241 3.639"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="4.5"
     />
   </svg>
 );
 
 const WaveDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 191 117" fill="none" className={className}>
-    <path 
-      d="M43.8532 21.6587C35.2616 30.8676 9.64144 58.5872 18.7959 49.9377C28.5802 40.6931 37.719 30.7576 47.412 21.4126C49.1624 19.725 50.8448 17.9477 52.7717 16.4649C32.8988 39.0849 29.2779 42.82 17.9058 55.5342C14.0593 59.8346 10.1855 64.113 6.46175 68.5201C4.9633 70.2936 -2.50903 79.0773 5.38398 72.0587C19.7011 59.3276 33.0142 45.4381 46.9955 32.3412C49.5417 29.9561 51.9606 27.4088 54.7427 25.3036C59.6009 21.6276 46.7607 34.5124 42.6209 38.9821C31.7456 50.724 22.2321 60.8066 11.6275 72.7703C28.1593 59.0374 43.9271 42.8651 60.1992 27.1899" 
-      stroke="white" 
-      strokeLinecap="round" 
-      strokeWidth="2.5" 
+    <path
+      d="M43.8532 21.6587C35.2616 30.8676 9.64144 58.5872 18.7959 49.9377C28.5802 40.6931 37.719 30.7576 47.412 21.4126C49.1624 19.725 50.8448 17.9477 52.7717 16.4649C32.8988 39.0849 29.2779 42.82 17.9058 55.5342C14.0593 59.8346 10.1855 64.113 6.46175 68.5201C4.9633 70.2936 -2.50903 79.0773 5.38398 72.0587C19.7011 59.3276 33.0142 45.4381 46.9955 32.3412C49.5417 29.9561 51.9606 27.4088 54.7427 25.3036C59.6009 21.6276 46.7607 34.5124 42.6209 38.9821C31.7456 50.724 22.2321 60.8066 11.6275 72.7703C28.1593 59.0374 43.9271 42.8651 60.1992 27.1899"
+      stroke="white"
+      strokeLinecap="round"
+      strokeWidth="2.5"
     />
   </svg>
 );
 
 const HeartDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <path 
-      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
+    <path
+      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
 
 const GeometricOrbitDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 100 100" fill="none" className={className}>
-    <ellipse cx="50" cy="50" rx="40" ry="16" transform="rotate(-30 50 50)" stroke="currentColor" strokeWidth="2.5" strokeDasharray="4 4" />
-    <ellipse cx="50" cy="50" rx="40" ry="16" transform="rotate(30 50 50)" stroke="currentColor" strokeWidth="2.5" />
+    <ellipse
+      cx="50"
+      cy="50"
+      rx="40"
+      ry="16"
+      transform="rotate(-30 50 50)"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeDasharray="4 4"
+    />
+    <ellipse
+      cx="50"
+      cy="50"
+      rx="40"
+      ry="16"
+      transform="rotate(30 50 50)"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    />
     <circle cx="50" cy="50" r="5" fill="currentColor" />
   </svg>
 );
@@ -95,27 +113,41 @@ const GeometricOrbitDoodle = ({ className = "" }: { className?: string }) => (
 const SunburstDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 100 100" fill="none" className={className}>
     <circle cx="50" cy="50" r="14" stroke="currentColor" strokeWidth="3" />
-    <path d="M50 12v12M50 76v12M12 50h12M76 50h12M23 23l9 9M68 68l9 9M23 77l9-9M68 32l9-9" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
+    <path
+      d="M50 12v12M50 76v12M12 50h12M76 50h12M23 23l9 9M68 68l9 9M23 77l9-9M68 32l9-9"
+      stroke="currentColor"
+      strokeWidth="2.8"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
 const StarBurstDoodle = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 100 100" fill="none" className={className}>
-    <path d="M50 8 C50 34 66 50 92 50 C66 50 50 66 50 92 C50 66 34 50 8 50 C34 50 50 34 50 8 Z" fill="currentColor" opacity="0.8" />
+    <path
+      d="M50 8 C50 34 66 50 92 50 C66 50 50 66 50 92 C50 66 34 50 8 50 C34 50 50 34 50 8 Z"
+      fill="currentColor"
+      opacity="0.8"
+    />
   </svg>
 );
 
 // Wavy / Scallop Divider Cut
 const WavyDivider = () => (
-  <svg className="absolute right-0 bottom-0 left-0 w-full z-10" fill="none" preserveAspectRatio="none" viewBox="0 0 400 20">
-    <path 
-      className="fill-[#0c0e15]" 
-      d="M0 20V12C10 12 10 4 20 4C30 4 30 12 40 12C50 12 50 4 60 4C70 4 70 12 80 12C90 12 90 4 100 4C110 4 110 12 120 12C130 12 130 4 140 4C150 4 150 12 160 12C170 12 170 4 180 4C190 4 190 12 200 12C210 12 210 4 220 4C230 4 230 12 240 12C250 12 250 4 260 4C270 4 270 12 280 12C290 12 290 4 300 4C310 4 310 12 320 12C330 12 330 4 340 4C350 4 350 12 360 12C370 12 370 4 380 4C390 4 390 12 400 12V20H0Z" 
+  <svg
+    className="absolute right-0 bottom-0 left-0 w-full z-10"
+    fill="none"
+    preserveAspectRatio="none"
+    viewBox="0 0 400 20"
+  >
+    <path
+      className="fill-[#0c0e15]"
+      d="M0 20V12C10 12 10 4 20 4C30 4 30 12 40 12C50 12 50 4 60 4C70 4 70 12 80 12C90 12 90 4 100 4C110 4 110 12 120 12C130 12 130 4 140 4C150 4 150 12 160 12C170 12 170 4 180 4C190 4 190 12 200 12C210 12 210 4 220 4C230 4 230 12 240 12C250 12 250 4 260 4C270 4 270 12 280 12C290 12 290 4 300 4C310 4 310 12 320 12C330 12 330 4 340 4C350 4 350 12 360 12C370 12 370 4 380 4C390 4 390 12 400 12V20H0Z"
     />
-    <path 
-      d="M0 12C10 12 10 4 20 4C30 4 30 12 40 12C50 12 50 4 60 4C70 4 70 12 80 12C90 12 90 4 100 4C110 4 110 12 120 12C130 12 130 4 140 4C150 4 150 12 160 12C170 12 170 4 180 4C190 4 190 12 200 12C210 12 210 4 220 4C230 4 230 12 240 12C250 12 250 4 260 4C270 4 270 12 280 12C290 12 290 4 300 4C310 4 310 12 320 12C330 12 330 4 340 4C350 4 350 12 360 12C370 12 370 4 380 4C390 4 390 12 400 12" 
-      stroke="rgba(255,255,255,0.12)" 
-      strokeWidth="1.2" 
+    <path
+      d="M0 12C10 12 10 4 20 4C30 4 30 12 40 12C50 12 50 4 60 4C70 4 70 12 80 12C90 12 90 4 100 4C110 4 110 12 120 12C130 12 130 4 140 4C150 4 150 12 160 12C170 12 170 4 180 4C190 4 190 12 200 12C210 12 210 4 220 4C230 4 230 12 240 12C250 12 250 4 260 4C270 4 270 12 280 12C290 12 290 4 300 4C310 4 310 12 320 12C330 12 330 4 340 4C350 4 350 12 360 12C370 12 370 4 380 4C390 4 390 12 400 12"
+      stroke="rgba(255,255,255,0.12)"
+      strokeWidth="1.2"
     />
   </svg>
 );
@@ -123,58 +155,66 @@ const WavyDivider = () => (
 // 8 Distinct Rich Thematic Color Palettes (Curated for authentic variety)
 const THEME_STYLES = {
   violet: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(88, 28, 135, 0.95), rgba(30, 10, 60, 0.98))',
-    accent: '#c084fc',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(88, 28, 135, 0.95), rgba(30, 10, 60, 0.98))",
+    accent: "#c084fc",
     DoodleComponent: SparkleStarDoodle,
   },
   emerald: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(6, 78, 59, 0.95), rgba(4, 35, 27, 0.98))',
-    accent: '#34d399',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(6, 78, 59, 0.95), rgba(4, 35, 27, 0.98))",
+    accent: "#34d399",
     DoodleComponent: LightningDoodle,
   },
   crimson: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(190, 18, 60, 0.95), rgba(76, 5, 25, 0.98))',
-    accent: '#fb7185',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(190, 18, 60, 0.95), rgba(76, 5, 25, 0.98))",
+    accent: "#fb7185",
     DoodleComponent: HeartDoodle,
   },
   sapphire: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(29, 78, 216, 0.95), rgba(15, 23, 42, 0.98))',
-    accent: '#60a5fa',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(29, 78, 216, 0.95), rgba(15, 23, 42, 0.98))",
+    accent: "#60a5fa",
     DoodleComponent: GeometricOrbitDoodle,
   },
   amber: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(180, 83, 9, 0.95), rgba(69, 26, 3, 0.98))',
-    accent: '#fbbf24',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(180, 83, 9, 0.95), rgba(69, 26, 3, 0.98))",
+    accent: "#fbbf24",
     DoodleComponent: SunburstDoodle,
   },
   teal: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(13, 148, 136, 0.95), rgba(4, 47, 46, 0.98))',
-    accent: '#2dd4bf',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(13, 148, 136, 0.95), rgba(4, 47, 46, 0.98))",
+    accent: "#2dd4bf",
     DoodleComponent: WaveDoodle,
   },
   rose: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(157, 23, 77, 0.95), rgba(60, 7, 30, 0.98))',
-    accent: '#f472b6',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(157, 23, 77, 0.95), rgba(60, 7, 30, 0.98))",
+    accent: "#f472b6",
     DoodleComponent: StarBurstDoodle,
   },
   slate: {
-    cardBg: 'radial-gradient(120% 100% at 30% 20%, rgba(39, 39, 42, 0.95), rgba(18, 18, 24, 0.98))',
-    accent: '#a1a1aa',
+    cardBg:
+      "radial-gradient(120% 100% at 30% 20%, rgba(39, 39, 42, 0.95), rgba(18, 18, 24, 0.98))",
+    accent: "#a1a1aa",
     DoodleComponent: SmileyDoodle,
-  }
+  },
 } as const;
 
 type ThemeKey = keyof typeof THEME_STYLES;
 
 const PALETTE_CYCLE: ThemeKey[] = [
-  'emerald',
-  'sapphire',
-  'amber',
-  'rose',
-  'teal',
-  'crimson',
-  'slate',
-  'violet'
+  "emerald",
+  "sapphire",
+  "amber",
+  "rose",
+  "teal",
+  "crimson",
+  "slate",
+  "violet",
 ];
 
 export default function AdminGuestbookPage() {
@@ -184,41 +224,46 @@ export default function AdminGuestbookPage() {
   const [loading, setLoading] = useState(true);
 
   // Composer State
-  const [composeMessage, setComposeMessage] = useState('');
-  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('violet');
-  const [adminAvatar, setAdminAvatar] = useState('/images/about/hero-profile.png');
+  const [composeMessage, setComposeMessage] = useState("");
+  const [selectedTheme, setSelectedTheme] = useState<ThemeKey>("violet");
+  const [adminAvatar, setAdminAvatar] = useState(
+    "/images/about/hero-profile.png",
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Note State
   const [editingEntry, setEditingEntry] = useState<DbGuestbookRow | null>(null);
-  const [editMessage, setEditMessage] = useState('');
-  const [editTheme, setEditTheme] = useState<ThemeKey>('violet');
-  const [editAvatar, setEditAvatar] = useState('');
+  const [editMessage, setEditMessage] = useState("");
+  const [editTheme, setEditTheme] = useState<ThemeKey>("violet");
+  const [editAvatar, setEditAvatar] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Avatar Modal State
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [customAvatarUrl, setCustomAvatarUrl] = useState('');
+  const [customAvatarUrl, setCustomAvatarUrl] = useState("");
   const [isCropOpen, setIsCropOpen] = useState(false);
 
   // Deletion Modal
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const loadEntries = async () => {
+  const loadEntries = useCallback(async () => {
     setLoading(true);
     const res = await fetchAdminGuestbook();
     if (res.success && res.entries) {
       setEntries(res.entries);
     } else {
-      showToast(res.error || 'Failed to load guestbook signatures', 'error');
+      showToast(res.error || "Failed to load guestbook signatures", "error");
     }
     setLoading(false);
-  };
+  }, [showToast]);
 
   useEffect(() => {
-    loadEntries();
-  }, []);
+    const timeout = window.setTimeout(() => {
+      void loadEntries();
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [loadEntries]);
 
   const handleComposeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,14 +278,14 @@ export default function AdminGuestbookPage() {
       });
 
       if (res.success && res.entry) {
-        showToast('Guestbook signature posted successfully.', 'success');
-        setEntries(prev => [res.entry!, ...prev]);
-        setComposeMessage('');
+        showToast("Guestbook signature posted successfully.", "success");
+        setEntries((prev) => [res.entry!, ...prev]);
+        setComposeMessage("");
       } else {
-        showToast(res.error || 'Failed to post signature', 'error');
+        showToast(res.error || "Failed to post signature", "error");
       }
     } catch {
-      showToast('An error occurred while posting signature', 'error');
+      showToast("An error occurred while posting signature", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -249,7 +294,11 @@ export default function AdminGuestbookPage() {
   const handleStartEdit = (entry: DbGuestbookRow) => {
     setEditingEntry(entry);
     setEditMessage(entry.message);
-    setEditTheme((entry.theme && (entry.theme in THEME_STYLES)) ? (entry.theme as ThemeKey) : 'violet');
+    setEditTheme(
+      entry.theme && entry.theme in THEME_STYLES
+        ? (entry.theme as ThemeKey)
+        : "violet",
+    );
     setEditAvatar(entry.avatar || adminAvatar);
   };
 
@@ -266,14 +315,16 @@ export default function AdminGuestbookPage() {
       });
 
       if (res.success && res.entry) {
-        showToast('Note updated successfully in PostgreSQL.', 'success');
-        setEntries(prev => prev.map(item => item.id === editingEntry.id ? res.entry! : item));
+        showToast("Note updated successfully in PostgreSQL.", "success");
+        setEntries((prev) =>
+          prev.map((item) => (item.id === editingEntry.id ? res.entry! : item)),
+        );
         setEditingEntry(null);
       } else {
-        showToast(res.error || 'Failed to update note', 'error');
+        showToast(res.error || "Failed to update note", "error");
       }
     } catch {
-      showToast('An error occurred while updating note', 'error');
+      showToast("An error occurred while updating note", "error");
     } finally {
       setIsSavingEdit(false);
     }
@@ -284,10 +335,10 @@ export default function AdminGuestbookPage() {
     startTransition(async () => {
       const res = await removeAdminGuestbookEntry(deletingId);
       if (res.success) {
-        showToast('Signature removed.', 'success');
-        setEntries(prev => prev.filter(e => e.id !== deletingId));
+        showToast("Signature removed.", "success");
+        setEntries((prev) => prev.filter((e) => e.id !== deletingId));
       } else {
-        showToast(res.error || 'Failed to delete entry', 'error');
+        showToast(res.error || "Failed to delete entry", "error");
       }
       setDeletingId(null);
     });
@@ -295,7 +346,6 @@ export default function AdminGuestbookPage() {
 
   return (
     <div className="space-y-8 max-w-7xl px-4 sm:px-8 py-6 pb-20">
-      
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-white/[0.08]">
         <div className="space-y-1.5">
@@ -303,18 +353,19 @@ export default function AdminGuestbookPage() {
             COMMUNITY &amp; VISITOR SIGNATURES
           </span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-normal text-white tracking-tight">
-            The{' '}
-            <span 
+            The{" "}
+            <span
               className="font-serif italic font-normal text-transparent bg-clip-text"
               style={{
-                backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`
+                backgroundImage: `linear-gradient(135deg, #ffffff 40%, ${currentTheme.primary} 100%)`,
               }}
             >
               Guestbook
             </span>
           </h1>
           <p className="text-xs text-neutral-400 font-mono">
-            {entries.length} signature(s) stored in PostgreSQL &bull; Post or edit notes directly as Rohan Mia or moderate visitor signatures
+            {entries.length} signature(s) stored in PostgreSQL &bull; Post or
+            edit notes directly as Rohan Mia or moderate visitor signatures
           </p>
         </div>
 
@@ -337,17 +388,18 @@ export default function AdminGuestbookPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 items-stretch">
-          
           {/* ========================================================
               CARD 1: ADMIN COMPOSE CARD (EXACT IN-CARD COMPOSE BOX)
              ======================================================== */}
           <div className="relative z-10 flex flex-col overflow-hidden rounded-2xl bg-[#0c0e15] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.7)] hover:border-white/20 transition-all duration-300 cursor-default">
-            <form 
+            <form
               onSubmit={handleComposeSubmit}
               className="relative flex flex-col justify-between h-full p-5 text-white"
               style={{
-                background: THEME_STYLES[selectedTheme]?.cardBg || THEME_STYLES.violet.cardBg,
-                minHeight: '260px'
+                background:
+                  THEME_STYLES[selectedTheme]?.cardBg ||
+                  THEME_STYLES.violet.cardBg,
+                minHeight: "260px",
               }}
             >
               {/* Top Bar: Clickable Avatar + Name + Status */}
@@ -362,12 +414,14 @@ export default function AdminGuestbookPage() {
                     className="relative size-9 rounded-full overflow-hidden border border-white/20 shadow-md group/avatar cursor-pointer shrink-0 bg-rose-600"
                     title="Click to change your avatar"
                   >
-                    <img 
-                      src={adminAvatar} 
-                      alt="Rohan Mia" 
-                      className="size-full object-cover object-top" 
+                    <Image
+                      src={adminAvatar}
+                      alt="Rohan Mia"
+                      fill
+                      unoptimized
+                      className="object-cover object-top"
                       onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = '/images/about/hero-profile.png';
+                        e.currentTarget.src = "/images/about/hero-profile.png";
                       }}
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center text-white">
@@ -403,7 +457,9 @@ export default function AdminGuestbookPage() {
 
               {/* Theme Color Picker Row */}
               <div className="flex items-center justify-between gap-1 mb-2 pt-1 border-t border-white/10">
-                <span className="text-[10px] font-mono text-white/60 uppercase">Theme</span>
+                <span className="text-[10px] font-mono text-white/60 uppercase">
+                  Theme
+                </span>
                 <div className="flex items-center gap-1.5">
                   {PALETTE_CYCLE.map((th) => (
                     <button
@@ -411,9 +467,9 @@ export default function AdminGuestbookPage() {
                       type="button"
                       onClick={() => setSelectedTheme(th)}
                       className={`w-3.5 h-3.5 rounded-full transition-transform cursor-pointer border ${
-                        selectedTheme === th 
-                          ? 'scale-125 border-white shadow-xs' 
-                          : 'border-white/30 hover:scale-110'
+                        selectedTheme === th
+                          ? "scale-125 border-white shadow-xs"
+                          : "border-white/30 hover:scale-110"
                       }`}
                       style={{ backgroundColor: THEME_STYLES[th].accent }}
                       title={th}
@@ -450,12 +506,17 @@ export default function AdminGuestbookPage() {
               (Exact match to public guestbook card styling)
              ======================================================== */}
           {entries.map((entry, idx) => {
-            const paletteTheme = (entry.theme && (entry.theme in THEME_STYLES))
-              ? (entry.theme as ThemeKey)
-              : PALETTE_CYCLE[idx % PALETTE_CYCLE.length];
-            const themeConfig = THEME_STYLES[paletteTheme] || THEME_STYLES.violet;
+            const paletteTheme =
+              entry.theme && entry.theme in THEME_STYLES
+                ? (entry.theme as ThemeKey)
+                : PALETTE_CYCLE[idx % PALETTE_CYCLE.length];
+            const themeConfig =
+              THEME_STYLES[paletteTheme] || THEME_STYLES.violet;
             const Doodle = themeConfig.DoodleComponent;
-            const isAdminMessage = entry.provider === 'admin' || entry.email === 'rohanmia.org@gmail.com' || entry.name === 'Rohan Mia';
+            const isAdminMessage =
+              entry.provider === "admin" ||
+              entry.email === "rohanmia.org@gmail.com" ||
+              entry.name === "Rohan Mia";
 
             return (
               <div
@@ -463,13 +524,13 @@ export default function AdminGuestbookPage() {
                 className="relative z-10 group flex flex-col overflow-hidden rounded-2xl bg-[#0c0e15] border border-white/10 shadow-[0_20px_45px_rgba(0,0,0,0.65)] hover:border-white/25 transition-all duration-300 cursor-default"
               >
                 {/* Colored Jewel-Tone Upper Body */}
-                <div 
+                <div
                   className="relative flex min-h-[190px] w-full flex-1 flex-col items-center justify-center overflow-hidden p-6 pb-12 text-center cursor-default"
                   style={{ background: themeConfig.cardBg }}
                 >
                   {/* Background Doodle Accent */}
-                  <div 
-                    aria-hidden="true" 
+                  <div
+                    aria-hidden="true"
                     className="pointer-events-none absolute inset-0 overflow-hidden opacity-30 group-hover:opacity-45 transition-opacity"
                     style={{ color: themeConfig.accent }}
                   >
@@ -491,19 +552,19 @@ export default function AdminGuestbookPage() {
                   <div className="flex min-w-0 items-center gap-2.5">
                     <div className="relative size-7 rounded-full overflow-hidden border border-white/20 shrink-0 bg-zinc-800">
                       {entry.avatar ? (
-                        <img 
-                          src={entry.avatar} 
-                          alt={entry.name || 'User'} 
-                          referrerPolicy="no-referrer"
-                          crossOrigin="anonymous"
-                          className="size-full object-cover object-top" 
+                        <Image
+                          src={entry.avatar}
+                          alt={entry.name || "User"}
+                          fill
+                          unoptimized
+                          className="object-cover object-top"
                           onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(entry.name || 'User')}`;
+                            e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(entry.name || "User")}`;
                           }}
                         />
                       ) : (
                         <div className="size-full flex items-center justify-center font-mono text-xs text-white">
-                          {entry.name?.[0] || 'U'}
+                          {entry.name?.[0] || "U"}
                         </div>
                       )}
                     </div>
@@ -513,7 +574,16 @@ export default function AdminGuestbookPage() {
                         {entry.name}
                       </span>
                       <time className="text-[11px] font-mono text-zinc-500">
-                        {entry.created_at ? new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'}
+                        {entry.created_at
+                          ? new Date(entry.created_at).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )
+                          : "Recent"}
                       </time>
                     </div>
                   </div>
@@ -541,7 +611,6 @@ export default function AdminGuestbookPage() {
                     </button>
                   </div>
                 </div>
-
               </div>
             );
           })}
@@ -558,9 +627,12 @@ export default function AdminGuestbookPage() {
       >
         <form onSubmit={handleSaveEdit} className="space-y-4">
           {/* Live Preview of Note */}
-          <div 
+          <div
             className="p-5 rounded-2xl text-white text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[140px] shadow-lg border border-white/10"
-            style={{ background: THEME_STYLES[editTheme]?.cardBg || THEME_STYLES.violet.cardBg }}
+            style={{
+              background:
+                THEME_STYLES[editTheme]?.cardBg || THEME_STYLES.violet.cardBg,
+            }}
           >
             <SparkleStarDoodle className="absolute top-2 right-2 size-12 opacity-25 text-white" />
             <p className="relative z-10 font-bold text-sm sm:text-base text-white leading-snug drop-shadow-md">
@@ -600,9 +672,9 @@ export default function AdminGuestbookPage() {
                   type="button"
                   onClick={() => setEditTheme(th)}
                   className={`w-5 h-5 rounded-full transition-transform cursor-pointer border ${
-                    editTheme === th 
-                      ? 'scale-125 border-white shadow-xs' 
-                      : 'border-white/30 hover:scale-110'
+                    editTheme === th
+                      ? "scale-125 border-white shadow-xs"
+                      : "border-white/30 hover:scale-110"
                   }`}
                   style={{ backgroundColor: THEME_STYLES[th].accent }}
                   title={th}
@@ -647,12 +719,14 @@ export default function AdminGuestbookPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <div className="relative size-16 rounded-full overflow-hidden border-2 border-white/20 shrink-0 bg-zinc-800">
-              <img 
-                src={customAvatarUrl || adminAvatar} 
-                alt="Avatar" 
-                className="size-full object-cover object-top" 
+              <Image
+                src={customAvatarUrl || adminAvatar}
+                alt="Avatar"
+                fill
+                unoptimized
+                className="object-cover object-top"
                 onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = '/images/about/hero-profile.png';
+                  e.currentTarget.src = "/images/about/hero-profile.png";
                 }}
               />
             </div>
@@ -699,7 +773,7 @@ export default function AdminGuestbookPage() {
               onClick={() => {
                 if (customAvatarUrl.trim()) {
                   setAdminAvatar(customAvatarUrl.trim());
-                  showToast('Avatar updated.', 'success');
+                  showToast("Avatar updated.", "success");
                 }
                 setIsAvatarModalOpen(false);
               }}
@@ -720,7 +794,7 @@ export default function AdminGuestbookPage() {
           setAdminAvatar(url);
           setIsCropOpen(false);
           setIsAvatarModalOpen(false);
-          showToast('Avatar uploaded to Cloudinary successfully.', 'success');
+          showToast("Avatar uploaded to Cloudinary successfully.", "success");
         }}
         title="Crop & Upload Admin Avatar"
         subtitle="Crop your profile photo to a square frame."
@@ -737,7 +811,6 @@ export default function AdminGuestbookPage() {
         onConfirm={confirmDelete}
         onClose={() => setDeletingId(null)}
       />
-
     </div>
   );
 }

@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Home, 
-  User2, 
-  FolderGit2, 
-  Cpu, 
-  BookOpen, 
-  Mail, 
+import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Home,
+  User2,
+  FolderGit2,
+  Cpu,
+  BookOpen,
+  Mail,
   Image as ImageIcon,
   Globe,
   Settings,
@@ -23,19 +23,22 @@ import {
   Bell,
   Eye,
   SlidersHorizontal,
-  BarChart3
-} from 'lucide-react';
-import AnimatedLogo from '@/components/shared/AnimatedLogo';
-import { logoutFromControlRoom } from '@/actions/stealthAuth';
-import { ToastProvider } from './ui/Toast';
-import { AdminModeProvider, useAdminMode } from './AdminModeContext';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import ColorSwitcher from '@/components/theme/ColorSwitcher';
-import NotificationDropdown from './NotificationDropdown';
-import { useScrollLock } from '@/hooks/useScrollLock';
+  BarChart3,
+} from "lucide-react";
+import AnimatedLogo from "@/components/shared/AnimatedLogo";
+import { logoutFromControlRoom } from "@/actions/stealthAuth";
+import { ToastProvider } from "./ui/Toast";
+import { AdminModeProvider, useAdminMode } from "./AdminModeContext";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
+import ColorSwitcher from "@/components/theme/ColorSwitcher";
+import NotificationDropdown from "./NotificationDropdown";
+import { useScrollLock } from "@/hooks/useScrollLock";
 
 const getCurvedNavPath = (index?: number) => {
-  const safeIdx = typeof index === 'number' && !isNaN(index) && index >= 0 && index <= 4 ? index : 0;
+  const safeIdx =
+    typeof index === "number" && !isNaN(index) && index >= 0 && index <= 4
+      ? index
+      : 0;
   const cx = 10 + safeIdx * 20;
   const nw = 11.7;
   const p1 = (cx - nw).toFixed(2);
@@ -61,7 +64,12 @@ interface AdminShellProps {
   children: React.ReactNode;
 }
 
-function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellProps) {
+function AdminShellContent({
+  basePath,
+  user,
+  avatarUrl,
+  children,
+}: AdminShellProps) {
   const pathname = usePathname();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { currentTheme } = useThemeAccent();
@@ -72,7 +80,8 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
 
   // Close drawer on route change
   useEffect(() => {
-    setMobileDrawerOpen(false);
+    const timeoutId = window.setTimeout(() => setMobileDrawerOpen(false), 0);
+    return () => window.clearTimeout(timeoutId);
   }, [pathname]);
 
   // Strict wheel event isolation on sidebar middle section
@@ -88,42 +97,52 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
       }
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
+    el.addEventListener("wheel", handleWheel, { passive: false });
     return () => {
-      el.removeEventListener('wheel', handleWheel);
+      el.removeEventListener("wheel", handleWheel);
     };
   }, []);
 
   const NAV_ITEMS = [
-    { name: 'Overview', href: `${basePath}/overview`, icon: BarChart3 },
-    { name: 'Homepage', href: `${basePath}/homepage`, icon: Home },
-    { name: 'About', href: `${basePath}/about`, icon: User2 },
-    { name: 'Projects', href: `${basePath}/projects`, icon: FolderGit2 },
-    { name: 'Stack', href: `${basePath}/tech-stack`, icon: Cpu },
-    { name: 'Gallery', href: `${basePath}/gallery`, icon: ImageIcon },
-    { name: 'Guestbook', href: `${basePath}/guestbook`, icon: BookOpen },
-    { name: 'Links', href: `${basePath}/links`, icon: Globe },
-    { name: 'Contact', href: `${basePath}/contact`, icon: Mail },
-    { name: 'Settings', href: `${basePath}/settings`, icon: Settings },
+    { name: "Overview", href: `${basePath}/overview`, icon: BarChart3 },
+    { name: "Homepage", href: `${basePath}/homepage`, icon: Home },
+    { name: "About", href: `${basePath}/about`, icon: User2 },
+    { name: "Projects", href: `${basePath}/projects`, icon: FolderGit2 },
+    { name: "Stack", href: `${basePath}/tech-stack`, icon: Cpu },
+    { name: "Gallery", href: `${basePath}/gallery`, icon: ImageIcon },
+    { name: "Guestbook", href: `${basePath}/guestbook`, icon: BookOpen },
+    { name: "Links", href: `${basePath}/links`, icon: Globe },
+    { name: "Contact", href: `${basePath}/contact`, icon: Mail },
+    { name: "Settings", href: `${basePath}/settings`, icon: Settings },
   ];
 
   const isLinkActive = (href: string) => {
-    const cleanHref = href.replace(basePath, '/control-room-internal');
-    return pathname === href || pathname === cleanHref || pathname.startsWith(`${cleanHref}/`) || pathname.startsWith(`${href}/`);
+    const cleanHref = href.replace(basePath, "/control-room-internal");
+    return (
+      pathname === href ||
+      pathname === cleanHref ||
+      pathname.startsWith(`${cleanHref}/`) ||
+      pathname.startsWith(`${href}/`)
+    );
   };
 
   const getPageTitle = () => {
-    if (pathname.includes('/overview')) return 'Overview & Analytics';
-    if (pathname.includes('/homepage') || pathname === basePath || pathname === '/control-room-internal') return 'Homepage';
-    if (pathname.includes('/about')) return 'About Me';
-    if (pathname.includes('/projects')) return 'Case Studies';
-    if (pathname.includes('/tech-stack')) return 'Tech Stack';
-    if (pathname.includes('/gallery')) return 'Gallery Visuals';
-    if (pathname.includes('/guestbook')) return 'Guestbook Ledger';
-    if (pathname.includes('/links')) return 'Social Links';
-    if (pathname.includes('/contact')) return 'Client Inquiries';
-    if (pathname.includes('/settings')) return 'Site Settings';
-    return 'Studio Engine';
+    if (pathname.includes("/overview")) return "Overview & Analytics";
+    if (
+      pathname.includes("/homepage") ||
+      pathname === basePath ||
+      pathname === "/control-room-internal"
+    )
+      return "Homepage";
+    if (pathname.includes("/about")) return "About Me";
+    if (pathname.includes("/projects")) return "Case Studies";
+    if (pathname.includes("/tech-stack")) return "Tech Stack";
+    if (pathname.includes("/gallery")) return "Gallery Visuals";
+    if (pathname.includes("/guestbook")) return "Guestbook Ledger";
+    if (pathname.includes("/links")) return "Social Links";
+    if (pathname.includes("/contact")) return "Client Inquiries";
+    if (pathname.includes("/settings")) return "Site Settings";
+    return "Studio Engine";
   };
 
   const handleSignOut = async () => {
@@ -132,19 +151,24 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
   };
 
   const ADMIN_MOBILE_TABS = [
-    { name: 'Overview', href: `${basePath}/overview`, icon: BarChart3 },
-    { name: 'Home', href: `${basePath}/homepage`, icon: Home },
-    { name: 'Work', href: `${basePath}/projects`, icon: FolderGit2 },
-    { name: 'Stack', href: `${basePath}/tech-stack`, icon: Cpu },
-    { name: 'More', href: '#more', icon: LayoutGrid, isMore: true },
+    { name: "Overview", href: `${basePath}/overview`, icon: BarChart3 },
+    { name: "Home", href: `${basePath}/homepage`, icon: Home },
+    { name: "Work", href: `${basePath}/projects`, icon: FolderGit2 },
+    { name: "Stack", href: `${basePath}/tech-stack`, icon: Cpu },
+    { name: "More", href: "#more", icon: LayoutGrid, isMore: true },
   ];
 
   const getAdminActiveIndex = () => {
     if (mobileDrawerOpen) return 4;
-    if (pathname.includes('/overview')) return 0;
-    if (pathname.includes('/homepage') || pathname === basePath || pathname === '/control-room-internal') return 1;
-    if (pathname.includes('/projects')) return 2;
-    if (pathname.includes('/tech-stack')) return 3;
+    if (pathname.includes("/overview")) return 0;
+    if (
+      pathname.includes("/homepage") ||
+      pathname === basePath ||
+      pathname === "/control-room-internal"
+    )
+      return 1;
+    if (pathname.includes("/projects")) return 2;
+    if (pathname.includes("/tech-stack")) return 3;
     return 4;
   };
 
@@ -153,12 +177,12 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
   const AdminActiveIcon = adminActiveTab.icon;
 
   return (
-    <div 
+    <div
       data-lenis-prevent="true"
       className="min-h-screen bg-transparent text-neutral-200 antialiased selection:bg-white/20 relative"
     >
       {/* Ambient horizon glow */}
-      <div 
+      <div
         aria-hidden="true"
         className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[360px] rounded-full blur-[140px] opacity-15 pointer-events-none -z-10 transition-colors duration-700"
         style={{ backgroundColor: currentTheme.primary }}
@@ -176,7 +200,10 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
       >
         {/* 1. FIXED TOP HEADER WITH BORDER BELOW (Exact h-16 matching right top header) */}
         <div className="h-16 shrink-0 px-4 border-b border-white/[0.08] flex items-center justify-between bg-[#08090d]/80">
-          <Link href={`${basePath}/overview`} className="flex items-center gap-2.5 group">
+          <Link
+            href={`${basePath}/overview`}
+            className="flex items-center gap-2.5 group"
+          >
             <AnimatedLogo size={32} animated={true} glow={true} />
             <div className="flex flex-col">
               <span className="font-serif text-base font-medium text-white group-hover:text-white transition-colors leading-tight">
@@ -188,16 +215,16 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
             </div>
           </Link>
 
-          <div 
+          <div
             className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-mono font-medium"
             style={{
               backgroundColor: `${currentTheme.primary}15`,
               borderColor: `${currentTheme.primary}35`,
-              color: currentTheme.primary
+              color: currentTheme.primary,
             }}
           >
-            <span 
-              className="w-1.5 h-1.5 rounded-full animate-pulse" 
+            <span
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
               style={{ backgroundColor: currentTheme.primary }}
             />
             <span>Live</span>
@@ -220,32 +247,40 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
               <Link
                 key={item.name}
                 href={item.href}
-                style={active ? {
-                  backgroundColor: `${currentTheme.primary}18`,
-                  borderColor: `${currentTheme.primary}40`,
-                  color: '#ffffff',
-                } : undefined}
+                style={
+                  active
+                    ? {
+                        backgroundColor: `${currentTheme.primary}18`,
+                        borderColor: `${currentTheme.primary}40`,
+                        color: "#ffffff",
+                      }
+                    : undefined
+                }
                 className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-mono transition-all duration-150 border ${
                   active
-                    ? 'font-semibold shadow-xs'
-                    : 'border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                    ? "font-semibold shadow-xs"
+                    : "border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.04]"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Icon 
-                    size={15} 
-                    style={active ? { color: currentTheme.primary } : undefined} 
-                    className={active ? '' : 'text-neutral-400 group-hover:text-neutral-300'}
+                  <Icon
+                    size={15}
+                    style={active ? { color: currentTheme.primary } : undefined}
+                    className={
+                      active
+                        ? ""
+                        : "text-neutral-400 group-hover:text-neutral-300"
+                    }
                   />
                   <span>{item.name}</span>
                 </div>
 
                 {active && (
-                  <span 
-                    className="w-1.5 h-1.5 rounded-full" 
-                    style={{ 
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{
                       backgroundColor: currentTheme.primary,
-                      boxShadow: `0 0 6px ${currentTheme.primary}`
+                      boxShadow: `0 0 6px ${currentTheme.primary}`,
                     }}
                   />
                 )}
@@ -276,25 +311,28 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
               {avatarUrl ? (
                 <Image
                   src={avatarUrl}
-                  alt={user.name || 'Admin'}
+                  alt={user.name || "Admin"}
                   width={28}
                   height={28}
                   className="w-7 h-7 rounded-lg object-cover shrink-0 border border-white/10"
                 />
               ) : (
-                <div 
+                <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-mono font-bold text-white shrink-0"
-                  style={{ backgroundColor: `${currentTheme.primary}30`, borderColor: `${currentTheme.primary}50` }}
+                  style={{
+                    backgroundColor: `${currentTheme.primary}30`,
+                    borderColor: `${currentTheme.primary}50`,
+                  }}
                 >
                   RM
                 </div>
               )}
               <div className="truncate">
                 <p className="text-xs font-medium text-white truncate leading-tight">
-                  {user.name || 'Admin'}
+                  {user.name || "Admin"}
                 </p>
                 <p className="text-[10px] font-mono text-neutral-400 truncate leading-tight">
-                  {user.email || 'Admin'}
+                  {user.email || "Admin"}
                 </p>
               </div>
             </div>
@@ -328,42 +366,73 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
 
         <div className="flex items-center gap-2">
           {/* Mode Switcher (Surface Canvas vs Studio Engine) on Mobile */}
-          {(!pathname.includes('/overview') && !pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact') && !pathname.includes('/tech-stack') && !pathname.includes('/projects')) && (
-            <div className="flex items-center p-0.5 rounded-xl border border-white/[0.12] bg-white/[0.04]">
-              <button
-                type="button"
-                onClick={() => setMode('preview')}
-                style={mode === 'preview' ? {
-                  backgroundColor: `${currentTheme.primary}25`,
-                  borderColor: `${currentTheme.primary}50`,
-                  color: '#ffffff'
-                } : undefined}
-                className={`p-1.5 rounded-lg transition-all border cursor-pointer ${
-                  mode === 'preview' ? 'shadow-xs' : 'border-transparent text-neutral-400 hover:text-white'
-                }`}
-                title="Surface Canvas (Preview)"
-                aria-label="Surface Canvas"
-              >
-                <Eye size={13} style={mode === 'preview' ? { color: currentTheme.primary } : undefined} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode('studio')}
-                style={mode === 'studio' ? {
-                  backgroundColor: `${currentTheme.primary}25`,
-                  borderColor: `${currentTheme.primary}50`,
-                  color: '#ffffff'
-                } : undefined}
-                className={`p-1.5 rounded-lg transition-all border cursor-pointer ${
-                  mode === 'studio' ? 'shadow-xs' : 'border-transparent text-neutral-400 hover:text-white'
-                }`}
-                title="Studio Engine (Edit)"
-                aria-label="Studio Engine"
-              >
-                <SlidersHorizontal size={13} style={mode === 'studio' ? { color: currentTheme.primary } : undefined} />
-              </button>
-            </div>
-          )}
+          {!pathname.includes("/overview") &&
+            !pathname.includes("/gallery") &&
+            !pathname.includes("/guestbook") &&
+            !pathname.includes("/contact") &&
+            !pathname.includes("/tech-stack") &&
+            !pathname.includes("/projects") && (
+              <div className="flex items-center p-0.5 rounded-xl border border-white/[0.12] bg-white/[0.04]">
+                <button
+                  type="button"
+                  onClick={() => setMode("preview")}
+                  style={
+                    mode === "preview"
+                      ? {
+                          backgroundColor: `${currentTheme.primary}25`,
+                          borderColor: `${currentTheme.primary}50`,
+                          color: "#ffffff",
+                        }
+                      : undefined
+                  }
+                  className={`p-1.5 rounded-lg transition-all border cursor-pointer ${
+                    mode === "preview"
+                      ? "shadow-xs"
+                      : "border-transparent text-neutral-400 hover:text-white"
+                  }`}
+                  title="Surface Canvas (Preview)"
+                  aria-label="Surface Canvas"
+                >
+                  <Eye
+                    size={13}
+                    style={
+                      mode === "preview"
+                        ? { color: currentTheme.primary }
+                        : undefined
+                    }
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("studio")}
+                  style={
+                    mode === "studio"
+                      ? {
+                          backgroundColor: `${currentTheme.primary}25`,
+                          borderColor: `${currentTheme.primary}50`,
+                          color: "#ffffff",
+                        }
+                      : undefined
+                  }
+                  className={`p-1.5 rounded-lg transition-all border cursor-pointer ${
+                    mode === "studio"
+                      ? "shadow-xs"
+                      : "border-transparent text-neutral-400 hover:text-white"
+                  }`}
+                  title="Studio Engine (Edit)"
+                  aria-label="Studio Engine"
+                >
+                  <SlidersHorizontal
+                    size={13}
+                    style={
+                      mode === "studio"
+                        ? { color: currentTheme.primary }
+                        : undefined
+                    }
+                  />
+                </button>
+              </div>
+            )}
 
           <ColorSwitcher variant="dropdown" />
           <NotificationDropdown basePath={basePath} />
@@ -392,7 +461,7 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
             </span>
             <span className="text-neutral-600">/</span>
             <div className="flex items-center gap-1.5">
-              <span 
+              <span
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ backgroundColor: currentTheme.primary }}
               />
@@ -403,41 +472,68 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
           </div>
 
           {/* Middle: Mode Switcher (Surface Canvas vs Studio Engine) */}
-          {(!pathname.includes('/overview') && !pathname.includes('/gallery') && !pathname.includes('/guestbook') && !pathname.includes('/contact') && !pathname.includes('/tech-stack') && !pathname.includes('/projects')) ? (
+          {!pathname.includes("/overview") &&
+          !pathname.includes("/gallery") &&
+          !pathname.includes("/guestbook") &&
+          !pathname.includes("/contact") &&
+          !pathname.includes("/tech-stack") &&
+          !pathname.includes("/projects") ? (
             <div className="flex items-center p-1 rounded-2xl border border-white/[0.12] bg-white/[0.03] backdrop-blur-md">
               <button
                 type="button"
-                onClick={() => setMode('preview')}
-                style={mode === 'preview' ? {
-                  backgroundColor: `${currentTheme.primary}25`,
-                  borderColor: `${currentTheme.primary}50`,
-                  color: '#ffffff'
-                } : undefined}
+                onClick={() => setMode("preview")}
+                style={
+                  mode === "preview"
+                    ? {
+                        backgroundColor: `${currentTheme.primary}25`,
+                        borderColor: `${currentTheme.primary}50`,
+                        color: "#ffffff",
+                      }
+                    : undefined
+                }
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
-                  mode === 'preview'
-                    ? 'font-medium shadow-xs'
-                    : 'border-transparent text-neutral-400 hover:text-white'
+                  mode === "preview"
+                    ? "font-medium shadow-xs"
+                    : "border-transparent text-neutral-400 hover:text-white"
                 }`}
               >
-                <Eye size={13} style={mode === 'preview' ? { color: currentTheme.primary } : undefined} />
+                <Eye
+                  size={13}
+                  style={
+                    mode === "preview"
+                      ? { color: currentTheme.primary }
+                      : undefined
+                  }
+                />
                 <span>Surface Canvas</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setMode('studio')}
-                style={mode === 'studio' ? {
-                  backgroundColor: `${currentTheme.primary}25`,
-                  borderColor: `${currentTheme.primary}50`,
-                  color: '#ffffff'
-                } : undefined}
+                onClick={() => setMode("studio")}
+                style={
+                  mode === "studio"
+                    ? {
+                        backgroundColor: `${currentTheme.primary}25`,
+                        borderColor: `${currentTheme.primary}50`,
+                        color: "#ffffff",
+                      }
+                    : undefined
+                }
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border cursor-pointer ${
-                  mode === 'studio'
-                    ? 'font-medium shadow-xs'
-                    : 'border-transparent text-neutral-400 hover:text-white'
+                  mode === "studio"
+                    ? "font-medium shadow-xs"
+                    : "border-transparent text-neutral-400 hover:text-white"
                 }`}
               >
-                <SlidersHorizontal size={13} style={mode === 'studio' ? { color: currentTheme.primary } : undefined} />
+                <SlidersHorizontal
+                  size={13}
+                  style={
+                    mode === "studio"
+                      ? { color: currentTheme.primary }
+                      : undefined
+                  }
+                />
                 <span>Studio Engine</span>
               </button>
             </div>
@@ -467,10 +563,7 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="flex-1 pb-32 md:pb-16 pt-0">
-          {children}
-        </main>
-
+        <main className="flex-1 pb-32 md:pb-16 pt-0">{children}</main>
       </div>
 
       {/* ========================================================
@@ -491,10 +584,10 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
 
             {/* Bottom Sheet Drawer */}
             <motion.div
-              initial={{ y: '100%', opacity: 0.6 }}
+              initial={{ y: "100%", opacity: 0.6 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 320 }}
               className="fixed bottom-24 left-3 right-3 sm:left-6 sm:right-6 max-w-md mx-auto z-50 md:hidden bg-[#0c0e12]/95 border border-white/[0.12] rounded-[28px] backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 flex flex-col gap-3.5 max-h-[76vh] overflow-y-auto overscroll-contain select-none"
               onClick={(e) => e.stopPropagation()}
             >
@@ -503,7 +596,10 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
                 <div className="w-10 h-1 rounded-full bg-white/25" />
                 <div className="w-full flex items-center justify-between pt-1 pb-2 border-b border-white/[0.08]">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck size={15} style={{ color: currentTheme.primary }} />
+                    <ShieldCheck
+                      size={15}
+                      style={{ color: currentTheme.primary }}
+                    />
                     <span className="text-xs font-mono uppercase tracking-wider text-neutral-400 font-semibold">
                       Control Room Studio
                     </span>
@@ -520,7 +616,12 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
 
               {/* Studio Panels Grid */}
               <div className="grid grid-cols-2 gap-2">
-                {NAV_ITEMS.filter((item) => !['Overview', 'Homepage', 'Projects', 'Stack'].includes(item.name)).map((item) => {
+                {NAV_ITEMS.filter(
+                  (item) =>
+                    !["Overview", "Homepage", "Projects", "Stack"].includes(
+                      item.name,
+                    ),
+                ).map((item) => {
                   const Icon = item.icon;
                   const active = isLinkActive(item.href);
                   return (
@@ -530,41 +631,50 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
                       onClick={() => setMobileDrawerOpen(false)}
                       className={`relative flex flex-col p-3 rounded-2xl border transition-all duration-200 group overflow-hidden ${
                         active
-                          ? 'border-white/20 bg-white/[0.08]'
-                          : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10'
+                          ? "border-white/20 bg-white/[0.08]"
+                          : "border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10"
                       }`}
                     >
                       {active && (
-                        <div 
+                        <div
                           className="absolute inset-0 opacity-15 pointer-events-none"
                           style={{ backgroundColor: currentTheme.primary }}
                         />
                       )}
 
                       <div className="flex items-center justify-between mb-2">
-                        <div 
+                        <div
                           className="w-8 h-8 rounded-xl flex items-center justify-center border border-white/10"
-                          style={{ 
+                          style={{
                             backgroundColor: `${currentTheme.primary}18`,
-                            boxShadow: active ? `0 0 12px ${currentTheme.primary}40` : undefined 
+                            boxShadow: active
+                              ? `0 0 12px ${currentTheme.primary}40`
+                              : undefined,
                           }}
                         >
-                          <Icon size={15} style={{ color: currentTheme.primary }} />
+                          <Icon
+                            size={15}
+                            style={{ color: currentTheme.primary }}
+                          />
                         </div>
                         {active && (
-                          <span 
-                            className="w-2 h-2 rounded-full" 
-                            style={{ 
+                          <span
+                            className="w-2 h-2 rounded-full"
+                            style={{
                               backgroundColor: currentTheme.primary,
-                              boxShadow: `0 0 8px ${currentTheme.primary}` 
-                            }} 
+                              boxShadow: `0 0 8px ${currentTheme.primary}`,
+                            }}
                           />
                         )}
                       </div>
 
-                      <span className={`text-xs font-semibold tracking-tight transition-colors ${
-                        active ? 'text-white' : 'text-zinc-200 group-hover:text-white'
-                      }`}>
+                      <span
+                        className={`text-xs font-semibold tracking-tight transition-colors ${
+                          active
+                            ? "text-white"
+                            : "text-zinc-200 group-hover:text-white"
+                        }`}
+                      >
                         {item.name}
                       </span>
                     </Link>
@@ -601,22 +711,22 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
       {/* ========================================================
           MOBILE BOTTOM NAVIGATION DOCK (Curved Notch & Floating Circle)
          ======================================================== */}
-      <nav 
+      <nav
         className="fixed bottom-4 inset-x-3 sm:inset-x-8 max-w-md mx-auto z-[60] md:hidden select-none pointer-events-auto"
         aria-label="Admin Mobile Navigation"
       >
         <div className="relative w-full h-[66px]">
           {/* SVG Background with animated curved notch */}
-          <svg 
+          <svg
             className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.85)]"
-            viewBox="0 0 100 66" 
+            viewBox="0 0 100 66"
             preserveAspectRatio="none"
           >
             <motion.path
               d={getCurvedNavPath(safeAdminActiveIndex)}
               animate={{ d: getCurvedNavPath(safeAdminActiveIndex) }}
               transition={{
-                type: 'spring',
+                type: "spring",
                 stiffness: 380,
                 damping: 28,
                 mass: 0.8,
@@ -631,12 +741,12 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
           {/* Sliding Elevated Active Bubble */}
           <motion.div
             className="absolute top-0 h-full pointer-events-none z-20 flex flex-col items-center justify-between pb-2"
-            style={{ width: '20%' }}
+            style={{ width: "20%" }}
             animate={{
               left: `${safeAdminActiveIndex * 20}%`,
             }}
             transition={{
-              type: 'spring',
+              type: "spring",
               stiffness: 380,
               damping: 28,
               mass: 0.8,
@@ -647,7 +757,7 @@ function AdminShellContent({ basePath, user, avatarUrl, children }: AdminShellPr
               key={adminActiveTab.name}
               initial={{ scale: 0.8, y: 4 }}
               animate={{ scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 26 }}
+              transition={{ type: "spring", stiffness: 420, damping: 26 }}
               className="relative -top-2.5 w-11 h-11 rounded-full bg-[#0d1117] border-2 flex items-center justify-center shadow-lg"
               style={{
                 borderColor: currentTheme.primary,

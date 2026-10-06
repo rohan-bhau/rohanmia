@@ -1,103 +1,120 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Home, 
-  Briefcase, 
-  User, 
-  Layers, 
-  BookOpen, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  ArrowRight, 
-  ArrowLeft, 
-  ArrowUpRight, 
-  X, 
-  MessageSquare, 
-  MessageCircle, 
-  Send, 
-  Award, 
-  Laptop, 
-  Quote, 
+import React, { useEffect, useState, useRef } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Search,
+  Home,
+  Briefcase,
+  User,
+  Layers,
+  BookOpen,
+  Mail,
+  Phone,
+  Calendar,
+  ArrowRight,
+  ArrowLeft,
+  ArrowUpRight,
+  X,
+  MessageSquare,
+  MessageCircle,
+  Send,
+  Award,
+  Laptop,
+  Quote,
   Link as LinkIcon,
   Loader2,
-  Check
-} from 'lucide-react';
-import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import { sendMessage } from '@/actions/contact';
-import { ALL_PROJECTS } from '@/data/projects';
-import { toast } from 'sonner';
+  Check,
+} from "lucide-react";
+import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
+import { sendMessage } from "@/actions/contact";
+import { ALL_PROJECTS } from "@/data/projects";
+import { toast } from "sonner";
 
-type PaletteView = 'search' | 'reachout' | 'contact';
+type PaletteView = "search" | "reachout" | "contact";
 
 interface PageItem {
   name: string;
   href: string;
-  icon: React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>;
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+    style?: React.CSSProperties;
+  }>;
   isAction?: boolean;
   action?: () => void;
   desc?: string;
 }
 
-const CLOUDINARY_PROFILE_IMAGE = "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png";
+const CLOUDINARY_PROFILE_IMAGE =
+  "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png";
 
 export default function CommandPalette() {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<PaletteView>('search');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [view, setView] = useState<PaletteView>("search");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  
+
   // Alternating icon state for Reach Out button (Message vs Phone)
-  const [alternateIcon, setAlternateIcon] = useState<'message' | 'call'>('message');
+  const [alternateIcon, setAlternateIcon] = useState<"message" | "call">(
+    "message",
+  );
 
   // Contact / Reach out states
-  const [messageDraft, setMessageDraft] = useState('');
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactSubject, setContactSubject] = useState('Project Inquiry');
-  const [contactMessage, setContactMessage] = useState('');
+  const [messageDraft, setMessageDraft] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactSubject, setContactSubject] = useState("Project Inquiry");
+  const [contactMessage, setContactMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { accent, setAccent, themes, currentTheme } = useThemeAccent();
 
-  const [dynamicEmail, setDynamicEmail] = useState('');
-  const [socials, setSocials] = useState<{ linkedin?: string; github?: string; twitter?: string }>({});
+  const [dynamicEmail, setDynamicEmail] = useState("");
+  const [socials, setSocials] = useState<{
+    linkedin?: string;
+    github?: string;
+    twitter?: string;
+  }>({});
 
   useEffect(() => {
     if (open) {
-      import('@/actions/adminSettings').then((m) => m.getSettings()).then((s) => {
-        if (s?.contact_email) setDynamicEmail(s.contact_email);
-      }).catch(() => {});
-      import('@/actions/adminLinks').then((m) => m.getPublicLinks()).then((l) => {
-        if (l?.socialMap) {
-          setSocials({
-            linkedin: l.socialMap.linkedin,
-            github: l.socialMap.github,
-            twitter: l.socialMap.twitter || l.socialMap.x,
-          });
-        }
-      }).catch(() => {});
+      import("@/actions/adminSettings")
+        .then((m) => m.getSettings())
+        .then((s) => {
+          if (s?.contact_email) setDynamicEmail(s.contact_email);
+        })
+        .catch(() => {});
+      import("@/actions/adminLinks")
+        .then((m) => m.getPublicLinks())
+        .then((l) => {
+          if (l?.socialMap) {
+            setSocials({
+              linkedin: l.socialMap.linkedin,
+              github: l.socialMap.github,
+              twitter: l.socialMap.twitter || l.socialMap.x,
+            });
+          }
+        })
+        .catch(() => {});
     }
   }, [open]);
 
   // 1. Listen for CMD+K / CTRL+K and Custom Events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+      if ((e.key === "k" || e.key === "K") && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((prev) => !prev);
       }
-      if (e.key === 'Escape' && open) {
+      if (e.key === "Escape" && open) {
         e.preventDefault();
         setOpen(false);
       }
@@ -111,18 +128,18 @@ export default function CommandPalette() {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('open-command-palette', handleOpenEvent);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("open-command-palette", handleOpenEvent);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('open-command-palette', handleOpenEvent);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("open-command-palette", handleOpenEvent);
     };
   }, [open]);
 
   // 2. Cycle alternating message/call icon every 1.8 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setAlternateIcon((prev) => (prev === 'message' ? 'call' : 'message'));
+      setAlternateIcon((prev) => (prev === "message" ? "call" : "message"));
     }, 1800);
     return () => clearInterval(interval);
   }, []);
@@ -130,19 +147,22 @@ export default function CommandPalette() {
   // 3. Strict Scroll Lock: Lock both body & html when open, stop background scrolling completely
   useEffect(() => {
     if (!open) {
-      setSearchQuery('');
-      setSelectedIndex(0);
-      setIsSubmitted(false);
-      return;
+      const resetTimer = window.setTimeout(() => {
+        setSearchQuery("");
+        setSelectedIndex(0);
+        setIsSubmitted(false);
+      }, 0);
+      return () => window.clearTimeout(resetTimer);
     }
 
     const originalBodyOverflow = document.body.style.overflow;
     const originalHtmlOverflow = document.documentElement.style.overflow;
     const originalBodyPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
 
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
@@ -154,10 +174,12 @@ export default function CommandPalette() {
         e.preventDefault();
       }
     };
-    document.addEventListener('touchmove', preventBackgroundTouch, { passive: false });
+    document.addEventListener("touchmove", preventBackgroundTouch, {
+      passive: false,
+    });
 
     // Focus input on search view
-    if (view === 'search') {
+    if (view === "search") {
       setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
@@ -167,13 +189,14 @@ export default function CommandPalette() {
       document.body.style.overflow = originalBodyOverflow;
       document.documentElement.style.overflow = originalHtmlOverflow;
       document.body.style.paddingRight = originalBodyPaddingRight;
-      document.removeEventListener('touchmove', preventBackgroundTouch);
+      document.removeEventListener("touchmove", preventBackgroundTouch);
     };
   }, [open, view]);
 
   // Reset selectedIndex on search change
   useEffect(() => {
-    setSelectedIndex(0);
+    const timeout = window.setTimeout(() => setSelectedIndex(0), 0);
+    return () => window.clearTimeout(timeout);
   }, [searchQuery]);
 
   // Navigate helper
@@ -190,21 +213,21 @@ export default function CommandPalette() {
         duration: 2500,
       });
     } else {
-      navigateTo('/contact');
+      navigateTo("/contact");
     }
   };
 
   // Transition from quick message draft to full contact form
   const handleContinueToContact = () => {
     setContactMessage(messageDraft);
-    setView('contact');
+    setView("contact");
   };
 
   // Submit full contact form
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) {
-      toast.error('Please fill in your name, email, and message.');
+      toast.error("Please fill in your name, email, and message.");
       return;
     }
 
@@ -213,21 +236,25 @@ export default function CommandPalette() {
       const res = await sendMessage({
         name: contactName,
         email: contactEmail,
-        message: contactSubject ? `[${contactSubject}] ${contactMessage}` : contactMessage,
+        message: contactSubject
+          ? `[${contactSubject}] ${contactMessage}`
+          : contactMessage,
       });
 
       if (res?.success) {
         setIsSubmitted(true);
-        toast.success('Message sent successfully! Rohan will get back to you shortly.');
-        setMessageDraft('');
-        setContactMessage('');
-        setContactName('');
-        setContactEmail('');
+        toast.success(
+          "Message sent successfully! Rohan will get back to you shortly.",
+        );
+        setMessageDraft("");
+        setContactMessage("");
+        setContactName("");
+        setContactEmail("");
       } else {
-        toast.error('Failed to send message. Please try again.');
+        toast.error("Failed to send message. Please try again.");
       }
     } catch {
-      toast.error('Something went wrong. Please email directly.');
+      toast.error("Something went wrong. Please email directly.");
     } finally {
       setIsSubmitting(false);
     }
@@ -235,19 +262,49 @@ export default function CommandPalette() {
 
   // Pages grid items matching portfolio site structure
   const PAGES: PageItem[] = [
-    { name: 'Home', href: '/', icon: Home, desc: 'Portfolio overview & hero' },
-    { name: 'About', href: '/about', icon: User, desc: 'Career narrative & principles' },
-    { name: 'Work', href: '/projects', icon: Briefcase, desc: 'Selected case studies archive' },
-    { name: 'Stack', href: '/tech-stack', icon: Layers, desc: 'Architecture tooling & languages' },
-    { name: 'Guestbook', href: '/guestbook', icon: BookOpen, desc: 'Visitor & recruiter notes' },
-    { 
-      name: 'Book a call', 
-      href: '/contact#book-call', 
-      icon: Phone, 
-      desc: '30 min discovery call'
+    { name: "Home", href: "/", icon: Home, desc: "Portfolio overview & hero" },
+    {
+      name: "About",
+      href: "/about",
+      icon: User,
+      desc: "Career narrative & principles",
     },
-    { name: 'Links', href: '/links', icon: LinkIcon, desc: 'Social profiles & connect hub' },
-    { name: 'Contact', href: '/contact', icon: Mail, desc: 'Direct message & project proposal' },
+    {
+      name: "Work",
+      href: "/projects",
+      icon: Briefcase,
+      desc: "Selected case studies archive",
+    },
+    {
+      name: "Stack",
+      href: "/tech-stack",
+      icon: Layers,
+      desc: "Architecture tooling & languages",
+    },
+    {
+      name: "Guestbook",
+      href: "/guestbook",
+      icon: BookOpen,
+      desc: "Visitor & recruiter notes",
+    },
+    {
+      name: "Book a call",
+      href: "/contact#book-call",
+      icon: Phone,
+      desc: "30 min discovery call",
+    },
+    {
+      name: "Links",
+      href: "/links",
+      icon: LinkIcon,
+      desc: "Social profiles & connect hub",
+    },
+    {
+      name: "Contact",
+      href: "/contact",
+      icon: Mail,
+      desc: "Direct message & project proposal",
+    },
   ];
 
   // Search filtering
@@ -258,12 +315,15 @@ export default function CommandPalette() {
           p.title.toLowerCase().includes(q) ||
           p.tagline.toLowerCase().includes(q) ||
           p.category.toLowerCase().includes(q) ||
-          p.techStack.some((t) => t.toLowerCase().includes(q))
+          p.techStack.some((t) => t.toLowerCase().includes(q)),
       )
     : [];
 
   const filteredPages = q
-    ? PAGES.filter((p) => p.name.toLowerCase().includes(q) || p.desc?.toLowerCase().includes(q))
+    ? PAGES.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) || p.desc?.toLowerCase().includes(q),
+      )
     : [];
 
   const allFilteredItems = [...filteredProjects, ...filteredPages];
@@ -272,18 +332,21 @@ export default function CommandPalette() {
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (allFilteredItems.length === 0) return;
 
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prev) => (prev + 1) % allFilteredItems.length);
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev - 1 + allFilteredItems.length) % allFilteredItems.length);
-    } else if (e.key === 'Enter') {
+      setSelectedIndex(
+        (prev) =>
+          (prev - 1 + allFilteredItems.length) % allFilteredItems.length,
+      );
+    } else if (e.key === "Enter") {
       e.preventDefault();
       const currentItem = allFilteredItems[selectedIndex];
       if (!currentItem) return;
 
-      if ('slug' in currentItem) {
+      if ("slug" in currentItem) {
         navigateTo(`/projects/${currentItem.slug}`);
       } else if (currentItem.isAction && currentItem.action) {
         currentItem.action();
@@ -296,7 +359,7 @@ export default function CommandPalette() {
   return (
     <AnimatePresence>
       {open && (
-        <div 
+        <div
           className="fixed inset-0 z-[100001] flex items-start justify-center pt-16 sm:pt-24 pb-8 px-3 sm:px-4"
           data-lenis-prevent="true"
         >
@@ -324,15 +387,21 @@ export default function CommandPalette() {
             {/* TOP BAR (Compact, Modern, Zero Theme-Moon per specification)  */}
             {/* ============================================================== */}
             <div className="flex items-center gap-2 mb-2">
-              {view === 'search' ? (
+              {view === "search" ? (
                 /* Search Input Pill */
-                <div 
+                <div
                   className="flex-1 h-11 rounded-full bg-[#16171b]/90 border border-white/[0.12] hover:border-white/[0.2] px-3.5 flex items-center gap-2.5 backdrop-blur-xl transition-all shadow-lg focus-within:ring-2 focus-within:ring-theme/30"
                   style={{
-                    borderColor: searchQuery ? `${currentTheme.primary}60` : undefined,
+                    borderColor: searchQuery
+                      ? `${currentTheme.primary}60`
+                      : undefined,
                   }}
                 >
-                  <Search size={16} className="text-muted-foreground shrink-0" style={{ color: currentTheme.primary }} />
+                  <Search
+                    size={16}
+                    className="text-muted-foreground shrink-0"
+                    style={{ color: currentTheme.primary }}
+                  />
                   <input
                     ref={searchInputRef}
                     type="text"
@@ -345,7 +414,7 @@ export default function CommandPalette() {
                   />
                   {searchQuery && (
                     <button
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => setSearchQuery("")}
                       className="text-xs text-muted-foreground hover:text-white p-1"
                     >
                       <X size={13} />
@@ -358,25 +427,30 @@ export default function CommandPalette() {
               ) : (
                 /* Reach out / Contact Top Navigation Pill */
                 <button
-                  onClick={() => setView(view === 'contact' ? 'reachout' : 'search')}
+                  onClick={() =>
+                    setView(view === "contact" ? "reachout" : "search")
+                  }
                   className="h-11 px-3.5 rounded-full bg-[#16171b]/90 border border-white/[0.12] hover:border-white/[0.25] flex items-center gap-2 text-xs sm:text-sm font-medium text-foreground hover:text-white transition-all shadow-lg group backdrop-blur-xl"
                 >
-                  <ArrowLeft size={15} className="text-muted-foreground group-hover:text-white transition-transform group-hover:-translate-x-0.5" />
-                  <span>{view === 'contact' ? 'Back' : 'Reach out'}</span>
+                  <ArrowLeft
+                    size={15}
+                    className="text-muted-foreground group-hover:text-white transition-transform group-hover:-translate-x-0.5"
+                  />
+                  <span>{view === "contact" ? "Back" : "Reach out"}</span>
                 </button>
               )}
 
               {/* Action Buttons Row */}
               <div className="flex items-center gap-1.5 shrink-0">
                 {/* 1. Alternating Message / Phone Icon Button */}
-                {view === 'search' ? (
+                {view === "search" ? (
                   <button
-                    onClick={() => setView('reachout')}
+                    onClick={() => setView("reachout")}
                     className="w-11 h-11 rounded-full bg-[#16171b]/90 border border-white/[0.12] hover:border-white/[0.25] flex items-center justify-center text-muted-foreground hover:text-white transition-all hover:scale-105 shadow-lg backdrop-blur-xl relative overflow-hidden group"
                     title="Reach out (Message / Call)"
                   >
                     <AnimatePresence mode="wait" initial={false}>
-                      {alternateIcon === 'message' ? (
+                      {alternateIcon === "message" ? (
                         <motion.div
                           key="icon-message"
                           initial={{ opacity: 0, y: 4, scale: 0.8 }}
@@ -384,7 +458,10 @@ export default function CommandPalette() {
                           exit={{ opacity: 0, y: -4, scale: 0.8 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <MessageCircle size={16} className="group-hover:text-theme transition-colors" />
+                          <MessageCircle
+                            size={16}
+                            className="group-hover:text-theme transition-colors"
+                          />
                         </motion.div>
                       ) : (
                         <motion.div
@@ -394,14 +471,17 @@ export default function CommandPalette() {
                           exit={{ opacity: 0, y: -4, scale: 0.8 }}
                           transition={{ duration: 0.2 }}
                         >
-                          <Phone size={16} className="group-hover:text-theme transition-colors" />
+                          <Phone
+                            size={16}
+                            className="group-hover:text-theme transition-colors"
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </button>
                 ) : (
                   <button
-                    onClick={() => setView('search')}
+                    onClick={() => setView("search")}
                     className="w-11 h-11 rounded-full bg-[#16171b]/90 border border-white/[0.12] hover:border-white/[0.25] flex items-center justify-center text-muted-foreground hover:text-white transition-all hover:scale-105 shadow-lg backdrop-blur-xl"
                     title="Search Pages & Projects"
                   >
@@ -423,7 +503,7 @@ export default function CommandPalette() {
             {/* ============================================================== */}
             {/* FIXED-HEIGHT MODAL MAIN CONTENT CONTAINER (Calibrated h-[420px]) */}
             {/* ============================================================== */}
-            <div 
+            <div
               data-modal-scrollable="true"
               data-lenis-prevent="true"
               className="h-[420px] overflow-y-auto overscroll-contain rounded-3xl bg-[#16171b]/95 border border-white/[0.1] backdrop-blur-2xl shadow-[0_25px_70px_rgba(0,0,0,0.85)] p-4 sm:p-4.5 [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.12)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/10 hover:[&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full"
@@ -432,7 +512,7 @@ export default function CommandPalette() {
                 {/* ----------------------------------------------------------- */}
                 {/* VIEW 1: SEARCH & PAGES (Reference Screenshot 1) */}
                 {/* ----------------------------------------------------------- */}
-                {view === 'search' && (
+                {view === "search" && (
                   <motion.div
                     key="view-search"
                     initial={{ opacity: 0, y: 6 }}
@@ -446,14 +526,17 @@ export default function CommandPalette() {
                       <div className="space-y-4">
                         {allFilteredItems.length === 0 ? (
                           <div className="py-12 text-center text-xs text-muted-foreground">
-                            No matching projects or pages found for &quot;{searchQuery}&quot;.
+                            No matching projects or pages found for &quot;
+                            {searchQuery}&quot;.
                           </div>
                         ) : (
                           <>
                             {filteredProjects.length > 0 && (
                               <div>
                                 <div className="flex items-center gap-3 mb-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/80">
-                                  <span>Projects ({filteredProjects.length})</span>
+                                  <span>
+                                    Projects ({filteredProjects.length})
+                                  </span>
                                   <div className="h-px bg-white/[0.08] flex-1" />
                                 </div>
                                 <div className="space-y-1.5">
@@ -462,30 +545,42 @@ export default function CommandPalette() {
                                     return (
                                       <button
                                         key={p.slug}
-                                        onClick={() => navigateTo(`/projects/${p.slug}`)}
+                                        onClick={() =>
+                                          navigateTo(`/projects/${p.slug}`)
+                                        }
                                         className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all ${
                                           isSelected
-                                            ? 'bg-white/[0.08] text-white border border-white/[0.12]'
-                                            : 'hover:bg-white/[0.04] text-zinc-300'
+                                            ? "bg-white/[0.08] text-white border border-white/[0.12]"
+                                            : "hover:bg-white/[0.04] text-zinc-300"
                                         }`}
                                       >
                                         <div className="flex items-center gap-2.5">
-                                          <div 
+                                          <div
                                             className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 border border-white/10"
-                                            style={{ backgroundColor: `${currentTheme.primary}20`, color: currentTheme.primary }}
+                                            style={{
+                                              backgroundColor: `${currentTheme.primary}20`,
+                                              color: currentTheme.primary,
+                                            }}
                                           >
                                             <Briefcase size={14} />
                                           </div>
                                           <div>
-                                            <div className="font-semibold text-xs sm:text-sm text-white">{p.title}</div>
-                                            <div className="text-[11px] text-muted-foreground line-clamp-1">{p.tagline}</div>
+                                            <div className="font-semibold text-xs sm:text-sm text-white">
+                                              {p.title}
+                                            </div>
+                                            <div className="text-[11px] text-muted-foreground line-clamp-1">
+                                              {p.tagline}
+                                            </div>
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                           <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/[0.06] text-muted-foreground border border-white/[0.08]">
                                             {p.category}
                                           </span>
-                                          <ArrowRight size={13} className="text-muted-foreground" />
+                                          <ArrowRight
+                                            size={13}
+                                            className="text-muted-foreground"
+                                          />
                                         </div>
                                       </button>
                                     );
@@ -502,20 +597,23 @@ export default function CommandPalette() {
                                 </div>
                                 <div className="space-y-1.5">
                                   {filteredPages.map((page, idx) => {
-                                    const globalIdx = filteredProjects.length + idx;
-                                    const isSelected = selectedIndex === globalIdx;
+                                    const globalIdx =
+                                      filteredProjects.length + idx;
+                                    const isSelected =
+                                      selectedIndex === globalIdx;
                                     const Icon = page.icon;
                                     return (
                                       <button
                                         key={page.name}
                                         onClick={() => {
-                                          if (page.isAction && page.action) page.action();
+                                          if (page.isAction && page.action)
+                                            page.action();
                                           else navigateTo(page.href);
                                         }}
                                         className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-all ${
                                           isSelected
-                                            ? 'bg-white/[0.08] text-white border border-white/[0.12]'
-                                            : 'hover:bg-white/[0.04] text-zinc-300'
+                                            ? "bg-white/[0.08] text-white border border-white/[0.12]"
+                                            : "hover:bg-white/[0.04] text-zinc-300"
                                         }`}
                                       >
                                         <div className="flex items-center gap-2.5">
@@ -523,11 +621,18 @@ export default function CommandPalette() {
                                             <Icon size={14} />
                                           </div>
                                           <div>
-                                            <div className="font-semibold text-xs sm:text-sm text-white">{page.name}</div>
-                                            <div className="text-[11px] text-muted-foreground">{page.desc}</div>
+                                            <div className="font-semibold text-xs sm:text-sm text-white">
+                                              {page.name}
+                                            </div>
+                                            <div className="text-[11px] text-muted-foreground">
+                                              {page.desc}
+                                            </div>
                                           </div>
                                         </div>
-                                        <ArrowRight size={13} className="text-muted-foreground" />
+                                        <ArrowRight
+                                          size={13}
+                                          className="text-muted-foreground"
+                                        />
                                       </button>
                                     );
                                   })}
@@ -543,7 +648,9 @@ export default function CommandPalette() {
                         {/* Section: Pages */}
                         <div>
                           <div className="flex items-center gap-2.5 mb-2 text-xs font-medium text-muted-foreground">
-                            <span className="shrink-0 font-medium text-zinc-400">Pages</span>
+                            <span className="shrink-0 font-medium text-zinc-400">
+                              Pages
+                            </span>
                             <div className="h-px bg-white/[0.08] flex-1" />
                           </div>
 
@@ -554,7 +661,8 @@ export default function CommandPalette() {
                                 <button
                                   key={item.name}
                                   onClick={() => {
-                                    if (item.isAction && item.action) item.action();
+                                    if (item.isAction && item.action)
+                                      item.action();
                                     else navigateTo(item.href);
                                   }}
                                   className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-white/[0.06] text-left transition-all group"
@@ -574,7 +682,9 @@ export default function CommandPalette() {
                         {/* Section: Connect */}
                         <div>
                           <div className="flex items-center gap-2.5 mt-3 mb-2 text-xs font-medium text-muted-foreground">
-                            <span className="shrink-0 font-medium text-zinc-400">Connect</span>
+                            <span className="shrink-0 font-medium text-zinc-400">
+                              Connect
+                            </span>
                             <div className="h-px bg-white/[0.08] flex-1" />
                           </div>
 
@@ -586,10 +696,16 @@ export default function CommandPalette() {
                               className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                             >
                               <div className="flex items-center gap-1.5">
-                                <FaGithub size={13} className="group-hover:text-theme transition-colors" />
+                                <FaGithub
+                                  size={13}
+                                  className="group-hover:text-theme transition-colors"
+                                />
                                 <span>GitHub</span>
                               </div>
-                              <ArrowUpRight size={11} className="text-muted-foreground group-hover:text-white transition-colors" />
+                              <ArrowUpRight
+                                size={11}
+                                className="text-muted-foreground group-hover:text-white transition-colors"
+                              />
                             </a>
 
                             <a
@@ -599,10 +715,16 @@ export default function CommandPalette() {
                               className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                             >
                               <div className="flex items-center gap-1.5">
-                                <FaLinkedin size={13} className="group-hover:text-theme transition-colors" />
+                                <FaLinkedin
+                                  size={13}
+                                  className="group-hover:text-theme transition-colors"
+                                />
                                 <span>LinkedIn</span>
                               </div>
-                              <ArrowUpRight size={11} className="text-muted-foreground group-hover:text-white transition-colors" />
+                              <ArrowUpRight
+                                size={11}
+                                className="text-muted-foreground group-hover:text-white transition-colors"
+                              />
                             </a>
 
                             <a
@@ -612,10 +734,16 @@ export default function CommandPalette() {
                               className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                             >
                               <div className="flex items-center gap-1.5">
-                                <FaXTwitter size={12} className="group-hover:text-theme transition-colors" />
+                                <FaXTwitter
+                                  size={12}
+                                  className="group-hover:text-theme transition-colors"
+                                />
                                 <span>X (Twitter)</span>
                               </div>
-                              <ArrowUpRight size={11} className="text-muted-foreground group-hover:text-white transition-colors" />
+                              <ArrowUpRight
+                                size={11}
+                                className="text-muted-foreground group-hover:text-white transition-colors"
+                              />
                             </a>
                           </div>
                         </div>
@@ -623,7 +751,9 @@ export default function CommandPalette() {
                         {/* Section: Theme Accent Selection */}
                         <div>
                           <div className="flex items-center gap-2.5 mt-3 mb-2 text-xs font-medium text-muted-foreground">
-                            <span className="shrink-0 font-medium text-zinc-400">Accent Color</span>
+                            <span className="shrink-0 font-medium text-zinc-400">
+                              Accent Color
+                            </span>
                             <div className="h-px bg-white/[0.08] flex-1" />
                           </div>
 
@@ -635,24 +765,31 @@ export default function CommandPalette() {
                                   key={t.id}
                                   onClick={() => {
                                     setAccent(t.id);
-                                    toast.success(`Theme switched to ${t.name}`, {
-                                      duration: 1200,
-                                    });
+                                    toast.success(
+                                      `Theme switched to ${t.name}`,
+                                      {
+                                        duration: 1200,
+                                      },
+                                    );
                                   }}
                                   className={`flex items-center gap-1.5 p-1.5 rounded-lg text-[11px] font-medium border transition-all ${
                                     isActive
-                                      ? 'bg-white/[0.08] border-white/20 text-white'
-                                      : 'bg-white/[0.02] border-white/[0.05] text-zinc-400 hover:text-white hover:bg-white/[0.05]'
+                                      ? "bg-white/[0.08] border-white/20 text-white"
+                                      : "bg-white/[0.02] border-white/[0.05] text-zinc-400 hover:text-white hover:bg-white/[0.05]"
                                   }`}
                                 >
                                   <span
                                     className="w-2 h-2 rounded-full shrink-0"
                                     style={{
                                       backgroundColor: t.primary,
-                                      boxShadow: isActive ? `0 0 8px ${t.glow}` : undefined,
+                                      boxShadow: isActive
+                                        ? `0 0 8px ${t.glow}`
+                                        : undefined,
                                     }}
                                   />
-                                  <span className="truncate">{t.name.split(' ')[0]}</span>
+                                  <span className="truncate">
+                                    {t.name.split(" ")[0]}
+                                  </span>
                                 </button>
                               );
                             })}
@@ -666,7 +803,7 @@ export default function CommandPalette() {
                 {/* ----------------------------------------------------------- */}
                 {/* VIEW 2: REACH OUT (Matches Reference Screenshot 2) */}
                 {/* ----------------------------------------------------------- */}
-                {view === 'reachout' && (
+                {view === "reachout" && (
                   <motion.div
                     key="view-reachout"
                     initial={{ opacity: 0, y: 6 }}
@@ -689,8 +826,12 @@ export default function CommandPalette() {
                           />
                         </div>
                         <div>
-                          <div className="text-xs sm:text-sm font-semibold text-white">Send Rohan a message</div>
-                          <div className="text-[10px] text-muted-foreground">I read every one</div>
+                          <div className="text-xs sm:text-sm font-semibold text-white">
+                            Send Rohan a message
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">
+                            I read every one
+                          </div>
                         </div>
                       </div>
 
@@ -699,7 +840,7 @@ export default function CommandPalette() {
                         value={messageDraft}
                         onChange={(e) => setMessageDraft(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
+                          if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleContinueToContact();
                           }
@@ -713,7 +854,14 @@ export default function CommandPalette() {
                       {/* Card Footer Hints & Continue Button */}
                       <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.06]">
                         <span className="text-[10px] text-muted-foreground/70 font-mono">
-                          <kbd className="px-1 py-0.5 rounded bg-white/[0.06] border border-white/[0.08]">↵</kbd> to continue · <kbd className="px-1 py-0.5 rounded bg-white/[0.06] border border-white/[0.08]">⇧↵</kbd> new line
+                          <kbd className="px-1 py-0.5 rounded bg-white/[0.06] border border-white/[0.08]">
+                            ↵
+                          </kbd>{" "}
+                          to continue ·{" "}
+                          <kbd className="px-1 py-0.5 rounded bg-white/[0.06] border border-white/[0.08]">
+                            ⇧↵
+                          </kbd>{" "}
+                          new line
                         </span>
 
                         <button
@@ -721,7 +869,10 @@ export default function CommandPalette() {
                           className="px-3 py-1 rounded-xl text-xs font-medium bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] hover:border-theme/40 text-white flex items-center gap-1.5 transition-all group"
                         >
                           <span>Continue</span>
-                          <ArrowRight size={12} className="text-muted-foreground group-hover:text-white transition-transform group-hover:translate-x-0.5" />
+                          <ArrowRight
+                            size={12}
+                            className="text-muted-foreground group-hover:text-white transition-transform group-hover:translate-x-0.5"
+                          />
                         </button>
                       </div>
                     </div>
@@ -730,7 +881,7 @@ export default function CommandPalette() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {/* Left: Book a call */}
                       <button
-                        onClick={() => navigateTo('/contact#book-call')}
+                        onClick={() => navigateTo("/contact#book-call")}
                         className="p-3.5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.08] hover:border-theme/40 flex flex-col items-center justify-center text-center cursor-pointer transition-all group"
                       >
                         {/* Overlapping Avatars: Rohan (Hero image) + You */}
@@ -744,7 +895,9 @@ export default function CommandPalette() {
                               sizes="32px"
                             />
                           </div>
-                          <span className="text-xs text-muted-foreground font-mono mx-1">+</span>
+                          <span className="text-xs text-muted-foreground font-mono mx-1">
+                            +
+                          </span>
                           <div className="w-8 h-8 rounded-full bg-white/[0.1] border border-white/20 flex items-center justify-center text-[10px] font-semibold text-white">
                             You
                           </div>
@@ -771,7 +924,7 @@ export default function CommandPalette() {
                           Email me
                         </div>
                         <div className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate max-w-[140px]">
-                          {dynamicEmail || 'Direct Email'}
+                          {dynamicEmail || "Direct Email"}
                         </div>
                       </button>
                     </div>
@@ -779,32 +932,45 @@ export default function CommandPalette() {
                     {/* Bottom Row: Social Links */}
                     <div className="grid grid-cols-3 gap-2">
                       <a
-                        href={socials.linkedin || '/links'}
-                        target={socials.linkedin ? '_blank' : undefined}
-                        rel={socials.linkedin ? 'noopener noreferrer' : undefined}
+                        href={socials.linkedin || "/links"}
+                        target={socials.linkedin ? "_blank" : undefined}
+                        rel={
+                          socials.linkedin ? "noopener noreferrer" : undefined
+                        }
                         className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                       >
-                        <FaLinkedin size={13} className="group-hover:text-theme transition-colors" />
+                        <FaLinkedin
+                          size={13}
+                          className="group-hover:text-theme transition-colors"
+                        />
                         <span>LinkedIn</span>
                       </a>
 
                       <a
-                        href={socials.twitter || '/links'}
-                        target={socials.twitter ? '_blank' : undefined}
-                        rel={socials.twitter ? 'noopener noreferrer' : undefined}
+                        href={socials.twitter || "/links"}
+                        target={socials.twitter ? "_blank" : undefined}
+                        rel={
+                          socials.twitter ? "noopener noreferrer" : undefined
+                        }
                         className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                       >
-                        <FaXTwitter size={12} className="group-hover:text-theme transition-colors" />
+                        <FaXTwitter
+                          size={12}
+                          className="group-hover:text-theme transition-colors"
+                        />
                         <span>X / Twitter</span>
                       </a>
 
                       <a
-                        href={socials.github || '/links'}
-                        target={socials.github ? '_blank' : undefined}
-                        rel={socials.github ? 'noopener noreferrer' : undefined}
+                        href={socials.github || "/links"}
+                        target={socials.github ? "_blank" : undefined}
+                        rel={socials.github ? "noopener noreferrer" : undefined}
                         className="flex items-center justify-center gap-1.5 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
                       >
-                        <FaGithub size={13} className="group-hover:text-theme transition-colors" />
+                        <FaGithub
+                          size={13}
+                          className="group-hover:text-theme transition-colors"
+                        />
                         <span>GitHub</span>
                       </a>
                     </div>
@@ -814,7 +980,7 @@ export default function CommandPalette() {
                 {/* ----------------------------------------------------------- */}
                 {/* VIEW 3: FULL CONTACT FORM (Step 2 of Reach Out Message) */}
                 {/* ----------------------------------------------------------- */}
-                {view === 'contact' && (
+                {view === "contact" && (
                   <motion.div
                     key="view-contact"
                     initial={{ opacity: 0, y: 6 }}
@@ -826,7 +992,7 @@ export default function CommandPalette() {
                     {isSubmitted ? (
                       /* Success Celebration State */
                       <div className="py-8 text-center space-y-3">
-                        <div 
+                        <div
                           className="w-12 h-12 rounded-full mx-auto flex items-center justify-center border shadow-lg"
                           style={{
                             backgroundColor: `${currentTheme.primary}20`,
@@ -837,16 +1003,19 @@ export default function CommandPalette() {
                           <Check size={24} />
                         </div>
                         <div>
-                          <h3 className="text-base font-bold text-white">Message Dispatched!</h3>
+                          <h3 className="text-base font-bold text-white">
+                            Message Dispatched!
+                          </h3>
                           <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
-                            Thank you for reaching out. Rohan will reply to your email within 24 hours.
+                            Thank you for reaching out. Rohan will reply to your
+                            email within 24 hours.
                           </p>
                         </div>
                         <div className="flex items-center justify-center gap-2 pt-2">
                           <button
                             onClick={() => {
                               setIsSubmitted(false);
-                              setView('search');
+                              setView("search");
                               setOpen(false);
                             }}
                             className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/[0.08] hover:bg-white/[0.14] text-white border border-white/10 transition-all"
@@ -856,7 +1025,7 @@ export default function CommandPalette() {
                           <button
                             onClick={() => {
                               setIsSubmitted(false);
-                              setView('reachout');
+                              setView("reachout");
                             }}
                             className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-white transition-colors"
                           >
@@ -866,11 +1035,17 @@ export default function CommandPalette() {
                       </div>
                     ) : (
                       /* Contact Form */
-                      <form onSubmit={handleContactSubmit} className="space-y-2.5">
+                      <form
+                        onSubmit={handleContactSubmit}
+                        className="space-y-2.5"
+                      >
                         <div className="border-b border-white/[0.08] pb-1.5">
-                          <div className="text-xs sm:text-sm font-semibold text-white">Direct Project Proposal</div>
+                          <div className="text-xs sm:text-sm font-semibold text-white">
+                            Direct Project Proposal
+                          </div>
                           <div className="text-[10px] text-muted-foreground">
-                            Fill in your details below. Your draft has been autofilled.
+                            Fill in your details below. Your draft has been
+                            autofilled.
                           </div>
                         </div>
 
@@ -938,7 +1113,7 @@ export default function CommandPalette() {
                         <div className="flex items-center justify-between pt-1">
                           <button
                             type="button"
-                            onClick={() => setView('reachout')}
+                            onClick={() => setView("reachout")}
                             className="text-[11px] text-muted-foreground hover:text-white transition-colors"
                           >
                             ← Edit draft

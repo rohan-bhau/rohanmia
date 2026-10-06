@@ -1,24 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Home, ArrowLeft } from 'lucide-react';
-import Magnetic from '@/components/shared/Magnetic';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Home, ArrowLeft } from "lucide-react";
+import Magnetic from "@/components/shared/Magnetic";
 
 export default function NotFound() {
-  const [particles, setParticles] = useState([]);
-
-  useEffect(() => {
-    const newParticles = [...Array(5)].map(() => ({
+  const [particles] = useState(() =>
+    [...Array(5)].map(() => ({
       top: `${Math.random() * 100}%`,
       left: `${Math.random() * 100}%`,
       duration: 5 + Math.random() * 5,
       delay: Math.random() * 5,
-      x: Math.random() * 50 - 25
-    }));
-    setParticles(newParticles);
-  }, []);
+      x: Math.random() * 50 - 25,
+    })),
+  );
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 overflow-hidden relative">
@@ -55,7 +52,8 @@ export default function NotFound() {
           transition={{ delay: 0.4 }}
           className="text-gray-400 text-lg md:text-xl max-w-md mx-auto leading-relaxed"
         >
-          The coordinates you followed lead to a void. The page you are looking for has been moved or deleted.
+          The coordinates you followed lead to a void. The page you are looking
+          for has been moved or deleted.
         </motion.p>
 
         {/* Navigation Buttons */}
@@ -73,9 +71,9 @@ export default function NotFound() {
               </button>
             </Link>
           </Magnetic>
-          
+
           <Magnetic>
-            <button 
+            <button
               onClick={() => window.history.back()}
               className="flex items-center gap-3 px-8 py-4 glass border-white/10 text-white font-bold rounded-2xl hover:bg-white/5 transition-all"
             >
@@ -92,17 +90,17 @@ export default function NotFound() {
             animate={{
               y: [0, -100, 0],
               x: [0, p.x, 0],
-              opacity: [0, 0.5, 0]
+              opacity: [0, 0.5, 0],
             }}
             transition={{
               duration: p.duration,
               repeat: Infinity,
-              delay: p.delay
+              delay: p.delay,
             }}
             className="absolute w-1 h-1 bg-primary rounded-full blur-[1px]"
             style={{
               top: p.top,
-              left: p.left
+              left: p.left,
             }}
           />
         ))}
