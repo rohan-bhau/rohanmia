@@ -78,11 +78,13 @@ function FeaturedProjectCard({
   index,
   isActive,
   onCardClick,
+  href,
 }: {
   project: CaseStudy;
   index: number;
   isActive: boolean;
   onCardClick?: () => void;
+  href?: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -112,7 +114,7 @@ function FeaturedProjectCard({
     setIsHoveringImage(false);
   };
 
-  return (
+  const cardElement = (
     <div
       ref={cardRef}
       onClick={onCardClick}
@@ -237,6 +239,16 @@ function FeaturedProjectCard({
       </div>
     </div>
   );
+
+  if (href && !onCardClick) {
+    return (
+      <Link href={href} className="block w-full">
+        {cardElement}
+      </Link>
+    );
+  }
+
+  return cardElement;
 }
 
 export default function FeaturedCaseStudies({ 
@@ -494,6 +506,7 @@ export default function FeaturedCaseStudies({
                     project={project}
                     index={index}
                     isActive={isCurrent}
+                    href={isAdmin ? undefined : `/projects/${project.slug}`}
                     onCardClick={isAdmin ? () => onEdit?.(project) : undefined}
                   />
 

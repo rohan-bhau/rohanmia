@@ -6,39 +6,50 @@ import { usePathname } from 'next/navigation';
 import AnimatedLogo from '@/components/shared/AnimatedLogo';
 import { useThemeAccent } from '@/components/theme/ThemeProvider';
 
-// Module-scoped flag resets on every full page refresh or first load
-let hasShownPreloaderOnThisPageLoad = false;
-
 export default function Preloader() {
   const pathname = usePathname();
   const { currentTheme } = useThemeAccent();
   const [isMounted, setIsMounted] = useState(false);
   const [loading, setLoading] = useState(() => {
-    if (typeof window !== 'undefined' && hasShownPreloaderOnThisPageLoad) {
-      return false;
+    if (typeof window !== 'undefined') {
+      try {
+        const isAdmin = window.location.pathname.startsWith('/control-room-internal');
+        const storageKey = isAdmin ? 'bhau_admin_preloader_seen' : 'bhau_public_preloader_seen';
+        if (sessionStorage.getItem(storageKey)) {
+          return false;
+        }
+      } catch {}
     }
     return true;
   });
 
   useEffect(() => {
     setIsMounted(true);
-    // If on admin control room or already shown on this full page load, dismiss immediately
-    if (pathname?.startsWith('/control-room-internal') || hasShownPreloaderOnThisPageLoad) {
-      setLoading(false);
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
-    hasShownPreloaderOnThisPageLoad = true;
+    const isAdmin = pathname?.startsWith('/control-room-internal');
+    const storageKey = isAdmin ? 'bhau_admin_preloader_seen' : 'bhau_public_preloader_seen';
+
+    try {
+      if (sessionStorage.getItem(storageKey)) {
+        setLoading(false);
+        window.dispatchEvent(new CustomEvent('bhau-preloader-done'));
+        return;
+      }
+      sessionStorage.setItem(storageKey, 'true');
+    } catch {}
+
+    setLoading(true);
     document.body.style.overflow = 'hidden';
 
-    // 2.5s total time: Logo draws + 'Bhau' draws + flourish, then unlocks and reveals homepage
+    // 2.3s total time: Logo draws + 'Bhau' draws, then smoothly transitions
     const timer = setTimeout(() => {
       setLoading(false);
       document.body.style.overflow = 'unset';
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('bhau-preloader-done'));
       }
-    }, 2500);
+    }, 2300);
 
     return () => {
       document.body.style.overflow = 'unset';

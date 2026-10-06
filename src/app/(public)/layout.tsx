@@ -4,7 +4,6 @@ import FloatingControls from "@/components/shared/FloatingControls";
 import Chatbot from "@/components/ai/Chatbot";
 import ClickBurst from "@/components/shared/ClickBurst";
 import Footer from "@/components/layout/Footer";
-import Preloader from "@/components/shared/Preloader";
 import { getSettings } from "@/actions/adminSettings";
 import { getPublicLinks } from "@/actions/adminLinks";
 
@@ -20,7 +19,6 @@ export default async function PublicLayout({
 
   return (
     <>
-      <Preloader />
       <ClickBurst />
       <Navbar settings={settings} />
       <FloatingControls />
