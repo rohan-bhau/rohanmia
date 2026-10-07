@@ -100,9 +100,11 @@ export function ensurePortfolioTables(): Promise<void> {
           tagline TEXT,
           category VARCHAR(64) DEFAULT 'Full Stack',
           featured BOOLEAN DEFAULT false,
+          featured_sort_order INT DEFAULT 0,
           role VARCHAR(128),
           year VARCHAR(64),
           target_audience TEXT,
+          why_i_built_this TEXT,
           overview TEXT,
           problem TEXT,
           solution TEXT,
@@ -228,6 +230,7 @@ export function ensurePortfolioTables(): Promise<void> {
           client_url TEXT,
           server_url TEXT,
           sort_order INT DEFAULT 0,
+          migrated_to_project BOOLEAN DEFAULT false,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`,
@@ -295,6 +298,42 @@ export function ensurePortfolioTables(): Promise<void> {
       // Ensure recently added columns exist
       await executeSql(
         `ALTER TABLE about_content ADD COLUMN IF NOT EXISTS carousel_items JSONB DEFAULT '[]'::jsonb;`,
+      );
+      await executeSql(
+        `ALTER TABLE projects ADD COLUMN IF NOT EXISTS why_i_built_this TEXT;`,
+      );
+      await executeSql(
+        `ALTER TABLE projects ADD COLUMN IF NOT EXISTS featured_sort_order INT DEFAULT 0;`,
+      );
+      await executeSql(
+        `ALTER TABLE featured_case_studies ADD COLUMN IF NOT EXISTS migrated_to_project BOOLEAN DEFAULT false;`,
+      );
+      await executeSql(`
+        WITH pending AS (
+          SELECT featured_case_studies.*,
+            (ROW_NUMBER() OVER (ORDER BY sort_order ASC, created_at ASC)
+              + COALESCE((SELECT MAX(featured_sort_order) FROM projects WHERE featured = true), 0))::INT AS next_featured_order
+          FROM featured_case_studies
+          WHERE migrated_to_project = false
+        )
+        INSERT INTO projects (
+          id, slug, title, tagline, category, featured, featured_sort_order,
+          year, overview, gradient, accent_color, preview_image, hover_image,
+          github_url, client_url, server_url, live_url, tech_stack, key_features,
+          sort_order
+        )
+        SELECT
+          'legacy_featured_' || id, slug, title, tagline, category, true,
+          next_featured_order, year, overview, gradient, accent_color,
+          preview_image, hover_image, github_url, client_url, server_url,
+          live_url, tech_stack, key_features, sort_order
+        FROM pending
+        ON CONFLICT (slug) DO UPDATE SET
+          featured = true,
+          featured_sort_order = EXCLUDED.featured_sort_order;
+      `);
+      await executeSql(
+        `UPDATE featured_case_studies SET migrated_to_project = true WHERE migrated_to_project = false;`,
       );
     })().catch((err) => {
       portfolioTablesReady = null;

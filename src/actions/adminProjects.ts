@@ -10,11 +10,12 @@ import {
   getFeaturedCaseStudiesDb,
   upsertFeaturedCaseStudyDb,
   deleteFeaturedCaseStudyDb,
-  updateFeaturedCaseStudiesOrderDb,
+  updateFeaturedProjectsOrderDb,
   updateProjectsOrderDb,
 } from "@/lib/db/projects";
 import { revalidatePath, updateTag } from "next/cache";
 import { getCachedFeaturedProjects, PUBLIC_DATA_TAGS } from "@/lib/publicData";
+import { getProjectPalette } from "@/lib/constants/projectPalette";
 
 /**
  * Public & Admin Server Action to fetch featured case studies directly from PostgreSQL
@@ -135,12 +136,33 @@ export async function removeAdminFeaturedCaseStudy(
   }
 }
 
-export async function reorderAdminFeaturedCaseStudies(
+export async function reorderAdminFeaturedProjects(
   orderedIds: string[],
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
-    await updateFeaturedCaseStudiesOrderDb(orderedIds);
+    const projects = await getProjectsDb();
+    const byId = new Map(projects.map((project) => [project.id, project]));
+    const orderedProjects = orderedIds.flatMap((id, index) => {
+      const project = byId.get(id);
+      if (!project) return [];
+      const palette = getProjectPalette(index);
+      return [
+        {
+          id,
+          gradient: palette.value,
+          accent_color: palette.accent,
+        },
+      ];
+    });
+    await updateFeaturedProjectsOrderDb(orderedProjects);
+    for (const project of projects.filter((entry) => entry.featured)) {
+      revalidatePath(`/projects/${project.slug}`);
+    }
+    for (const project of orderedProjects) {
+      const saved = byId.get(project.id);
+      if (saved) revalidatePath(`/projects/${saved.slug}`);
+    }
     revalidatePath("/");
     revalidatePath("/projects");
     updateTag(PUBLIC_DATA_TAGS.projects);
@@ -220,6 +242,7 @@ export async function saveAdminProject(
     });
 
     revalidatePath("/projects");
+    revalidatePath(`/projects/${saved.slug}`);
     revalidatePath("/");
     updateTag(PUBLIC_DATA_TAGS.projects);
     return { success: true, project: saved };
@@ -257,12 +280,33 @@ export async function removeAdminProject(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
+    const projects = await getProjectsDb();
+    const project = projects.find((entry) => entry.id === id);
     const deleted = await deleteProjectDb(id);
     if (!deleted) {
       return { success: false, error: "Failed to delete project." };
     }
 
+    if (project?.featured) {
+      const remainingFeatured = projects
+        .filter((entry) => entry.featured && entry.id !== id)
+        .sort(
+          (left, right) => left.featured_sort_order - right.featured_sort_order,
+        );
+      await updateFeaturedProjectsOrderDb(
+        remainingFeatured.map((entry, index) => {
+          const palette = getProjectPalette(index);
+          return {
+            id: entry.id,
+            gradient: palette.value,
+            accent_color: palette.accent,
+          };
+        }),
+      );
+    }
+
     revalidatePath("/projects");
+    if (project) revalidatePath(`/projects/${project.slug}`);
     revalidatePath("/");
     updateTag(PUBLIC_DATA_TAGS.projects);
     return { success: true };

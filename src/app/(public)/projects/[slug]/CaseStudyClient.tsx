@@ -54,8 +54,8 @@ export default function CaseStudyClient({
 
   const cardAccent = project.accentColor || currentTheme.primary;
   const displayUrl = project.liveUrl
-    ? project.liveUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")
-    : `${project.slug}.vercel.app`;
+    ?.replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
 
   const hasBothRepos = Boolean(
     (project.clientUrl || project.githubUrl) && project.serverUrl,
@@ -118,29 +118,7 @@ export default function CaseStudyClient({
     dragStartX.current = null;
   };
 
-  const defaultDirectoryTree = `apps/
-  web/          # Next.js 16 App Router & Client Views
-  api/          # Domain Services & Business Logic
-packages/
-  shared-types/ # Shared TypeScript Contracts
-  validators/   # Shared Zod Schemas
-  ui/           # Design System & Tailwind Tokens`;
-
-  const defaultCodeSnippet = {
-    title: "Shared Zod Validation Contract",
-    filename: "packages/shared-types/src/index.ts",
-    code: `export const schema = z.object({
-  id: z.string().uuid(),
-  createdAt: z.string().datetime(),
-  status: z.enum(['ACTIVE', 'PENDING', 'COMPLETED']),
-  metadata: z.record(z.string(), z.unknown()),
-});
-
-export type SchemaType = z.infer<typeof schema>;`,
-  };
-
-  const codeSnippetToDisplay = project.codeSnippet || defaultCodeSnippet;
-  const directoryTreeToDisplay = project.directoryTree || defaultDirectoryTree;
+  const codeSnippetToDisplay = project.codeSnippet;
 
   return (
     <article className="pt-28 md:pt-36 pb-16 min-h-screen relative overflow-x-clip">
@@ -232,11 +210,11 @@ export type SchemaType = z.infer<typeof schema>;`,
                 </span>
               </div>
 
-              <div>
-                <span className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">
-                  Visit
-                </span>
-                {project.liveUrl ? (
+              {project.liveUrl && (
+                <div>
+                  <span className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">
+                    Visit
+                  </span>
                   <a
                     href={project.liveUrl}
                     target="_blank"
@@ -254,12 +232,8 @@ export type SchemaType = z.infer<typeof schema>;`,
                       className="shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                     />
                   </a>
-                ) : (
-                  <span className="font-mono text-xs text-neutral-400">
-                    Enterprise
-                  </span>
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Column 2: Role -> Updated -> Source */}
@@ -282,12 +256,14 @@ export type SchemaType = z.infer<typeof schema>;`,
                 </span>
               </div>
 
-              <div>
-                <span className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">
-                  Source
-                </span>
+              {(project.clientUrl ||
+                project.githubUrl ||
+                project.serverUrl) && (
+                <div>
+                  <span className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest block mb-1">
+                    Source
+                  </span>
 
-                {project.clientUrl || project.githubUrl || project.serverUrl ? (
                   <button
                     type="button"
                     onClick={() => {
@@ -316,12 +292,8 @@ export type SchemaType = z.infer<typeof schema>;`,
                       className="shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                     />
                   </button>
-                ) : (
-                  <span className="font-mono text-xs text-neutral-500">
-                    Proprietary
-                  </span>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -442,26 +414,28 @@ export type SchemaType = z.infer<typeof schema>;`,
         </div>
 
         {/* 4. Production Metrics Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {project.metrics.map((metric, idx) => (
-            <div
-              key={idx}
-              className="p-6 rounded-2xl bg-[#0c0e14] border border-white/[0.06] space-y-1"
-            >
-              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">
-                {metric.label}
-              </span>
-              <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
-                {metric.value}
+        {project.metrics.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {project.metrics.map((metric, idx) => (
+              <div
+                key={idx}
+                className="p-6 rounded-2xl bg-[#0c0e14] border border-white/[0.06] space-y-1"
+              >
+                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 block">
+                  {metric.label}
+                </span>
+                <div className="text-2xl sm:text-3xl font-black font-mono tracking-tight text-white">
+                  {metric.value}
+                </div>
+                {metric.description && (
+                  <p className="text-xs text-neutral-400/80 leading-relaxed pt-1">
+                    {metric.description}
+                  </p>
+                )}
               </div>
-              {metric.description && (
-                <p className="text-xs text-neutral-400/80 leading-relaxed pt-1">
-                  {metric.description}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* ============================================================== */}
         {/* ASYMMETRIC 2-COLUMN BLUEPRINT SECTION GRID (Exact Editorial) */}
@@ -480,7 +454,7 @@ export type SchemaType = z.infer<typeof schema>;`,
 
           <div className="md:col-span-8 lg:col-span-9 space-y-5 md:pl-6 md:border-l border-white/[0.08]">
             <p className="text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
-              {project.whyIBuiltThis || project.overview}
+              {project.whyIBuiltThis}
             </p>
 
             <div className="p-5 rounded-2xl bg-[#0e1017] border border-white/[0.08] space-y-2">
@@ -494,11 +468,59 @@ export type SchemaType = z.infer<typeof schema>;`,
           </div>
         </section>
 
-        {/* SECTION 02: How It Works */}
+        {/* SECTION 02: Key Features */}
+        {project.keyFeatures.some(
+          (feature) => feature.title.trim() || feature.description.trim(),
+        ) && (
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
+            <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
+              <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
+                02
+              </span>
+              <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
+                Key Features
+              </h2>
+            </div>
+
+            <div className="md:col-span-8 lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-3 md:pl-6 md:border-l border-white/[0.08]">
+              {project.keyFeatures
+                .filter(
+                  (feature) =>
+                    feature.title.trim() || feature.description.trim(),
+                )
+                .map((feature, index) => (
+                  <article
+                    key={`${feature.title}-${index}`}
+                    className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0e1017] p-5 sm:p-6"
+                    style={{ borderTopColor: `${cardAccent}70` }}
+                  >
+                    <span
+                      className="font-mono text-[10px] tracking-widest"
+                      style={{ color: cardAccent }}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {feature.title && (
+                      <h3 className="mt-3 text-base font-semibold text-white leading-snug">
+                        {feature.title}
+                      </h3>
+                    )}
+                    {feature.description && (
+                      <p className="mt-2 text-sm text-neutral-400 leading-relaxed">
+                        {feature.description}
+                      </p>
+                    )}
+                  </article>
+                ))}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 03: How It Works */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
           <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
             <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
-              02
+              03
             </span>
             <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
               How It Works
@@ -511,15 +533,17 @@ export type SchemaType = z.infer<typeof schema>;`,
             </p>
 
             {/* Architecture Directory Tree Terminal Box */}
-            <CodeBlock
-              code={directoryTreeToDisplay}
-              filename="workspace-architecture-tree"
-              language="tree"
-              isTree={true}
-            />
+            {project.directoryTree && (
+              <CodeBlock
+                code={project.directoryTree}
+                filename="workspace-architecture-tree"
+                language="tree"
+                isTree={true}
+              />
+            )}
 
             {/* Layered System Breakdown Cards */}
-            {project.systemBreakdown && (
+            {project.systemBreakdown.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 {project.systemBreakdown.map((layer, idx) => (
                   <div
@@ -554,152 +578,157 @@ export type SchemaType = z.infer<typeof schema>;`,
           </div>
         </section>
 
-        {/* SECTION 03: Key Decisions */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
-          <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
-            <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
-              03
-            </span>
-            <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
-              Key Decisions
-            </h2>
-          </div>
-
-          <div className="md:col-span-8 lg:col-span-9 space-y-6 md:pl-6 md:border-l border-white/[0.08]">
-            {project.technicalDecisions.map((dec, idx) => (
-              <div key={idx} className="space-y-2">
-                <h3 className="text-base font-bold text-white tracking-tight">
-                  {dec.decision}
-                </h3>
-                <p className="text-sm text-neutral-300 font-light leading-relaxed">
-                  {dec.rationale}
-                </p>
-                <p className="text-xs font-mono text-neutral-500">
-                  <strong className="text-neutral-400">Tradeoff: </strong>
-                  {dec.tradeoff}
-                </p>
-              </div>
-            ))}
-
-            {/* Embedded Code Snippet Box (Shared Zod / Type Contracts) */}
-            <div className="mt-4">
-              <CodeBlock
-                code={codeSnippetToDisplay.code}
-                filename={codeSnippetToDisplay.filename}
-                language="typescript"
-              />
+        {/* SECTION 04: Key Decisions */}
+        {(project.technicalDecisions.length > 0 ||
+          codeSnippetToDisplay?.code) && (
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
+            <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
+              <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
+                04
+              </span>
+              <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
+                Key Decisions
+              </h2>
             </div>
-          </div>
-        </section>
 
-        {/* SECTION 04: Backend Architecture */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
-          <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
-            <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
-              04
-            </span>
-            <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
-              Backend Architecture
-            </h2>
-          </div>
-
-          <div className="md:col-span-8 lg:col-span-9 space-y-6 md:pl-6 md:border-l border-white/[0.08]">
-            <p className="text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
-              {project.backendArchitecture?.overview ||
-                "The backend is organized by explicit domain modules rather than technical layers. Each module encapsulates its controllers, atomic query services, and validation schemas, ensuring horizontal scalability and zero data collision."}
-            </p>
-
-            {project.backendArchitecture?.codeSnippet && (
-              <CodeBlock
-                code={project.backendArchitecture.codeSnippet.code}
-                filename={project.backendArchitecture.codeSnippet.filename}
-                language="typescript"
-              />
-            )}
-          </div>
-        </section>
-
-        {/* SECTION 05: Challenges Overcome (Status Badge Alert Cards) */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
-          <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
-            <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
-              05
-            </span>
-            <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
-              Challenges
-            </h2>
-          </div>
-
-          <div className="md:col-span-8 lg:col-span-9 space-y-4 md:pl-6 md:border-l border-white/[0.08]">
-            {project.challenges.map((c, idx) => (
-              <div
-                key={idx}
-                className="p-5 sm:p-6 rounded-2xl bg-[#0e1017] border border-white/[0.08] space-y-3"
-              >
-                {/* Status Badge Header */}
-                <div className="flex items-center gap-2">
-                  <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
-                  <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                    {c.title}
+            <div className="md:col-span-8 lg:col-span-9 space-y-6 md:pl-6 md:border-l border-white/[0.08]">
+              {project.technicalDecisions.map((dec, idx) => (
+                <div key={idx} className="space-y-2">
+                  <h3 className="text-base font-bold text-white tracking-tight">
+                    {dec.decision}
                   </h3>
+                  <p className="text-sm text-neutral-300 font-light leading-relaxed">
+                    {dec.rationale}
+                  </p>
+                  <p className="text-xs font-mono text-neutral-500">
+                    <strong className="text-neutral-400">Tradeoff: </strong>
+                    {dec.tradeoff}
+                  </p>
                 </div>
+              ))}
 
-                <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
-                  <strong className="text-neutral-200 font-medium">
-                    Symptom:{" "}
-                  </strong>
-                  {c.description}
-                </p>
+              {/* Embedded Code Snippet Box (Shared Zod / Type Contracts) */}
+              {codeSnippetToDisplay?.code && (
+                <div className="mt-4">
+                  <CodeBlock
+                    code={codeSnippetToDisplay.code}
+                    title={codeSnippetToDisplay.title}
+                    filename={codeSnippetToDisplay.filename}
+                    language="typescript"
+                  />
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
-                <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04] space-y-1 font-mono text-xs">
-                  <p className="text-neutral-200">
-                    <strong className="text-emerald-400 uppercase text-[10px] tracking-wider">
-                      Engineered Fix:{" "}
+        {/* SECTION 05: Backend Architecture */}
+        {(project.backendArchitecture?.overview ||
+          project.backendArchitecture?.codeSnippet?.code) && (
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
+            <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
+              <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
+                05
+              </span>
+              <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
+                Backend Architecture
+              </h2>
+            </div>
+
+            <div className="md:col-span-8 lg:col-span-9 space-y-6 md:pl-6 md:border-l border-white/[0.08]">
+              <p className="text-sm sm:text-base text-neutral-300 font-light leading-relaxed">
+                {project.backendArchitecture?.overview}
+              </p>
+
+              {project.backendArchitecture?.codeSnippet?.code && (
+                <CodeBlock
+                  code={project.backendArchitecture.codeSnippet.code}
+                  filename={project.backendArchitecture.codeSnippet.filename}
+                  language="typescript"
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* SECTION 06: Challenges Overcome (Status Badge Alert Cards) */}
+        {project.challenges.length > 0 && (
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
+            <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
+              <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
+                06
+              </span>
+              <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
+                Challenges
+              </h2>
+            </div>
+
+            <div className="md:col-span-8 lg:col-span-9 space-y-4 md:pl-6 md:border-l border-white/[0.08]">
+              {project.challenges.map((c, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 sm:p-6 rounded-2xl bg-[#0e1017] border border-white/[0.08] space-y-3"
+                >
+                  {/* Status Badge Header */}
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-rose-500 animate-pulse" />
+                    <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                      {c.title}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-neutral-300 font-light leading-relaxed">
+                    <strong className="text-neutral-200 font-medium">
+                      Symptom:{" "}
                     </strong>
-                    {c.resolution}
+                    {c.description}
                   </p>
-                  <p className="text-neutral-500 pt-0.5">
-                    <strong>Impact: </strong>
-                    {c.impact}
-                  </p>
+
+                  <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.04] space-y-1 font-mono text-xs">
+                    <p className="text-neutral-200">
+                      <strong className="text-emerald-400 uppercase text-[10px] tracking-wider">
+                        Engineered Fix:{" "}
+                      </strong>
+                      {c.resolution}
+                    </p>
+                    <p className="text-neutral-500 pt-0.5">
+                      <strong>Impact: </strong>
+                      {c.impact}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* SECTION 06: What I Learned */}
-        <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
-          <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
-            <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
-              06
-            </span>
-            <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
-              What I Learned
-            </h2>
-          </div>
+        {/* SECTION 07: What I Learned */}
+        {project.whatILearned && project.whatILearned.length > 0 && (
+          <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
+            <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
+              <span className="font-mono text-xs text-neutral-400 font-semibold tracking-wider block">
+                07
+              </span>
+              <h2 className="font-serif sm:font-sans font-bold text-2xl sm:text-3xl text-white tracking-tight">
+                What I Learned
+              </h2>
+            </div>
 
-          <div className="md:col-span-8 lg:col-span-9 space-y-4 md:pl-6 md:border-l border-white/[0.08]">
-            {(project.whatILearned && project.whatILearned.length > 0
-              ? project.whatILearned
-              : [
-                  "Shared types are the highest-leverage decision in full-stack architecture.",
-                  "Database conditional atomicity eliminates 99% of concurrency bugs.",
-                  "Designing for error observability upfront saves days of production post-mortems.",
-                ]
-            ).map((lesson, idx) => (
-              <div
-                key={idx}
-                className="p-4 rounded-xl bg-[#0e1017] border border-white/[0.06] text-xs sm:text-sm text-neutral-300 leading-relaxed font-light"
-              >
-                <strong className="text-white font-medium block mb-1">
-                  Takeaway 0{idx + 1}:
-                </strong>
-                {lesson}
-              </div>
-            ))}
-          </div>
-        </section>
+            <div className="md:col-span-8 lg:col-span-9 space-y-4 md:pl-6 md:border-l border-white/[0.08]">
+              {project.whatILearned.map((lesson, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl bg-[#0e1017] border border-white/[0.06] text-xs sm:text-sm text-neutral-300 leading-relaxed font-light"
+                >
+                  <strong className="text-white font-medium block mb-1">
+                    Takeaway 0{idx + 1}:
+                  </strong>
+                  {lesson}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 5. "UP NEXT" Minimalist Editorial Transition (Exact Match to User Reference) */}
         {nextProject && (
