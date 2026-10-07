@@ -199,8 +199,12 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
         </div>
       </div>
 
-      {/* Code Body with Line Numbers Gutter */}
-      <div className="overflow-x-auto p-4 sm:p-5 font-mono text-xs leading-relaxed bg-[#080a0f]">
+      {/* Code Body with Line Numbers Gutter (Scrollbar hidden) */}
+      <div 
+        data-code-block="true"
+        className="overflow-x-auto p-4 sm:p-5 font-mono text-xs leading-relaxed bg-[#080a0f] no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         <table className="w-full border-collapse">
           <tbody>
             {lines.map((line, idx) => (

@@ -1,70 +1,74 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Calendar, 
-  Send, 
-  Mail,
-  Loader2
-} from 'lucide-react';
-import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
-import { toast } from 'sonner';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import { sendMessage } from '@/actions/contact';
-import CalendlyBooking from '@/components/booking/CalendlyBooking';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar, Send, Mail, Loader2 } from "lucide-react";
+import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import { toast } from "sonner";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
+import { sendMessage } from "@/actions/contact";
+import CalendlyBooking from "@/components/booking/CalendlyBooking";
 
-type ContactTab = 'book' | 'message';
+type ContactTab = "book" | "message";
 
 interface ContactClientViewProps {
   contactEmail: string;
   socialMap: Record<string, string>;
 }
 
-export default function ContactClientView({ contactEmail, socialMap }: ContactClientViewProps) {
+export default function ContactClientView({
+  contactEmail,
+  socialMap,
+}: ContactClientViewProps) {
   const { currentTheme } = useThemeAccent();
-  const [activeTab, setActiveTab] = useState<ContactTab>('book');
+  const [activeTab, setActiveTab] = useState<ContactTab>("book");
 
   // Sync URL query params or hash with tab selection
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const timeout = window.setTimeout(() => {
       const search = window.location.search;
       const hash = window.location.hash;
-      if (search.includes('send-message') || search.includes('tab=message') || hash === '#message') {
-        setActiveTab('message');
-      } else if (search.includes('book-call') || search.includes('tab=book') || hash === '#meeting' || hash === '#book') {
-        setActiveTab('book');
-        setTimeout(() => {
-          const el = document.getElementById('meeting');
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 150);
+      if (
+        search.includes("send-message") ||
+        search.includes("tab=message") ||
+        hash === "#message"
+      ) {
+        setActiveTab("message");
+      } else if (
+        search.includes("book-call") ||
+        search.includes("tab=book") ||
+        hash === "#meeting" ||
+        hash === "#book"
+      ) {
+        setActiveTab("book");
+        const el = document.getElementById("meeting");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
-    }
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   const handleTabChange = (tab: ContactTab) => {
     setActiveTab(tab);
-    if (typeof window !== 'undefined') {
-      const url = tab === 'book' ? '/contact#meeting' : '/contact?tab=message';
-      window.history.replaceState(null, '', url);
+    if (typeof window !== "undefined") {
+      const url = tab === "book" ? "/contact#meeting" : "/contact?tab=message";
+      window.history.replaceState(null, "", url);
     }
   };
 
   // Form State for Send Message
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    topic: 'Freelance Project',
-    message: ''
+    name: "",
+    email: "",
+    topic: "Freelance Project",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
-      toast.error('Please fill in all required fields.');
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -74,21 +78,21 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
         name: formData.name,
         email: formData.email,
         topic: formData.topic,
-        message: formData.message
+        message: formData.message,
       });
       if (res.success) {
-        toast.success('Your message has been sent successfully!');
+        toast.success("Your message has been sent successfully!");
         setFormData({
-          name: '',
-          email: '',
-          topic: 'Freelance Project',
-          message: ''
+          name: "",
+          email: "",
+          topic: "Freelance Project",
+          message: "",
         });
       } else {
-        toast.error(res.error || 'Failed to send message.');
+        toast.error(res.error || "Failed to send message.");
       }
     } catch (err: any) {
-      toast.error(err?.message || 'Network error while sending message.');
+      toast.error(err?.message || "Network error while sending message.");
     } finally {
       setIsSubmitting(false);
     }
@@ -105,19 +109,24 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           {/* Subtle Monospace Category Pill */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-zinc-400">
-            <span 
-              className="w-1.5 h-1.5 rounded-full" 
-              style={{ backgroundColor: currentTheme.primary }} 
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: currentTheme.primary }}
             />
             <span>GET IN TOUCH</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-normal text-white tracking-tight">
-            Let&apos;s build something <span className="italic" style={{ color: currentTheme.primary }}>exceptional</span> together.
+            Let&apos;s build something{" "}
+            <span className="italic" style={{ color: currentTheme.primary }}>
+              exceptional
+            </span>{" "}
+            together.
           </h1>
 
           <p className="text-sm sm:text-base text-zinc-400 max-w-xl mx-auto font-light leading-relaxed">
-            Have a project in mind, want to discuss an architecture challenge, or just want to connect? Book a call directly or send me a message.
+            Have a project in mind, want to discuss an architecture challenge,
+            or just want to connect? Book a call directly or send me a message.
           </p>
         </div>
 
@@ -129,15 +138,19 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
           <div className="inline-flex items-center p-1 rounded-2xl bg-[#0e1015] border border-white/[0.08] shadow-xl">
             <button
               type="button"
-              onClick={() => handleTabChange('book')}
+              onClick={() => handleTabChange("book")}
               className={`inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
-                activeTab === 'book'
-                  ? 'text-white shadow-lg'
-                  : 'text-zinc-400 hover:text-white'
+                activeTab === "book"
+                  ? "text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
               }`}
               style={{
-                backgroundColor: activeTab === 'book' ? currentTheme.primary : 'transparent',
-                boxShadow: activeTab === 'book' ? `0 0 15px ${currentTheme.primary}40` : undefined,
+                backgroundColor:
+                  activeTab === "book" ? currentTheme.primary : "transparent",
+                boxShadow:
+                  activeTab === "book"
+                    ? `0 0 15px ${currentTheme.primary}40`
+                    : undefined,
               }}
             >
               <Calendar size={14} />
@@ -146,15 +159,21 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
 
             <button
               type="button"
-              onClick={() => handleTabChange('message')}
+              onClick={() => handleTabChange("message")}
               className={`inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
-                activeTab === 'message'
-                  ? 'text-white shadow-lg'
-                  : 'text-zinc-400 hover:text-white'
+                activeTab === "message"
+                  ? "text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
               }`}
               style={{
-                backgroundColor: activeTab === 'message' ? currentTheme.primary : 'transparent',
-                boxShadow: activeTab === 'message' ? `0 0 15px ${currentTheme.primary}40` : undefined,
+                backgroundColor:
+                  activeTab === "message"
+                    ? currentTheme.primary
+                    : "transparent",
+                boxShadow:
+                  activeTab === "message"
+                    ? `0 0 15px ${currentTheme.primary}40`
+                    : undefined,
               }}
             >
               <Send size={14} />
@@ -214,7 +233,7 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
            ========================================================================= */}
         <AnimatePresence mode="wait">
           {/* TAB 1: BOOK A CALL */}
-          {activeTab === 'book' && (
+          {activeTab === "book" && (
             <motion.div
               id="meeting"
               key="book-tab"
@@ -229,7 +248,7 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
           )}
 
           {/* TAB 2: SEND MESSAGE */}
-          {activeTab === 'message' && (
+          {activeTab === "message" && (
             <motion.div
               key="message-tab"
               initial={{ opacity: 0, y: 12 }}
@@ -250,7 +269,9 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
                         type="text"
                         required
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         placeholder="Jane Doe"
                         className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all font-sans"
                       />
@@ -264,7 +285,9 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
                         type="email"
                         required
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
                         placeholder="jane@example.com"
                         className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all font-sans"
                       />
@@ -279,17 +302,26 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
                     <div className="relative">
                       <select
                         value={formData.topic}
-                        onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, topic: e.target.value })
+                        }
                         className="w-full px-4 py-3 rounded-xl bg-[#111218] border border-white/[0.08] text-xs sm:text-sm text-white focus:outline-none focus:border-white/30 transition-all font-sans appearance-none cursor-pointer pr-10"
                       >
-                        <option value="Freelance Project">Freelance Project</option>
+                        <option value="Freelance Project">
+                          Freelance Project
+                        </option>
                         <option value="Full-Time Role">Full-Time Role</option>
-                        <option value="Architecture Consultation">Architecture Consultation</option>
+                        <option value="Architecture Consultation">
+                          Architecture Consultation
+                        </option>
                         <option value="Just Saying Hi">Just Saying Hi</option>
                         <option value="Other">Other</option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-zinc-400">
-                        <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                        <svg
+                          className="w-3.5 h-3.5 fill-current"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                         </svg>
                       </div>
@@ -305,7 +337,9 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
                       required
                       rows={5}
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       placeholder="Tell me about your project, idea, or just say hi..."
                       className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs sm:text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-white/30 focus:bg-white/[0.05] transition-all font-sans resize-none leading-relaxed"
                     />
@@ -320,13 +354,19 @@ export default function ContactClientView({ contactEmail, socialMap }: ContactCl
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 size={15} className="animate-spin text-zinc-300" />
+                          <Loader2
+                            size={15}
+                            className="animate-spin text-zinc-300"
+                          />
                           <span>Sending Message...</span>
                         </>
                       ) : (
                         <span className="inline-flex items-center gap-2">
                           <span>Send Message</span>
-                          <Send size={14} className="text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
+                          <Send
+                            size={14}
+                            className="text-zinc-400 group-hover:translate-x-0.5 transition-transform"
+                          />
                         </span>
                       )}
                     </button>

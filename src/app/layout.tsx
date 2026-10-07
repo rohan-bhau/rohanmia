@@ -5,8 +5,11 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
+import Preloader from "@/components/shared/Preloader";
 import { Toaster } from "sonner";
 import { getSettings } from "@/actions/adminSettings";
+import { cookies } from "next/headers";
+import { AccentColor } from "@/types/theme";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -67,8 +70,6 @@ export async function generateMetadata() {
   };
 }
 
-import { cookies } from "next/headers";
-import { AccentColor } from "@/types/theme";
 
 export default async function RootLayout({
   children,
@@ -121,6 +122,7 @@ export default async function RootLayout({
         />
 
         <Providers initialAccent={initialAccent}>
+          <Preloader />
           <Background />
           <Toaster theme="dark" richColors position="top-right" />
           {children}

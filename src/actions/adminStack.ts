@@ -1,7 +1,7 @@
-'use server';
+"use server";
 
-import { assertAdmin } from '@/lib/admin';
-import { executeSql } from '@/lib/postgres';
+import { assertAdmin } from "@/lib/admin";
+import { executeSql } from "@/lib/postgres";
 import {
   getTechStackDb,
   upsertTechItemDb,
@@ -12,10 +12,17 @@ import {
   updateTechItemsOrderDb,
   DbTechCategoryRow,
   DbTechItemRow,
-} from '@/lib/db/stack';
-import { revalidatePath } from 'next/cache';
+} from "@/lib/db/stack";
+import { revalidatePath, updateTag } from "next/cache";
+import { PUBLIC_DATA_TAGS } from "@/lib/publicData";
 
-export async function fetchAdminStack(): Promise<{ success: boolean; categories?: DbTechCategoryRow[]; error?: string }> {
+const invalidatePublicTechStack = () => updateTag(PUBLIC_DATA_TAGS.stack);
+
+export async function fetchAdminStack(): Promise<{
+  success: boolean;
+  categories?: DbTechCategoryRow[];
+  error?: string;
+}> {
   try {
     await assertAdmin();
     const categories = await getTechStackDb();
@@ -32,32 +39,37 @@ export async function createAdminTechCategory(categoryData: {
   description?: string;
   philosophy?: string;
   badge?: string;
-}): Promise<{ success: boolean; category?: DbTechCategoryRow; error?: string }> {
+}): Promise<{
+  success: boolean;
+  category?: DbTechCategoryRow;
+  error?: string;
+}> {
   try {
     await assertAdmin();
 
     const title = categoryData.title.trim();
     if (!title) {
-      return { success: false, error: 'Category title is required.' };
+      return { success: false, error: "Category title is required." };
     }
 
     const existingCats = await getTechStackDb();
-    const nextNumber = String(existingCats.length + 1).padStart(2, '0');
+    const nextNumber = String(existingCats.length + 1).padStart(2, "0");
     const id = categoryData.id || `cat-${Date.now()}`;
 
     const saved = await upsertTechCategoryDb({
       id,
       number: nextNumber,
       title,
-      subtitle: categoryData.subtitle?.trim() || '',
-      description: categoryData.description?.trim() || '',
-      philosophy: categoryData.philosophy?.trim() || '',
-      badge: categoryData.badge?.trim() || '',
+      subtitle: categoryData.subtitle?.trim() || "",
+      description: categoryData.description?.trim() || "",
+      philosophy: categoryData.philosophy?.trim() || "",
+      badge: categoryData.badge?.trim() || "",
       sort_order: existingCats.length + 1,
     });
 
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
     return { success: true, category: saved };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -72,68 +84,81 @@ export async function updateAdminTechCategory(categoryData: {
   philosophy?: string;
   badge?: string;
   sort_order?: number;
-}): Promise<{ success: boolean; category?: DbTechCategoryRow; error?: string }> {
+}): Promise<{
+  success: boolean;
+  category?: DbTechCategoryRow;
+  error?: string;
+}> {
   try {
     await assertAdmin();
 
     const title = categoryData.title.trim();
     if (!title) {
-      return { success: false, error: 'Category title is required.' };
+      return { success: false, error: "Category title is required." };
     }
 
     const saved = await upsertTechCategoryDb({
       id: categoryData.id,
       title,
-      subtitle: categoryData.subtitle?.trim() || '',
-      description: categoryData.description?.trim() || '',
-      philosophy: categoryData.philosophy?.trim() || '',
-      badge: categoryData.badge?.trim() || '',
+      subtitle: categoryData.subtitle?.trim() || "",
+      description: categoryData.description?.trim() || "",
+      philosophy: categoryData.philosophy?.trim() || "",
+      badge: categoryData.badge?.trim() || "",
       sort_order: categoryData.sort_order ?? 0,
     });
 
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
     return { success: true, category: saved };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function removeAdminTechCategory(id: string): Promise<{ success: boolean; error?: string }> {
+export async function removeAdminTechCategory(
+  id: string,
+): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
     const deleted = await deleteTechCategoryDb(id);
     if (!deleted) {
-      return { success: false, error: 'Failed to delete tech category.' };
+      return { success: false, error: "Failed to delete tech category." };
     }
 
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function reorderAdminTechCategories(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+export async function reorderAdminTechCategories(
+  orderedIds: string[],
+): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
     await updateTechCategoriesOrderDb(orderedIds);
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function saveAdminTechItem(data: Partial<DbTechItemRow> & { name: string; category_id: string }): Promise<{ success: boolean; item?: DbTechItemRow; error?: string }> {
+export async function saveAdminTechItem(
+  data: Partial<DbTechItemRow> & { name: string; category_id: string },
+): Promise<{ success: boolean; item?: DbTechItemRow; error?: string }> {
   try {
     await assertAdmin();
 
     const name = data.name.trim();
     if (!name) {
-      return { success: false, error: 'Tech name is required.' };
+      return { success: false, error: "Tech name is required." };
     }
 
     const id = data.id || `tech_${Date.now()}`;
@@ -149,63 +174,84 @@ export async function saveAdminTechItem(data: Partial<DbTechItemRow> & { name: s
       }
     }
 
-    const categoryName = data.category_name || existingItem?.category_name || (
-      data.category_id === 'frontend' ? 'Frontend Architecture' :
-      data.category_id === 'backend' ? 'Backend & Distributed Systems' :
-      data.category_id === 'database' ? 'Database & State Machines' :
-      'Infrastructure & DevOps'
-    );
+    const categoryName =
+      data.category_name ||
+      existingItem?.category_name ||
+      (data.category_id === "frontend"
+        ? "Frontend Architecture"
+        : data.category_id === "backend"
+          ? "Backend & Distributed Systems"
+          : data.category_id === "database"
+            ? "Database & State Machines"
+            : "Infrastructure & DevOps");
 
     const saved = await upsertTechItemDb({
       ...(existingItem || {}),
       id,
-      category_id: data.category_id || existingItem?.category_id || 'frontend',
+      category_id: data.category_id || existingItem?.category_id || "frontend",
       category_name: categoryName,
       name,
-      version: data.version ?? existingItem?.version ?? '',
-      description: data.description ?? existingItem?.description ?? '',
-      proficiency: data.proficiency !== undefined ? Number(data.proficiency) : (existingItem?.proficiency ?? 90),
-      is_core: data.is_core !== undefined ? Boolean(data.is_core) : Boolean(existingItem?.is_core),
-      use_case: data.use_case ?? existingItem?.use_case ?? '',
-      production_project: data.production_project ?? existingItem?.production_project ?? '',
-      docs_url: data.docs_url ?? existingItem?.docs_url ?? '',
-      brand_color: data.brand_color || existingItem?.brand_color || '#38bdf8',
-      sort_order: data.sort_order !== undefined ? Number(data.sort_order) : (existingItem?.sort_order ?? 0),
+      version: data.version ?? existingItem?.version ?? "",
+      description: data.description ?? existingItem?.description ?? "",
+      proficiency:
+        data.proficiency !== undefined
+          ? Number(data.proficiency)
+          : (existingItem?.proficiency ?? 90),
+      is_core:
+        data.is_core !== undefined
+          ? Boolean(data.is_core)
+          : Boolean(existingItem?.is_core),
+      use_case: data.use_case ?? existingItem?.use_case ?? "",
+      production_project:
+        data.production_project ?? existingItem?.production_project ?? "",
+      docs_url: data.docs_url ?? existingItem?.docs_url ?? "",
+      brand_color: data.brand_color || existingItem?.brand_color || "#38bdf8",
+      sort_order:
+        data.sort_order !== undefined
+          ? Number(data.sort_order)
+          : (existingItem?.sort_order ?? 0),
     });
 
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
-    revalidatePath('/');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
+    revalidatePath("/");
     return { success: true, item: saved };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function removeAdminTechItem(id: string): Promise<{ success: boolean; error?: string }> {
+export async function removeAdminTechItem(
+  id: string,
+): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
     const deleted = await deleteTechItemDb(id);
     if (!deleted) {
-      return { success: false, error: 'Failed to delete tech item.' };
+      return { success: false, error: "Failed to delete tech item." };
     }
 
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
-    revalidatePath('/');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
+    revalidatePath("/");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function reorderAdminTechItems(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+export async function reorderAdminTechItems(
+  orderedIds: string[],
+): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
     await updateTechItemsOrderDb(orderedIds);
-    revalidatePath('/tech-stack');
-    revalidatePath('/stack');
-    revalidatePath('/');
+    invalidatePublicTechStack();
+    revalidatePath("/tech-stack");
+    revalidatePath("/stack");
+    revalidatePath("/");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -224,12 +270,11 @@ export interface TechSuggestion {
 export async function getAvailableTechSuggestions(): Promise<TechSuggestion[]> {
   try {
     const res = await executeSql<TechSuggestion>(
-      `SELECT DISTINCT name, brand_color, category_name FROM tech_items ORDER BY name ASC;`
+      `SELECT DISTINCT name, brand_color, category_name FROM tech_items ORDER BY name ASC;`,
     );
     return res.rows;
   } catch (error) {
-    console.error('getAvailableTechSuggestions error:', error);
+    console.error("getAvailableTechSuggestions error:", error);
     return [];
   }
 }
-

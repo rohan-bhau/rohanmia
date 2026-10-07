@@ -1,29 +1,34 @@
-'use server';
+"use server";
 
-import { assertAdmin } from '@/lib/admin';
-import { 
-  getGalleryPhotosDb, 
-  insertGalleryPhotoDb, 
-  updateGalleryPhotoDb, 
-  deleteGalleryPhotoDb, 
+import { assertAdmin } from "@/lib/admin";
+import {
+  getGalleryPhotosDb,
+  insertGalleryPhotoDb,
+  updateGalleryPhotoDb,
+  deleteGalleryPhotoDb,
   updateGalleryPhotosOrderDb,
-  DbGalleryPhotoRow 
-} from '@/lib/db/gallery';
-import { revalidatePath } from 'next/cache';
+  DbGalleryPhotoRow,
+} from "@/lib/db/gallery";
+import { revalidatePath, updateTag } from "next/cache";
+import { getCachedGalleryPhotos, PUBLIC_DATA_TAGS } from "@/lib/publicData";
 
 /**
  * Public Server Action to fetch gallery images from PostgreSQL
  */
 export async function getGalleryImages(): Promise<DbGalleryPhotoRow[]> {
   try {
-    return await getGalleryPhotosDb();
+    return await getCachedGalleryPhotos();
   } catch (err) {
-    console.error('getGalleryImages error:', err);
+    console.error("getGalleryImages error:", err);
     return [];
   }
 }
 
-export async function fetchAdminGallery(): Promise<{ success: boolean; photos?: DbGalleryPhotoRow[]; error?: string }> {
+export async function fetchAdminGallery(): Promise<{
+  success: boolean;
+  photos?: DbGalleryPhotoRow[];
+  error?: string;
+}> {
   try {
     await assertAdmin();
     const photos = await getGalleryPhotosDb();
@@ -46,79 +51,96 @@ export async function saveAdminGalleryPhoto(data: {
   try {
     await assertAdmin();
     if (!data.src?.trim() || !data.title?.trim()) {
-      return { success: false, error: 'Photo URL and Title are required.' };
+      return { success: false, error: "Photo URL and Title are required." };
     }
 
     let photo: DbGalleryPhotoRow;
     if (data.id) {
       const updated = await updateGalleryPhotoDb(data.id, data);
-      if (!updated) return { success: false, error: 'Photo not found to update.' };
+      if (!updated)
+        return { success: false, error: "Photo not found to update." };
       photo = updated;
     } else {
       photo = await insertGalleryPhotoDb(data);
     }
 
-    revalidatePath('/gallery');
-    revalidatePath('/');
+    updateTag(PUBLIC_DATA_TAGS.gallery);
+    revalidatePath("/gallery");
+    revalidatePath("/");
     return { success: true, photo };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function removeAdminGalleryPhoto(id: string): Promise<{ success: boolean; error?: string }> {
+export async function removeAdminGalleryPhoto(
+  id: string,
+): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
     const deleted = await deleteGalleryPhotoDb(id);
-    if (!deleted) return { success: false, error: 'Failed to delete photo.' };
+    if (!deleted) return { success: false, error: "Failed to delete photo." };
 
-    revalidatePath('/gallery');
-    revalidatePath('/');
+    updateTag(PUBLIC_DATA_TAGS.gallery);
+    revalidatePath("/gallery");
+    revalidatePath("/");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function reorderAdminGalleryPhotos(orderedIds: string[]): Promise<{ success: boolean; error?: string }> {
+export async function reorderAdminGalleryPhotos(
+  orderedIds: string[],
+): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
     if (!orderedIds || orderedIds.length === 0) return { success: true };
     await updateGalleryPhotosOrderDb(orderedIds);
 
-    revalidatePath('/gallery');
-    revalidatePath('/');
+    updateTag(PUBLIC_DATA_TAGS.gallery);
+    revalidatePath("/gallery");
+    revalidatePath("/");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
 
-export async function fetchAdminGalleryCategories(): Promise<{ success: boolean; categories: string[]; error?: string }> {
+export async function fetchAdminGalleryCategories(): Promise<{
+  success: boolean;
+  categories: string[];
+  error?: string;
+}> {
   try {
-    const { getGalleryCategoriesDb } = await import('@/lib/db/gallery');
+    const { getGalleryCategoriesDb } = await import("@/lib/db/gallery");
     const categories = await getGalleryCategoriesDb();
     return { success: true, categories };
   } catch (err: any) {
-    return { success: false, categories: ['Personal', 'Travel', 'Work', 'Moments'], error: err.message };
+    return {
+      success: false,
+      categories: ["Personal", "Travel", "Work", "Moments"],
+      error: err.message,
+    };
   }
 }
 
-export async function createAdminGalleryCategory(name: string): Promise<{ success: boolean; category?: string; error?: string }> {
+export async function createAdminGalleryCategory(
+  name: string,
+): Promise<{ success: boolean; category?: string; error?: string }> {
   try {
     await assertAdmin();
     const cleanName = name.trim();
-    if (!cleanName) return { success: false, error: 'Category name cannot be empty.' };
+    if (!cleanName)
+      return { success: false, error: "Category name cannot be empty." };
 
-    const { insertGalleryCategoryDb } = await import('@/lib/db/gallery');
+    const { insertGalleryCategoryDb } = await import("@/lib/db/gallery");
     const cat = await insertGalleryCategoryDb(cleanName);
 
-    revalidatePath('/gallery');
-    revalidatePath('/');
+    revalidatePath("/gallery");
+    revalidatePath("/");
     return { success: true, category: cat };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
 }
-
-

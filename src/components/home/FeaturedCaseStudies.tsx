@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { 
-  ArrowRight, 
-  ArrowUpRight, 
-  ExternalLink, 
-  Eye, 
-  X, 
-  Pencil, 
-  GripVertical, 
-  ChevronUp, 
-  ChevronDown, 
-  Edit3, 
-  Trash2, 
-  Plus 
-} from 'lucide-react';
-import { FaGithub } from 'react-icons/fa6';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import { FEATURED_CASE_STUDIES, CaseStudy } from '@/data/projects';
-import TechBadge from '@/components/ui/TechBadge';
-import { useAdminMode } from '@/components/admin/AdminModeContext';
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ExternalLink,
+  Eye,
+  X,
+  Pencil,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Edit3,
+  Trash2,
+  Plus,
+} from "lucide-react";
+import { FaGithub } from "react-icons/fa6";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
+import { FEATURED_CASE_STUDIES, CaseStudy } from "@/data/projects";
+import TechBadge from "@/components/ui/TechBadge";
+import { useAdminMode } from "@/components/admin/AdminModeContext";
 
 /**
  * ============================================================================
@@ -29,34 +29,34 @@ import { useAdminMode } from '@/components/admin/AdminModeContext';
  * ============================================================================
  * Standard Screen Height: ~720px - 900px (Laptop / Desktop)
  * Available Sticky Content Height: ~450px - 520px (Sticky offset: top-28 / 112px)
- * 
+ *
  * 1. PROJECT TITLE:
  *    - Ideal Length: 1 - 3 words (e.g. "Reserva", "Keen-Keeper", "Qurbaniya")
  *    - Font Size: text-2xl sm:text-3xl font-bold (~36px height)
  *    - Behavior: Stays strictly FIXED at the top at all times.
- * 
+ *
  * 2. OVERVIEW / DESCRIPTION:
  *    - Ideal Word Count: 25 - 35 words (Maximum limit: 40 words)
  *    - Line Count: 2 - 3 lines (~48px - 54px height)
- *    - Example: "Reserva is a high-throughput facility reservation platform engineered 
- *      with Next.js, Node.js, and MongoDB. It addresses concurrency bottlenecks through 
+ *    - Example: "Reserva is a high-throughput facility reservation platform engineered
+ *      with Next.js, Node.js, and MongoDB. It addresses concurrency bottlenecks through
  *      atomic locks, dynamic slot pricing, and interactive calendars." (~30 words)
- * 
+ *
  * 3. KEY FEATURE HIGHLIGHTS (✦ Sparkle Points):
  *    - Ideal Point Count: Exactly 4 points (slice(0, 4))
  *    - Title Word Count: 2 - 4 words per point
  *    - Description Word Count: 12 - 18 words per point
  *    - Total Words per Bullet: 15 - 22 words (max 2 lines each, ~32px per bullet)
  *    - Total 4 Bullets Height: ~135px - 150px
- *    - Example: "✦ Atomic Reservation Scheduler: Guarantees a timeslot is only 
+ *    - Example: "✦ Atomic Reservation Scheduler: Guarantees a timeslot is only
  *      claimed by one user at a time with instant lock guards." (~18 words)
- * 
+ *
  * 4. TECH STACK BADGES:
  *    - Ideal Badge Count: 8 - 10 badges
  *    - Layout: Arranged in 2 neat rows (size="sm", ~56px height)
- * 
+ *
  * Total Visual Content Height: ~360px - 400px
- * 
+ *
  * 🎯 DYNAMIC SCROLL BEHAVIOR:
  * - CASE A (Content fits on screen): Right side does NOT scroll at all.
  *   Website scroll immediately advances the left-side project images.
@@ -78,11 +78,13 @@ function FeaturedProjectCard({
   index,
   isActive,
   onCardClick,
+  href,
 }: {
   project: CaseStudy;
   index: number;
   isActive: boolean;
   onCardClick?: () => void;
+  href?: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -112,7 +114,7 @@ function FeaturedProjectCard({
     setIsHoveringImage(false);
   };
 
-  return (
+  const cardElement = (
     <div
       ref={cardRef}
       onClick={onCardClick}
@@ -121,8 +123,8 @@ function FeaturedProjectCard({
       onMouseLeave={handleMouseLeave}
       className={`group/card relative block aspect-[16/11] sm:aspect-[16/10] w-full cursor-pointer overflow-hidden rounded-[26px] sm:rounded-[32px] p-1.5 sm:p-2 bg-white/[0.04] border transition-all duration-300 ease-out shadow-2xl ${
         isActive
-          ? 'border-white/30 ring-1 ring-white/10'
-          : 'border-white/[0.08] hover:border-white/20'
+          ? "border-white/30 ring-1 ring-white/10"
+          : "border-white/[0.08] hover:border-white/20"
       }`}
     >
       <div className="relative flex size-full flex-col justify-between overflow-hidden rounded-[20px] sm:rounded-[26px] bg-black">
@@ -150,14 +152,14 @@ function FeaturedProjectCard({
         <div
           aria-hidden="true"
           className={`absolute z-30 pointer-events-none select-none transition-all duration-150 ${
-            isHoveringImage ? 'opacity-100 scale-100' : 'opacity-0 scale-50'
+            isHoveringImage ? "opacity-100 scale-100" : "opacity-0 scale-50"
           }`}
           style={{
             left: `${mousePos.x}px`,
             top: `${mousePos.y}px`,
-            transform: 'translate(-50%, -50%)',
+            transform: "translate(-50%, -50%)",
             transition:
-              'transform 0.06s ease-out, opacity 0.15s ease-out, scale 0.15s ease-out',
+              "transform 0.06s ease-out, opacity 0.15s ease-out, scale 0.15s ease-out",
           }}
         >
           <div className="relative size-[86px] sm:size-[92px] flex items-center justify-center">
@@ -182,7 +184,9 @@ function FeaturedProjectCard({
                     href={`#featured-circle-${project.id}`}
                     startOffset="0%"
                   >
-                    {onCardClick ? 'EDIT • OPEN • STUDIO •' : 'DISCOVER • OPEN • EXPLORE •'}
+                    {onCardClick
+                      ? "EDIT • OPEN • STUDIO •"
+                      : "DISCOVER • OPEN • EXPLORE •"}
                   </textPath>
                 </text>
               </svg>
@@ -190,9 +194,15 @@ function FeaturedProjectCard({
               {/* 3. Solid Pure White Center Circle */}
               <div className="relative z-10 size-9 sm:size-10 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.15)] flex items-center justify-center border border-black/[0.08]">
                 {onCardClick ? (
-                  <Edit3 className="size-4.5 sm:size-5 text-black" strokeWidth={2.4} />
+                  <Edit3
+                    className="size-4.5 sm:size-5 text-black"
+                    strokeWidth={2.4}
+                  />
                 ) : (
-                  <Eye className="size-4.5 sm:size-5 text-black" strokeWidth={2.4} />
+                  <Eye
+                    className="size-4.5 sm:size-5 text-black"
+                    strokeWidth={2.4}
+                  />
                 )}
               </div>
             </div>
@@ -206,8 +216,8 @@ function FeaturedProjectCard({
             <div
               className={`w-full h-full rounded-t-xl sm:rounded-t-2xl border-t-2 border-x-2 border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden bg-black/90 relative transition-all duration-500 ease-out ${
                 project.hoverImage
-                  ? 'group-hover/card:-rotate-6 group-hover/card:-translate-x-6 sm:group-hover/card:-translate-x-8 group-hover/card:scale-95 group-hover/card:opacity-85'
-                  : 'group-hover/card:scale-[1.02]'
+                  ? "group-hover/card:-rotate-6 group-hover/card:-translate-x-6 sm:group-hover/card:-translate-x-8 group-hover/card:scale-95 group-hover/card:opacity-85"
+                  : "group-hover/card:scale-[1.02]"
               }`}
             >
               <Image
@@ -237,10 +247,20 @@ function FeaturedProjectCard({
       </div>
     </div>
   );
+
+  if (href && !onCardClick) {
+    return (
+      <Link href={href} className="block w-full">
+        {cardElement}
+      </Link>
+    );
+  }
+
+  return cardElement;
 }
 
-export default function FeaturedCaseStudies({ 
-  initialProjects, 
+export default function FeaturedCaseStudies({
+  initialProjects,
   isAdmin = false,
   compact = false,
   onEdit,
@@ -248,31 +268,30 @@ export default function FeaturedCaseStudies({
   onMove,
   onDrop,
   onAdd,
-}: { 
-  initialProjects?: CaseStudy[]; 
-  isAdmin?: boolean; 
+}: {
+  initialProjects?: CaseStudy[];
+  isAdmin?: boolean;
   compact?: boolean;
   onEdit?: (project: CaseStudy) => void;
   onDelete?: (projectId: string) => void;
-  onMove?: (projectId: string, direction: 'up' | 'down') => void;
+  onMove?: (projectId: string, direction: "up" | "down") => void;
   onDrop?: (sourceIndex: number, targetIndex: number) => void;
   onAdd?: () => void;
 }) {
   const { currentTheme } = useThemeAccent();
   const { basePath } = useAdminMode();
-  const [projectsList, setProjectsList] = useState<CaseStudy[]>(
-    initialProjects && initialProjects.length > 0 ? initialProjects : FEATURED_CASE_STUDIES
+  const projectsList = useMemo(
+    () =>
+      initialProjects && initialProjects.length > 0
+        ? initialProjects
+        : FEATURED_CASE_STUDIES,
+    [initialProjects],
   );
-
-  useEffect(() => {
-    if (initialProjects && initialProjects.length > 0) {
-      setProjectsList(initialProjects);
-    }
-  }, [initialProjects]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [shiftY, setShiftY] = useState(0);
-  const [githubModalProject, setGithubModalProject] = useState<CaseStudy | null>(null);
+  const [githubModalProject, setGithubModalProject] =
+    useState<CaseStudy | null>(null);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
@@ -282,12 +301,12 @@ export default function FeaturedCaseStudies({
   // Close modal on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setGithubModalProject(null);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Synchronize active project and handle overflow scroll-then-advance logic
@@ -344,13 +363,13 @@ export default function FeaturedCaseStudies({
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
     };
   }, [activeIndex]);
 
@@ -358,16 +377,21 @@ export default function FeaturedCaseStudies({
   const activeAccent = activeProject?.accentColor || currentTheme.primary;
 
   return (
-    <section id="projects" className={`${compact ? 'pt-2 sm:pt-4 pb-20' : 'py-20 sm:py-28'} px-4 sm:px-6 relative`}>
+    <section
+      id="projects"
+      className={`${compact ? "pt-2 sm:pt-4 pb-20" : "py-20 sm:py-28"} px-4 sm:px-6 relative`}
+    >
       <div className="container mx-auto max-w-6xl">
         {/* Section Header: CASE STUDIES on top, Curated work and Explore Button on the EXACT same line */}
-        <div className={`${compact ? 'mb-6 sm:mb-8' : 'mb-14 sm:mb-20'} space-y-2`}>
+        <div
+          className={`${compact ? "mb-6 sm:mb-8" : "mb-14 sm:mb-20"} space-y-2`}
+        >
           <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.25em] text-neutral-400 font-semibold">
             CASE STUDIES
           </p>
           <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
             <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-normal tracking-tight text-white">
-              Curated{' '}
+              Curated{" "}
               <span
                 className="font-serif italic font-normal text-transparent bg-clip-text"
                 style={{
@@ -390,7 +414,7 @@ export default function FeaturedCaseStudies({
                 </button>
               )}
               <Link
-                href={basePath ? `${basePath}/projects` : '/projects'}
+                href={basePath ? `${basePath}/projects` : "/projects"}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] text-[11px] sm:text-xs font-mono font-medium text-white transition-all hover:scale-105 active:scale-95 shadow-sm whitespace-nowrap cursor-pointer shrink-0"
               >
                 <span>All Archives</span>
@@ -406,7 +430,7 @@ export default function FeaturedCaseStudies({
           <div className="lg:col-span-7 space-y-20 sm:space-y-24 lg:space-y-28">
             {projectsList.map((project, index) => {
               const isCurrent = activeIndex === index;
-              const indexNumber = String(index + 1).padStart(2, '0');
+              const indexNumber = String(index + 1).padStart(2, "0");
 
               return (
                 <div
@@ -433,15 +457,19 @@ export default function FeaturedCaseStudies({
                     }
                   }}
                   className={`space-y-4 pb-8 sm:pb-10 lg:pb-0 rounded-3xl p-1 -m-1 transition-all duration-300 ${
-                    dragOverIdx === index ? 'ring-2 ring-emerald-400 bg-emerald-500/10 scale-[1.01]' : ''
+                    dragOverIdx === index
+                      ? "ring-2 ring-emerald-400 bg-emerald-500/10 scale-[1.01]"
+                      : ""
                   }`}
                 >
                   {/* Meta Header Above Card */}
-                  <div className={`flex items-center justify-between gap-3 px-1 pb-1 ${isAdmin ? '' : 'lg:hidden'}`}>
+                  <div
+                    className={`flex items-center justify-between gap-3 px-1 pb-1 ${isAdmin ? "" : "lg:hidden"}`}
+                  >
                     <div className="flex items-center gap-2.5 min-w-0">
                       {isAdmin && (
                         <div className="flex items-center gap-1 bg-[#121316] px-2 py-1 rounded-xl border border-white/10 shadow-sm shrink-0">
-                          <div 
+                          <div
                             className="cursor-grab active:cursor-grabbing p-0.5 text-neutral-400 hover:text-white transition-colors"
                             title="Drag to reorder"
                           >
@@ -450,7 +478,10 @@ export default function FeaturedCaseStudies({
                           <button
                             type="button"
                             disabled={index === 0}
-                            onClick={(e) => { e.stopPropagation(); onMove?.(project.id, 'up'); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onMove?.(project.id, "up");
+                            }}
                             className="p-1 text-neutral-400 hover:text-white disabled:opacity-20 hover:bg-white/10 rounded transition-colors cursor-pointer"
                             title="Move Up"
                           >
@@ -459,7 +490,10 @@ export default function FeaturedCaseStudies({
                           <button
                             type="button"
                             disabled={index === projectsList.length - 1}
-                            onClick={(e) => { e.stopPropagation(); onMove?.(project.id, 'down'); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onMove?.(project.id, "down");
+                            }}
                             className="p-1 text-neutral-400 hover:text-white disabled:opacity-20 hover:bg-white/10 rounded transition-colors cursor-pointer"
                             title="Move Down"
                           >
@@ -477,7 +511,9 @@ export default function FeaturedCaseStudies({
                       </span>
 
                       {/* Title beside number on mobile (and admin) */}
-                      <h3 className={`font-serif font-medium text-base sm:text-lg text-white tracking-tight leading-tight truncate ${isAdmin ? '' : 'lg:hidden'}`}>
+                      <h3
+                        className={`font-serif font-medium text-base sm:text-lg text-white tracking-tight leading-tight truncate ${isAdmin ? "" : "lg:hidden"}`}
+                      >
                         {project.title}
                       </h3>
                     </div>
@@ -494,6 +530,7 @@ export default function FeaturedCaseStudies({
                     project={project}
                     index={index}
                     isActive={isCurrent}
+                    href={isAdmin ? undefined : `/projects/${project.slug}`}
                     onCardClick={isAdmin ? () => onEdit?.(project) : undefined}
                   />
 
@@ -532,7 +569,9 @@ export default function FeaturedCaseStudies({
                         </a>
                       )}
 
-                      {(project.githubUrl || project.clientUrl || project.serverUrl) && (
+                      {(project.githubUrl ||
+                        project.clientUrl ||
+                        project.serverUrl) && (
                         <button
                           type="button"
                           onClick={() => setGithubModalProject(project)}
@@ -556,60 +595,62 @@ export default function FeaturedCaseStudies({
               If content has overflow (e.g. 1 line): shiftY brings only that line into view, then locks! */}
           <div className="hidden lg:block lg:col-span-5 sticky top-28 lg:top-32 self-start pl-2">
             <div className="space-y-4">
-                {/* Title Row with Colored Dash */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className="w-5 h-[2.5px] rounded-full shrink-0"
-                      style={{ backgroundColor: activeAccent }}
-                    />
-                    <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">
-                      {activeProject.title}
-                    </h3>
-                  </div>
-
-                  {isAdmin && (
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => onEdit?.(activeProject)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white text-neutral-200 hover:text-black border border-white/15 transition-all text-xs font-mono font-medium cursor-pointer shadow-sm active:scale-95"
-                        title="Edit Active Case Study"
-                      >
-                        <Edit3 size={12} />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete?.(activeProject.id)}
-                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 transition-all cursor-pointer shadow-sm active:scale-95"
-                        title="Delete Active Case Study"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  )}
+              {/* Title Row with Colored Dash */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className="w-5 h-[2.5px] rounded-full shrink-0"
+                    style={{ backgroundColor: activeAccent }}
+                  />
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">
+                    {activeProject.title}
+                  </h3>
                 </div>
 
-                {/* Details Container with Safe Shift:
-                    Scrolls only the overflow amount if any line is below fold, then locks! */}
-                <div className="relative overflow-hidden">
-                  <div
-                    ref={contentRef}
-                    style={{
-                      transform: `translateY(-${shiftY}px)`,
-                      transition: 'transform 0.08s ease-out',
-                    }}
-                    className="space-y-4 pt-0.5"
-                  >
-                    {/* Project Overview */}
-                    <p className="text-xs sm:text-[13px] text-zinc-400 font-light leading-relaxed">
-                      {activeProject.overview}
-                    </p>
+                {isAdmin && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => onEdit?.(activeProject)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.08] hover:bg-white text-neutral-200 hover:text-black border border-white/15 transition-all text-xs font-mono font-medium cursor-pointer shadow-sm active:scale-95"
+                      title="Edit Active Case Study"
+                    >
+                      <Edit3 size={12} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDelete?.(activeProject.id)}
+                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 transition-all cursor-pointer shadow-sm active:scale-95"
+                      title="Delete Active Case Study"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
 
-                    {/* Key Features Bullet Points with Colored Sparkle ✦ */}
-                    <div className="space-y-2.5 pt-0.5">
-                      {activeProject.keyFeatures.slice(0, 4).map((feature, idx) => (
+              {/* Details Container with Safe Shift:
+                    Scrolls only the overflow amount if any line is below fold, then locks! */}
+              <div className="relative overflow-hidden">
+                <div
+                  ref={contentRef}
+                  style={{
+                    transform: `translateY(-${shiftY}px)`,
+                    transition: "transform 0.08s ease-out",
+                  }}
+                  className="space-y-4 pt-0.5"
+                >
+                  {/* Project Overview */}
+                  <p className="text-xs sm:text-[13px] text-zinc-400 font-light leading-relaxed">
+                    {activeProject.overview}
+                  </p>
+
+                  {/* Key Features Bullet Points with Colored Sparkle ✦ */}
+                  <div className="space-y-2.5 pt-0.5">
+                    {activeProject.keyFeatures
+                      .slice(0, 4)
+                      .map((feature, idx) => (
                         <div
                           key={idx}
                           className="flex items-start gap-2.5 text-xs sm:text-[12.5px] text-zinc-300 leading-snug font-light"
@@ -622,7 +663,7 @@ export default function FeaturedCaseStudies({
                           </span>
                           <span>
                             <strong className="text-white font-medium">
-                              {feature.title}:{' '}
+                              {feature.title}:{" "}
                             </strong>
                             <span className="text-zinc-300">
                               {feature.description}
@@ -630,19 +671,19 @@ export default function FeaturedCaseStudies({
                           </span>
                         </div>
                       ))}
-                    </div>
+                  </div>
 
-                    {/* Tech Stack Badges */}
-                    <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {activeProject.techStack.map((tech) => (
-                          <TechBadge key={tech} name={tech} size="sm" />
-                        ))}
-                      </div>
+                  {/* Tech Stack Badges */}
+                  <div className="space-y-1.5 pt-2 border-t border-white/[0.08]">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {activeProject.techStack.map((tech) => (
+                        <TechBadge key={tech} name={tech} size="sm" />
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
           </div>
         </div>
       </div>
@@ -700,8 +741,7 @@ export default function FeaturedCaseStudies({
                 githubModalProject.githubUrl) && (
                 <a
                   href={
-                    githubModalProject.clientUrl ||
-                    githubModalProject.githubUrl
+                    githubModalProject.clientUrl || githubModalProject.githubUrl
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -732,7 +772,7 @@ export default function FeaturedCaseStudies({
                       {(
                         githubModalProject.clientUrl ||
                         githubModalProject.githubUrl
-                      )?.replace('https://github.com/', '')}
+                      )?.replace("https://github.com/", "")}
                     </span>
                   </div>
                   <ArrowUpRight
@@ -773,8 +813,8 @@ export default function FeaturedCaseStudies({
                     </div>
                     <span className="font-mono text-xs text-neutral-400 block truncate max-w-[260px]">
                       {githubModalProject.serverUrl.replace(
-                        'https://github.com/',
-                        ''
+                        "https://github.com/",
+                        "",
                       )}
                     </span>
                   </div>

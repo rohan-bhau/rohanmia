@@ -1,4 +1,4 @@
-import { executeSql } from '@/lib/postgres';
+import { executeSql } from "@/lib/postgres";
 
 let portfolioTablesReady: Promise<void> | null = null;
 let guestbookTableReady: Promise<void> | null = null;
@@ -24,7 +24,9 @@ export function ensureGuestbookTable(): Promise<void> {
           is_read BOOLEAN DEFAULT false
         );
       `);
-      await executeSql(`ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`);
+      await executeSql(
+        `ALTER TABLE guestbook_entries ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`,
+      );
     })().catch((err) => {
       guestbookTableReady = null;
       throw err;
@@ -70,8 +72,12 @@ export function ensureContactAndBookingTables(): Promise<void> {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
       `);
-      await executeSql(`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`);
-      await executeSql(`ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`);
+      await executeSql(
+        `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`,
+      );
+      await executeSql(
+        `ALTER TABLE meeting_bookings ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT false;`,
+      );
     })().catch((err) => {
       contactBookingTablesReady = null;
       throw err;
@@ -273,14 +279,23 @@ export function ensurePortfolioTables(): Promise<void> {
           notes TEXT,
           source VARCHAR(64) DEFAULT 'chatbot',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-        )`
+        )`,
       ];
 
-      for (const sql of ddlStatements) {
-        await executeSql(sql);
-      }
+      const techItemsStatementIndex = ddlStatements.findIndex((sql) =>
+        sql.includes("CREATE TABLE IF NOT EXISTS tech_items"),
+      );
+      const techItemsStatement = ddlStatements[techItemsStatementIndex];
+      const independentStatements = ddlStatements.filter(
+        (_, index) => index !== techItemsStatementIndex,
+      );
+
+      await Promise.all(independentStatements.map((sql) => executeSql(sql)));
+      if (techItemsStatement) await executeSql(techItemsStatement);
       // Ensure recently added columns exist
-      await executeSql(`ALTER TABLE about_content ADD COLUMN IF NOT EXISTS carousel_items JSONB DEFAULT '[]'::jsonb;`);
+      await executeSql(
+        `ALTER TABLE about_content ADD COLUMN IF NOT EXISTS carousel_items JSONB DEFAULT '[]'::jsonb;`,
+      );
     })().catch((err) => {
       portfolioTablesReady = null;
       throw err;

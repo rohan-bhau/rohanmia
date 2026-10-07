@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 
 interface CarouselItem {
   id: string;
@@ -15,11 +15,14 @@ interface CarouselItem {
 // Fast rotation interval as requested (2.5 seconds)
 const AUTO_ROTATE_INTERVAL = 2500;
 
-export default function StackedImageCarousel({ items = [] }: { items?: CarouselItem[] } = {}) {
+export default function StackedImageCarousel({
+  items = [],
+}: { items?: CarouselItem[] } = {}) {
   const carouselItems = items;
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const hasItems = carouselItems.length > 0;
 
   const nextSlide = useCallback(() => {
     if (carouselItems.length === 0) return;
@@ -28,15 +31,14 @@ export default function StackedImageCarousel({ items = [] }: { items?: CarouselI
 
   const prevSlide = useCallback(() => {
     if (carouselItems.length === 0) return;
-    setActiveIndex((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+    setActiveIndex(
+      (prev) => (prev - 1 + carouselItems.length) % carouselItems.length,
+    );
   }, [carouselItems.length]);
-
-  if (!carouselItems || carouselItems.length === 0) {
-    return null;
-  }
 
   // Auto rotation effect with fast timing
   useEffect(() => {
+    if (!hasItems) return;
     if (isPaused) return;
 
     timerRef.current = setInterval(() => {
@@ -46,10 +48,17 @@ export default function StackedImageCarousel({ items = [] }: { items?: CarouselI
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isPaused, nextSlide]);
+  }, [hasItems, isPaused, nextSlide]);
+
+  if (!hasItems) {
+    return null;
+  }
 
   // Handle drag gesture on desktop / touch
-  const handleDragEnd = (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (
+    _e: MouseEvent | TouchEvent | PointerEvent,
+    info: PanInfo,
+  ) => {
     setIsPaused(false);
     const threshold = 35;
     if (info.offset.x < -threshold) {
@@ -69,7 +78,7 @@ export default function StackedImageCarousel({ items = [] }: { items?: CarouselI
   };
 
   return (
-    <div 
+    <div
       className="relative flex flex-col items-center justify-center w-full max-w-[340px] sm:max-w-[400px] select-none py-4"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -85,40 +94,40 @@ export default function StackedImageCarousel({ items = [] }: { items?: CarouselI
           const isRight = normalizedOffset === 1;
           const isLeft = normalizedOffset === total - 1;
 
-          let translateX = '0%';
+          let translateX = "0%";
           let rotateY = 0;
           let scale = 0.75;
           let zIndex = 0;
-          let brightness = 'brightness(0.5)';
+          let brightness = "brightness(0.5)";
           let opacity = 0;
 
           if (isCenter) {
-            translateX = '0%';
+            translateX = "0%";
             rotateY = 0;
             scale = 1.0;
             zIndex = 20;
-            brightness = 'brightness(1)';
+            brightness = "brightness(1)";
             opacity = 1;
           } else if (isLeft) {
-            translateX = '-38%';
+            translateX = "-38%";
             rotateY = 32;
             scale = 0.85;
             zIndex = 10;
-            brightness = 'brightness(0.6)';
+            brightness = "brightness(0.6)";
             opacity = 0.85;
           } else if (isRight) {
-            translateX = '38%';
+            translateX = "38%";
             rotateY = -32;
             scale = 0.85;
             zIndex = 10;
-            brightness = 'brightness(0.6)';
+            brightness = "brightness(0.6)";
             opacity = 0.85;
           }
 
           return (
             <motion.div
               key={item.id || index}
-              drag={isCenter ? 'x' : false}
+              drag={isCenter ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
               onDragStart={() => setIsPaused(true)}
@@ -129,20 +138,20 @@ export default function StackedImageCarousel({ items = [] }: { items?: CarouselI
                 scale,
                 rotateY,
                 opacity,
-                zIndex
+                zIndex,
               }}
               transition={{
                 duration: 0.55,
-                ease: [0.23, 1, 0.32, 1]
+                ease: [0.23, 1, 0.32, 1],
               }}
               style={{
                 perspective: 1000,
-                transformStyle: 'preserve-3d',
+                transformStyle: "preserve-3d",
                 filter: brightness,
-                pointerEvents: isCenter || isLeft || isRight ? 'auto' : 'none'
+                pointerEvents: isCenter || isLeft || isRight ? "auto" : "none",
               }}
               className={`absolute top-0 bottom-0 aspect-[4/5] w-[200px] sm:w-[250px] md:w-[270px] rounded-[28px] overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.7)] border border-white/15 cursor-grab active:cursor-grabbing will-change-transform ${
-                isCenter ? 'ring-1 ring-white/25' : ''
+                isCenter ? "ring-1 ring-white/25" : ""
               }`}
             >
               <Image
@@ -192,9 +201,9 @@ export default function StackedImageCarousel({ items = [] }: { items?: CarouselI
             onClick={() => setActiveIndex(i)}
             aria-label={`Go to slide ${i + 1}`}
             className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-              activeIndex === i 
-                ? 'w-6 bg-white' 
-                : 'w-1.5 bg-white/20 hover:bg-white/40'
+              activeIndex === i
+                ? "w-6 bg-white"
+                : "w-1.5 bg-white/20 hover:bg-white/40"
             }`}
           />
         ))}

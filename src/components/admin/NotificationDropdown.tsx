@@ -1,34 +1,34 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { 
-  Bell, 
-  Mail, 
-  CalendarCheck, 
-  BookOpen, 
-  CheckCheck, 
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Bell,
+  Mail,
+  CalendarCheck,
+  BookOpen,
+  CheckCheck,
   ExternalLink,
   Clock,
   Sparkles,
-  X
-} from 'lucide-react';
-import { 
-  fetchAdminNotifications, 
-  markAdminNotificationRead, 
-  markAllAdminNotificationsRead, 
-  AdminNotificationItem 
-} from '@/actions/adminNotifications';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
+  X,
+} from "lucide-react";
+import {
+  fetchAdminNotifications,
+  markAdminNotificationRead,
+  markAllAdminNotificationsRead,
+  AdminNotificationItem,
+} from "@/actions/adminNotifications";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
 
 function timeAgo(dateStr: string): string {
   try {
     const now = new Date().getTime();
     const past = new Date(dateStr).getTime();
     const diffSec = Math.floor((now - past) / 1000);
-    if (diffSec < 60) return 'Just now';
+    if (diffSec < 60) return "Just now";
     const diffMin = Math.floor(diffSec / 60);
     if (diffMin < 60) return `${diffMin}m ago`;
     const diffHours = Math.floor(diffMin / 60);
@@ -37,15 +37,21 @@ function timeAgo(dateStr: string): string {
     if (diffDays < 7) return `${diffDays}d ago`;
     return new Date(dateStr).toLocaleDateString();
   } catch {
-    return 'Recent';
+    return "Recent";
   }
 }
 
-export default function NotificationDropdown({ basePath }: { basePath: string }) {
+export default function NotificationDropdown({
+  basePath,
+}: {
+  basePath: string;
+}) {
   const { currentTheme } = useThemeAccent();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<AdminNotificationItem[]>([]);
+  const [notifications, setNotifications] = useState<AdminNotificationItem[]>(
+    [],
+  );
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -58,47 +64,72 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
         setUnreadCount(res.unreadCount || 0);
       }
     } catch (err) {
-      console.error('Failed to load notifications:', err);
+      console.error("Failed to load notifications:", err);
     }
   };
 
   useEffect(() => {
-    loadNotifications();
-    // Poll every 30 seconds for live notifications
-    const interval = setInterval(loadNotifications, 30_000);
-    return () => clearInterval(interval);
+    let isMounted = true;
+
+    const refresh = async () => {
+      try {
+        const res = await fetchAdminNotifications();
+        if (!isMounted || !res.success) return;
+        setNotifications(res.notifications || []);
+        setUnreadCount(res.unreadCount || 0);
+      } catch (err) {
+        if (!isMounted) return;
+        console.error("Failed to load notifications:", err);
+      }
+    };
+
+    void refresh();
+    const interval = window.setInterval(() => {
+      void refresh();
+    }, 30_000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
+    };
   }, []);
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleMarkAllRead = async () => {
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setUnreadCount(0);
     await markAllAdminNotificationsRead();
   };
 
   const handleItemClick = async (item: AdminNotificationItem) => {
     if (!item.isRead) {
-      setNotifications(prev => prev.map(n => n.id === item.id ? { ...n, isRead: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)),
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
       await markAdminNotificationRead(item.type, item.sourceId);
     }
     setIsOpen(false);
     // Determine proper destination with basePath
-    const dest = item.type === 'guestbook' 
-      ? `${basePath}/guestbook` 
-      : `${basePath}/contact`;
+    const dest =
+      item.type === "guestbook"
+        ? `${basePath}/guestbook`
+        : `${basePath}/contact`;
     router.push(dest);
   };
 
@@ -112,20 +143,23 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
           if (!isOpen) loadNotifications();
         }}
         className={`relative p-2 rounded-xl border transition-all cursor-pointer group ${
-          isOpen 
-            ? 'bg-white/10 text-white border-white/20' 
-            : 'bg-white/[0.03] hover:bg-white/[0.08] border-white/[0.08] text-neutral-400 hover:text-white'
+          isOpen
+            ? "bg-white/10 text-white border-white/20"
+            : "bg-white/[0.03] hover:bg-white/[0.08] border-white/[0.08] text-neutral-400 hover:text-white"
         }`}
         title="Notifications & Activity"
       >
-        <Bell size={15} className="group-hover:rotate-12 transition-transform duration-200" />
-        
+        <Bell
+          size={15}
+          className="group-hover:rotate-12 transition-transform duration-200"
+        />
+
         {unreadCount > 0 && (
-          <span 
+          <span
             className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-mono font-bold text-white flex items-center justify-center border border-black shadow-lg animate-pulse"
             style={{ backgroundColor: currentTheme.primary }}
           >
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
@@ -133,7 +167,6 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
       {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl sm:rounded-3xl bg-[#08090d]/95 border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-          
           {/* Header */}
           <div className="p-4 border-b border-white/[0.08] flex items-center justify-between bg-white/[0.02]">
             <div className="flex items-center gap-2">
@@ -141,11 +174,11 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
                 Notifications
               </span>
               {unreadCount > 0 && (
-                <span 
+                <span
                   className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold"
-                  style={{ 
+                  style={{
                     backgroundColor: `${currentTheme.primary}20`,
-                    color: currentTheme.primary
+                    color: currentTheme.primary,
                   }}
                 >
                   {unreadCount} new
@@ -179,36 +212,43 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
             {notifications.length === 0 ? (
               <div className="py-12 px-6 text-center space-y-2">
                 <Sparkles size={24} className="mx-auto text-neutral-600" />
-                <p className="text-xs font-medium text-neutral-300">All caught up!</p>
+                <p className="text-xs font-medium text-neutral-300">
+                  All caught up!
+                </p>
                 <p className="text-[11px] font-mono text-neutral-500">
-                  New visitor messages, bookings, or guestbook signatures will appear here.
+                  New visitor messages, bookings, or guestbook signatures will
+                  appear here.
                 </p>
               </div>
             ) : (
               notifications.map((item) => {
-                const Icon = 
-                  item.type === 'contact' ? Mail :
-                  item.type === 'booking' ? CalendarCheck :
-                  BookOpen;
+                const Icon =
+                  item.type === "contact"
+                    ? Mail
+                    : item.type === "booking"
+                      ? CalendarCheck
+                      : BookOpen;
 
-                const iconColor = 
-                  item.type === 'contact' ? '#38bdf8' : // sky
-                  item.type === 'booking' ? '#34d399' : // emerald
-                  '#c084fc'; // purple
+                const iconColor =
+                  item.type === "contact"
+                    ? "#38bdf8" // sky
+                    : item.type === "booking"
+                      ? "#34d399" // emerald
+                      : "#c084fc"; // purple
 
                 return (
                   <div
                     key={item.id}
                     onClick={() => handleItemClick(item)}
                     className={`p-3 rounded-2xl transition-all cursor-pointer flex items-start gap-3 border ${
-                      !item.isRead 
-                        ? 'bg-white/[0.05] border-white/10 hover:bg-white/[0.08]' 
-                        : 'bg-transparent border-transparent hover:bg-white/[0.03] opacity-75 hover:opacity-100'
+                      !item.isRead
+                        ? "bg-white/[0.05] border-white/10 hover:bg-white/[0.08]"
+                        : "bg-transparent border-transparent hover:bg-white/[0.03] opacity-75 hover:opacity-100"
                     }`}
                   >
                     {/* Icon or Avatar */}
-                    <div 
-                      className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border mt-0.5 overflow-hidden"
+                    <div
+                      className="relative w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border mt-0.5 overflow-hidden"
                       style={{
                         backgroundColor: `${iconColor}15`,
                         borderColor: `${iconColor}30`,
@@ -216,12 +256,16 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
                       }}
                     >
                       {item.avatar ? (
-                        <img 
-                          src={item.avatar} 
-                          alt="Avatar" 
-                          className="w-full h-full object-cover"
+                        <Image
+                          src={item.avatar}
+                          alt="Avatar"
+                          fill
+                          unoptimized
+                          className="object-cover"
                           onError={(e) => {
-                            (e.currentTarget as HTMLElement).style.display = 'none';
+                            (
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = "none";
                           }}
                         />
                       ) : (
@@ -232,7 +276,9 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
                     {/* Text Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <p className={`text-xs font-medium truncate ${!item.isRead ? 'text-white' : 'text-neutral-300'}`}>
+                        <p
+                          className={`text-xs font-medium truncate ${!item.isRead ? "text-white" : "text-neutral-300"}`}
+                        >
                           {item.title}
                         </p>
                         <span className="text-[10px] font-mono text-neutral-500 shrink-0">
@@ -247,11 +293,11 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
 
                     {/* Unread Indicator */}
                     {!item.isRead && (
-                      <span 
+                      <span
                         className="w-2 h-2 rounded-full shrink-0 mt-2"
-                        style={{ 
+                        style={{
                           backgroundColor: currentTheme.primary,
-                          boxShadow: `0 0 6px ${currentTheme.primary}`
+                          boxShadow: `0 0 6px ${currentTheme.primary}`,
                         }}
                       />
                     )}
@@ -278,7 +324,6 @@ export default function NotificationDropdown({ basePath }: { basePath: string })
               Guestbook &rarr;
             </Link>
           </div>
-
         </div>
       )}
     </div>

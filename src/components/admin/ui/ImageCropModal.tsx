@@ -1,10 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { UploadCloud, Check, X, ZoomIn, ZoomOut, Loader2, RotateCcw } from 'lucide-react';
-import AdminModal from '@/components/admin/ui/AdminModal';
-import { useThemeAccent } from '@/components/theme/ThemeProvider';
-import { uploadImage } from '@/actions/upload';
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  UploadCloud,
+  Check,
+  X,
+  ZoomIn,
+  ZoomOut,
+  Loader2,
+  RotateCcw,
+} from "lucide-react";
+import AdminModal from "@/components/admin/ui/AdminModal";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
+import { uploadImage } from "@/actions/upload";
 
 interface ImageCropModalProps {
   isOpen: boolean;
@@ -19,7 +27,7 @@ export default function ImageCropModal({
   onClose,
   onSuccess,
   title = "Upload & Crop Image",
-  subtitle = "Select an image, drag to position within the square frame, and upload to Cloudinary."
+  subtitle = "Select an image, drag to position within the square frame, and upload to Cloudinary.",
 }: ImageCropModalProps) {
   const { currentTheme } = useThemeAccent();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -34,24 +42,26 @@ export default function ImageCropModal({
   const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Reset state when closed
-  useEffect(() => {
-    if (!isOpen) {
-      setImageSrc(null);
-      setImageObj(null);
-      setZoom(1);
-      setPan({ x: 0, y: 0 });
-      setErrorMsg(null);
-    }
-  }, [isOpen]);
+  const resetState = useCallback(() => {
+    setImageSrc(null);
+    setImageObj(null);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    setErrorMsg(null);
+  }, []);
+
+  const handleModalClose = () => {
+    resetState();
+    onClose();
+  };
 
   // Handle local file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Please select a valid image file (JPG, PNG, WebP).');
+    if (!file.type.startsWith("image/")) {
+      setErrorMsg("Please select a valid image file (JPG, PNG, WebP).");
       return;
     }
 
@@ -76,7 +86,7 @@ export default function ImageCropModal({
     const canvas = canvasRef.current;
     if (!canvas || !imageObj) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const size = canvas.width; // 400px viewport
@@ -117,7 +127,7 @@ export default function ImageCropModal({
     ctx.drawImage(imageObj, destX, destY, drawWidth, drawHeight);
 
     // Draw square grid overlay (Rule of Thirds, matching Facebook crop style)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
     ctx.lineWidth = 1;
     // Horizontal grid
     ctx.beginPath();
@@ -189,11 +199,11 @@ export default function ImageCropModal({
 
     try {
       // Create high-res 800x800 export canvas
-      const exportCanvas = document.createElement('canvas');
+      const exportCanvas = document.createElement("canvas");
       exportCanvas.width = 800;
       exportCanvas.height = 800;
-      const ctx = exportCanvas.getContext('2d');
-      if (!ctx) throw new Error('Could not create canvas context');
+      const ctx = exportCanvas.getContext("2d");
+      if (!ctx) throw new Error("Could not create canvas context");
 
       const size = 800;
       const scaleFactor = 800 / (canvasRef.current?.width || 400);
@@ -223,13 +233,13 @@ export default function ImageCropModal({
 
       // Convert to Blob
       const blob = await new Promise<Blob | null>((resolve) => {
-        exportCanvas.toBlob((b) => resolve(b), 'image/jpeg', 0.92);
+        exportCanvas.toBlob((b) => resolve(b), "image/jpeg", 0.92);
       });
 
-      if (!blob) throw new Error('Canvas export failed');
+      if (!blob) throw new Error("Canvas export failed");
 
       const formData = new FormData();
-      formData.append('file', blob, 'cropped-image.jpg');
+      formData.append("file", blob, "cropped-image.jpg");
 
       const res = await uploadImage(formData);
 
@@ -237,10 +247,10 @@ export default function ImageCropModal({
         onSuccess(res.url);
         onClose();
       } else {
-        setErrorMsg(res.error || 'Cloudinary upload failed');
+        setErrorMsg(res.error || "Cloudinary upload failed");
       }
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error uploading cropped image');
+      setErrorMsg(err.message || "Error uploading cropped image");
     } finally {
       setUploading(false);
     }
@@ -249,7 +259,7 @@ export default function ImageCropModal({
   return (
     <AdminModal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleModalClose}
       title={title}
       subtitle={subtitle}
       maxWidth="max-w-md"
@@ -276,7 +286,7 @@ export default function ImageCropModal({
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-white/10 hover:border-white/30 rounded-3xl p-10 flex flex-col items-center justify-center gap-3 cursor-pointer bg-white/[0.02] hover:bg-white/[0.04] transition-all group"
           >
-            <div 
+            <div
               className="p-4 rounded-2xl bg-white/[0.04] group-hover:scale-110 transition-transform"
               style={{ color: currentTheme.primary }}
             >
@@ -332,7 +342,10 @@ export default function ImageCropModal({
               <ZoomIn size={14} className="text-neutral-500 shrink-0" />
               <button
                 type="button"
-                onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
+                onClick={() => {
+                  setZoom(1);
+                  setPan({ x: 0, y: 0 });
+                }}
                 title="Reset zoom and pan"
                 className="p-1 rounded text-neutral-400 hover:text-white"
               >
@@ -357,7 +370,7 @@ export default function ImageCropModal({
         <div className="pt-4 border-t border-white/[0.08] flex items-center justify-end gap-3">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleModalClose}
             className="px-4 py-2 rounded-xl text-xs font-mono text-neutral-400 hover:text-white transition-colors"
           >
             Cancel

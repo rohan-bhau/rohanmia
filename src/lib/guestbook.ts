@@ -1,26 +1,33 @@
-import { auth } from '@/auth';
-import { fetchAllEntries } from '@/lib/postgres';
-import type { GuestbookEntry, GuestbookTheme } from '@/data/guestbook';
+import { auth } from "@/auth";
+import { getCachedGuestbookEntries } from "@/lib/publicData";
+import type { GuestbookEntry, GuestbookTheme } from "@/data/guestbook";
 
 export interface OAuthStatus {
   google: boolean;
   github: boolean;
+  devIdentityMode: boolean;
 }
 
 export function getOAuthStatus(): OAuthStatus {
+  const google = Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+  );
+  const github = Boolean(
+    (process.env.GITHUB_CLIENT_ID || process.env.GITHUB_ID) &&
+    (process.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_SECRET),
+  );
+
   return {
-    google: Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-    github: Boolean(
-      (process.env.GITHUB_CLIENT_ID || process.env.GITHUB_ID) &&
-        (process.env.GITHUB_CLIENT_SECRET || process.env.GITHUB_SECRET)
-    ),
+    google,
+    github,
+    devIdentityMode:
+      process.env.NODE_ENV === "development" && !google && !github,
   };
 }
 
 /** True when no OAuth provider is configured (local dev fallback identity is allowed) */
 export function isDevIdentityMode(): boolean {
-  const status = getOAuthStatus();
-  return !status.google && !status.github;
+  return getOAuthStatus().devIdentityMode;
 }
 
 // Format relative date (e.g. "Just now", "2h ago", "Sep 12, 2026")
@@ -30,13 +37,17 @@ export function formatDate(dateStr: string): string {
     const diffMins = Math.floor((Date.now() - d.getTime()) / 60000);
     const diffHours = Math.floor(diffMins / 60);
 
-    if (diffMins < 2) return 'Just now';
+    if (diffMins < 2) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
 
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   } catch {
-    return 'Recently';
+    return "Recently";
   }
 }
 
@@ -50,29 +61,33 @@ export async function getGuestbookData(): Promise<{
   oauthConfigured: OAuthStatus;
 }> {
   const [rows, session] = await Promise.all([
-    fetchAllEntries(),
+    getCachedGuestbookEntries(),
     auth().catch(() => null),
   ]);
 
   const devMode = isDevIdentityMode();
-  const viewerEmail = (session?.user?.email || '').trim().toLowerCase();
-  const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-  const viewerIsAdmin = Boolean(viewerEmail && adminEmail && viewerEmail === adminEmail);
+  const viewerEmail = (session?.user?.email || "").trim().toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  const viewerIsAdmin = Boolean(
+    viewerEmail && adminEmail && viewerEmail === adminEmail,
+  );
 
   const entries: GuestbookEntry[] = rows.map((r) => {
-    const authorEmail = (r.email || '').trim().toLowerCase();
+    const authorEmail = (r.email || "").trim().toLowerCase();
     return {
       id: r.id,
       name: r.name,
       // Only expose emails in local dev-identity mode (needed for client-side ownership there)
-      email: devMode ? r.email : '',
+      email: devMode ? r.email : "",
       message: r.message,
-      avatar: r.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(r.name)}`,
+      avatar: r.avatar || "",
       provider: r.provider,
       theme: r.theme as GuestbookTheme,
       createdAt: formatDate(r.created_at),
       verified: true,
-      isOwner: Boolean(viewerEmail && (viewerIsAdmin || viewerEmail === authorEmail)),
+      isOwner: Boolean(
+        viewerEmail && (viewerIsAdmin || viewerEmail === authorEmail),
+      ),
     };
   });
 

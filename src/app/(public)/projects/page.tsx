@@ -1,17 +1,18 @@
-import React from 'react';
-import { getProjectsDb } from '@/lib/db/projects';
-import ProjectsClientView from '@/components/projects/ProjectsClientView';
-import { CaseStudy } from '@/data/projects';
+import React from "react";
+import { getCachedProjects } from "@/lib/publicData";
+import ProjectsClientView from "@/components/projects/ProjectsClientView";
+import { CaseStudy } from "@/data/projects";
 
 export const revalidate = 60; // 0ms instantaneous visitor load with background revalidation
 
 export const metadata = {
-  title: 'Projects & Systems | MD Rohan Mia',
-  description: 'A curated collection of production web applications, system architectures, and mobile software engineered by Rohan Mia.',
+  title: "Projects & Systems | MD Rohan Mia",
+  description:
+    "A curated collection of production web applications, system architectures, and mobile software engineered by Rohan Mia.",
 };
 
 export default async function ProjectsPage() {
-  const dbProjects = await getProjectsDb();
+  const dbProjects = await getCachedProjects();
 
   const projects: CaseStudy[] = dbProjects.map((p) => ({
     id: p.id,
@@ -20,14 +21,14 @@ export default async function ProjectsPage() {
     tagline: p.tagline,
     category: p.category as any,
     featured: p.featured,
-    role: p.role || 'Lead Engineer',
-    year: p.year || '2026',
-    targetAudience: p.target_audience || '',
-    overview: p.overview || '',
-    problem: p.problem || '',
-    solution: p.solution || '',
-    gradient: p.gradient || 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)',
-    accentColor: p.accent_color || '#6366f1',
+    role: p.role || "Lead Engineer",
+    year: p.year || "2026",
+    targetAudience: p.target_audience || "",
+    overview: p.overview || "",
+    problem: p.problem || "",
+    solution: p.solution || "",
+    gradient: p.gradient || "linear-gradient(135deg, #182848 0%, #4b6cb7 100%)",
+    accentColor: p.accent_color || "#6366f1",
     previewImage: p.preview_image,
     hoverImage: p.hover_image,
     githubUrl: p.github_url,
