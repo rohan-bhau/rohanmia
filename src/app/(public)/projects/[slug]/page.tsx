@@ -1,68 +1,68 @@
-import { notFound } from 'next/navigation';
-import { getProjectBySlug, getAllProjectSlugs, getAdjacentProjects, CaseStudy } from '@/data/projects';
-import { getProjectBySlugDb, getProjectsDb } from '@/lib/db/projects';
-import CaseStudyClient from './CaseStudyClient';
+import { notFound } from "next/navigation";
+import type { CaseStudy } from "@/data/projects";
+import {
+  DbProjectRow,
+  getProjectBySlugDb,
+  getProjectsDb,
+} from "@/lib/db/projects";
+import CaseStudyClient from "./CaseStudyClient";
 
 interface CaseStudyPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  try {
-    const dbProjects = await getProjectsDb();
-    if (dbProjects.length > 0) {
-      return dbProjects.map((p) => ({ slug: p.slug }));
-    }
-  } catch (e) {
-    // fallback
-  }
-  return getAllProjectSlugs().map((slug) => ({ slug }));
+  const dbProjects = await getProjectsDb();
+  return dbProjects.map((project) => ({ slug: project.slug }));
+}
+
+function mapDbProject(project: DbProjectRow): CaseStudy {
+  return {
+    id: project.id,
+    slug: project.slug,
+    title: project.title,
+    tagline: project.tagline || "",
+    category: project.category as CaseStudy["category"],
+    featured: project.featured,
+    role: project.role || "",
+    year: project.year || "",
+    targetAudience: project.target_audience || "",
+    whyIBuiltThis: project.why_i_built_this || "",
+    overview: project.overview || "",
+    problem: project.problem || "",
+    solution: project.solution || "",
+    gradient: project.gradient || "",
+    accentColor: project.accent_color || "",
+    previewImage: project.preview_image || "",
+    hoverImage: project.hover_image,
+    githubUrl: project.github_url,
+    clientUrl: project.client_url,
+    serverUrl: project.server_url,
+    liveUrl: project.live_url,
+    techStack: project.tech_stack || [],
+    architecture: {
+      frontend: project.architecture?.frontend || [],
+      backend: project.architecture?.backend || [],
+      database: project.architecture?.database || [],
+      infrastructure: project.architecture?.infrastructure || [],
+    },
+    systemBreakdown: project.system_breakdown || [],
+    challenges: project.challenges || [],
+    technicalDecisions: project.technical_decisions || [],
+    keyFeatures: project.key_features || [],
+    metrics: project.metrics || [],
+    directoryTree: project.directory_tree,
+    codeSnippet: project.code_snippet,
+    backendArchitecture: project.backend_architecture,
+    whatILearned: project.what_i_learned,
+  };
 }
 
 export async function generateMetadata({ params }: CaseStudyPageProps) {
   const { slug } = await params;
-  let project: CaseStudy | null = null;
   const dbP = await getProjectBySlugDb(slug);
-  if (dbP) {
-    project = {
-      id: dbP.id,
-      slug: dbP.slug,
-      title: dbP.title,
-      tagline: dbP.tagline,
-      category: dbP.category as any,
-      featured: dbP.featured,
-      role: dbP.role || 'Lead Engineer',
-      year: dbP.year || '2026',
-      targetAudience: dbP.target_audience || '',
-      overview: dbP.overview || '',
-      problem: dbP.problem || '',
-      solution: dbP.solution || '',
-      gradient: dbP.gradient || 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)',
-      accentColor: dbP.accent_color || '#6366f1',
-      previewImage: dbP.preview_image,
-      hoverImage: dbP.hover_image,
-      githubUrl: dbP.github_url,
-      clientUrl: dbP.client_url,
-      serverUrl: dbP.server_url,
-      liveUrl: dbP.live_url,
-      techStack: dbP.tech_stack || [],
-      architecture: dbP.architecture as any || { frontend: [], backend: [], database: [], infrastructure: [] },
-      systemBreakdown: dbP.system_breakdown || [],
-      challenges: dbP.challenges || [],
-      technicalDecisions: dbP.technical_decisions || [],
-      keyFeatures: dbP.key_features || [],
-      metrics: dbP.metrics || [],
-    };
-  } else {
-    project = getProjectBySlug(slug) || null;
-  }
-  
-  if (!project) {
-    return {
-      title: 'Project Case Study Not Found | Rohan Mia',
-      description: 'The requested system architecture case study could not be located.'
-    };
-  }
+  if (!dbP) notFound();
+  const project = mapDbProject(dbP);
 
   return {
     title: `${project.title} — System Architecture Case Study | Rohan Mia`,
@@ -75,67 +75,36 @@ export async function generateMetadata({ params }: CaseStudyPageProps) {
           url: project.previewImage,
           width: 1200,
           height: 630,
-          alt: project.title
-        }
-      ]
-    }
+          alt: project.title,
+        },
+      ],
+    },
   };
 }
 
-export default async function ProjectCaseStudyPage({ params }: CaseStudyPageProps) {
+export default async function ProjectCaseStudyPage({
+  params,
+}: CaseStudyPageProps) {
   const { slug } = await params;
-  let project: CaseStudy | null = null;
-  
-  const dbP = await getProjectBySlugDb(slug);
-  if (dbP) {
-    project = {
-      id: dbP.id,
-      slug: dbP.slug,
-      title: dbP.title,
-      tagline: dbP.tagline,
-      category: dbP.category as any,
-      featured: dbP.featured,
-      role: dbP.role || 'Lead Engineer',
-      year: dbP.year || '2026',
-      targetAudience: dbP.target_audience || '',
-      overview: dbP.overview || '',
-      problem: dbP.problem || '',
-      solution: dbP.solution || '',
-      gradient: dbP.gradient || 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)',
-      accentColor: dbP.accent_color || '#6366f1',
-      previewImage: dbP.preview_image,
-      hoverImage: dbP.hover_image,
-      githubUrl: dbP.github_url,
-      clientUrl: dbP.client_url,
-      serverUrl: dbP.server_url,
-      liveUrl: dbP.live_url,
-      techStack: dbP.tech_stack || [],
-      architecture: dbP.architecture as any || { frontend: [], backend: [], database: [], infrastructure: [] },
-      systemBreakdown: dbP.system_breakdown || [],
-      challenges: dbP.challenges || [],
-      technicalDecisions: dbP.technical_decisions || [],
-      keyFeatures: dbP.key_features || [],
-      metrics: dbP.metrics || [],
-      directoryTree: dbP.directory_tree,
-      codeSnippet: dbP.code_snippet,
-      backendArchitecture: dbP.backend_architecture,
-      whatILearned: dbP.what_i_learned,
-    };
-  } else {
-    project = getProjectBySlug(slug) || null;
-  }
+  const dbProjects = await getProjectsDb();
+  const projectIndex = dbProjects.findIndex((entry) => entry.slug === slug);
+  if (projectIndex === -1) notFound();
 
-  if (!project) {
-    notFound();
-  }
-
-  const { prev, next } = getAdjacentProjects(slug);
+  const project = mapDbProject(dbProjects[projectIndex]);
+  const prev =
+    dbProjects.length > 1
+      ? mapDbProject(
+          dbProjects[
+            (projectIndex - 1 + dbProjects.length) % dbProjects.length
+          ],
+        )
+      : null;
+  const next =
+    dbProjects.length > 1
+      ? mapDbProject(dbProjects[(projectIndex + 1) % dbProjects.length])
+      : null;
 
   return (
-    <CaseStudyClient 
-      project={project} 
-      prevProject={prev} 
-      nextProject={next} 
-    />
+    <CaseStudyClient project={project} prevProject={prev} nextProject={next} />
   );
 }

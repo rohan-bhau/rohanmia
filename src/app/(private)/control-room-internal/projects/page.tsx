@@ -1,19 +1,11 @@
-import React from 'react';
-import { getProjectsDb, getFeaturedCaseStudiesDb } from '@/lib/db/projects';
-import AdminProjectsManager from '@/components/admin/AdminProjectsManager';
+import React from "react";
+import { getProjectsDb } from "@/lib/db/projects";
+import AdminProjectsManager from "@/components/admin/AdminProjectsManager";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function AdminProjectsPage() {
-  const [projects, featuredList] = await Promise.all([
-    getProjectsDb(),
-    getFeaturedCaseStudiesDb()
-  ]);
+  const projects = await getProjectsDb();
 
-  return (
-    <AdminProjectsManager
-      initialProjects={projects}
-      initialFeatured={featuredList}
-    />
-  );
+  return <AdminProjectsManager initialProjects={projects} />;
 }

@@ -14,12 +14,12 @@ import {
   ChevronUp,
   ChevronDown,
   Edit3,
-  Trash2,
+  Star,
   Plus,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa6";
 import { useThemeAccent } from "@/components/theme/ThemeProvider";
-import { FEATURED_CASE_STUDIES, CaseStudy } from "@/data/projects";
+import { CaseStudy } from "@/data/projects";
 import TechBadge from "@/components/ui/TechBadge";
 import { useAdminMode } from "@/components/admin/AdminModeContext";
 
@@ -264,7 +264,7 @@ export default function FeaturedCaseStudies({
   isAdmin = false,
   compact = false,
   onEdit,
-  onDelete,
+  onToggleFeatured,
   onMove,
   onDrop,
   onAdd,
@@ -273,20 +273,14 @@ export default function FeaturedCaseStudies({
   isAdmin?: boolean;
   compact?: boolean;
   onEdit?: (project: CaseStudy) => void;
-  onDelete?: (projectId: string) => void;
+  onToggleFeatured?: (projectId: string) => void;
   onMove?: (projectId: string, direction: "up" | "down") => void;
   onDrop?: (sourceIndex: number, targetIndex: number) => void;
   onAdd?: () => void;
 }) {
   const { currentTheme } = useThemeAccent();
   const { basePath } = useAdminMode();
-  const projectsList = useMemo(
-    () =>
-      initialProjects && initialProjects.length > 0
-        ? initialProjects
-        : FEATURED_CASE_STUDIES,
-    [initialProjects],
-  );
+  const projectsList = useMemo(() => initialProjects ?? [], [initialProjects]);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [shiftY, setShiftY] = useState(0);
@@ -375,6 +369,8 @@ export default function FeaturedCaseStudies({
 
   const activeProject = projectsList[activeIndex] || projectsList[0];
   const activeAccent = activeProject?.accentColor || currentTheme.primary;
+
+  if (projectsList.length === 0) return null;
 
   return (
     <section
@@ -620,11 +616,12 @@ export default function FeaturedCaseStudies({
                     </button>
                     <button
                       type="button"
-                      onClick={() => onDelete?.(activeProject.id)}
-                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 transition-all cursor-pointer shadow-sm active:scale-95"
-                      title="Delete Active Case Study"
+                      onClick={() => onToggleFeatured?.(activeProject.id)}
+                      className="p-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/20 transition-all cursor-pointer shadow-sm active:scale-95"
+                      title="Remove from Featured Case Studies"
+                      aria-label="Remove from Featured Case Studies"
                     >
-                      <Trash2 size={13} />
+                      <Star size={13} fill="currentColor" />
                     </button>
                   </div>
                 )}

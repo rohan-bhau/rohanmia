@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Check, Copy, Terminal, FileCode } from 'lucide-react';
+import React, { useState } from "react";
+import { Check, Copy, Terminal, FileCode } from "lucide-react";
 
 interface CodeBlockProps {
   code: string;
+  title?: string;
   filename?: string;
   language?: string;
   isTree?: boolean;
@@ -12,35 +13,87 @@ interface CodeBlockProps {
 
 // Token categories for professional syntax highlighting (VS Code One Dark Standard)
 const KEYWORDS = new Set([
-  'export', 'import', 'from', 'const', 'let', 'var', 'function', 'async',
-  'await', 'return', 'type', 'interface', 'class', 'extends', 'implements',
-  'if', 'else', 'throw', 'new', 'try', 'catch', 'finally', 'typeof',
-  'keyof', 'as', 'default', 'case', 'switch', 'break', 'continue', 'in', 'of'
+  "export",
+  "import",
+  "from",
+  "const",
+  "let",
+  "var",
+  "function",
+  "async",
+  "await",
+  "return",
+  "type",
+  "interface",
+  "class",
+  "extends",
+  "implements",
+  "if",
+  "else",
+  "throw",
+  "new",
+  "try",
+  "catch",
+  "finally",
+  "typeof",
+  "keyof",
+  "as",
+  "default",
+  "case",
+  "switch",
+  "break",
+  "continue",
+  "in",
+  "of",
 ]);
 
 const BUILTIN_TYPES = new Set([
-  'string', 'number', 'boolean', 'any', 'void', 'never', 'unknown',
-  'null', 'undefined', 'Date', 'Promise', 'Array', 'Record', 'Object', 'Set', 'Map'
+  "string",
+  "number",
+  "boolean",
+  "any",
+  "void",
+  "never",
+  "unknown",
+  "null",
+  "undefined",
+  "Date",
+  "Promise",
+  "Array",
+  "Record",
+  "Object",
+  "Set",
+  "Map",
 ]);
 
-export default function CodeBlock({ code, filename, language = 'typescript', isTree = false }: CodeBlockProps) {
+export default function CodeBlock({
+  code,
+  title,
+  filename,
+  language = "typescript",
+  isTree = false,
+}: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  const lines = code.trim().split('\n');
+  const lines = code.trim().split("\n");
 
   // Tokenize a single line of code
   const highlightCodeLine = (line: string) => {
     // Check if line is purely a comment
     const trimmed = line.trim();
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
+    if (
+      trimmed.startsWith("//") ||
+      trimmed.startsWith("/*") ||
+      trimmed.startsWith("*")
+    ) {
       return <span className="text-[#64748b] italic">{line}</span>;
     }
 
@@ -54,7 +107,8 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
     }
 
     // Tokenizer regex matching strings, numbers, keywords, function calls, property keys, punctuation
-    const tokenRegex = /('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`|\b(?:\d+(?:\.\d+)?)\b|\b[a-zA-Z_$][a-zA-Z0-9_$]*(?=\s*\()|\b[a-zA-Z_$][a-zA-Z0-9_$]*(?=\s*:)|[{}()\[\].,;:]|=>|[!=<>+\-*\/%&|^~?]+|[a-zA-Z_$][a-zA-Z0-9_$]*|\s+|[^\s\w{}()\[\].,;:=>!<>+\-*\/%&|^~?]+)/g;
+    const tokenRegex =
+      /('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`|\b(?:\d+(?:\.\d+)?)\b|\b[a-zA-Z_$][a-zA-Z0-9_$]*(?=\s*\()|\b[a-zA-Z_$][a-zA-Z0-9_$]*(?=\s*:)|[{}()\[\].,;:]|=>|[!=<>+\-*\/%&|^~?]+|[a-zA-Z_$][a-zA-Z0-9_$]*|\s+|[^\s\w{}()\[\].,;:=>!<>+\-*\/%&|^~?]+)/g;
 
     const tokens: React.ReactNode[] = [];
     let match;
@@ -66,42 +120,86 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
 
       if (/^['"`]/.test(token)) {
         // String literal (soft emerald green)
-        tokens.push(<span key={key} className="text-[#98c379]">{token}</span>);
+        tokens.push(
+          <span key={key} className="text-[#98c379]">
+            {token}
+          </span>,
+        );
       } else if (/^\d/.test(token)) {
         // Number literal (warm orange/peach)
-        tokens.push(<span key={key} className="text-[#d19a66]">{token}</span>);
+        tokens.push(
+          <span key={key} className="text-[#d19a66]">
+            {token}
+          </span>,
+        );
       } else if (KEYWORDS.has(token)) {
         // Keyword (vibrant purple/violet)
-        tokens.push(<span key={key} className="text-[#c678dd] font-medium">{token}</span>);
+        tokens.push(
+          <span key={key} className="text-[#c678dd] font-medium">
+            {token}
+          </span>,
+        );
       } else if (BUILTIN_TYPES.has(token)) {
         // Built-in Type (golden yellow / cyan)
-        tokens.push(<span key={key} className="text-[#e5c07b]">{token}</span>);
-      } else if (token === 'z') {
+        tokens.push(
+          <span key={key} className="text-[#e5c07b]">
+            {token}
+          </span>,
+        );
+      } else if (token === "z") {
         // Zod validation library instance (cyan highlight)
-        tokens.push(<span key={key} className="text-[#38bdf8] font-semibold">{token}</span>);
+        tokens.push(
+          <span key={key} className="text-[#38bdf8] font-semibold">
+            {token}
+          </span>,
+        );
       } else if (/^[A-Z][a-zA-Z0-9_$]*$/.test(token)) {
         // PascalCase Class, Interface, or Model (e.g. SlotModel, ApiError, Conflict)
-        tokens.push(<span key={key} className="text-[#e5c07b] font-medium">{token}</span>);
+        tokens.push(
+          <span key={key} className="text-[#e5c07b] font-medium">
+            {token}
+          </span>,
+        );
       } else if (/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(token)) {
         // Check following character in codePart for function call or property key
         const nextCharIndex = tokenRegex.lastIndex;
         const remainder = codePart.slice(nextCharIndex);
         if (/^\s*\(/.test(remainder)) {
           // Function or method call (sky blue)
-          tokens.push(<span key={key} className="text-[#61afef]">{token}</span>);
+          tokens.push(
+            <span key={key} className="text-[#61afef]">
+              {token}
+            </span>,
+          );
         } else if (/^\s*:/.test(remainder)) {
           // Object property key (coral / crisp white)
-          tokens.push(<span key={key} className="text-[#e06c75]">{token}</span>);
+          tokens.push(
+            <span key={key} className="text-[#e06c75]">
+              {token}
+            </span>,
+          );
         } else {
           // General identifier / variable
-          tokens.push(<span key={key} className="text-[#abb2bf]">{token}</span>);
+          tokens.push(
+            <span key={key} className="text-[#abb2bf]">
+              {token}
+            </span>,
+          );
         }
       } else if (/^[{}()\[\].,;:]$/.test(token)) {
         // Punctuation (muted slate)
-        tokens.push(<span key={key} className="text-[#abb2bf]/70">{token}</span>);
-      } else if (/^[!=<>+\-*\/%&|^~?]+$/.test(token) || token === '=>') {
+        tokens.push(
+          <span key={key} className="text-[#abb2bf]/70">
+            {token}
+          </span>,
+        );
+      } else if (/^[!=<>+\-*\/%&|^~?]+$/.test(token) || token === "=>") {
         // Operators (vibrant cyan/pink)
-        tokens.push(<span key={key} className="text-[#56b6c2]">{token}</span>);
+        tokens.push(
+          <span key={key} className="text-[#56b6c2]">
+            {token}
+          </span>,
+        );
       } else {
         // Whitespace or unrecognized
         tokens.push(<span key={key}>{token}</span>);
@@ -111,16 +209,18 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
     return (
       <>
         {tokens}
-        {commentPart && <span className="text-[#64748b] italic">{commentPart}</span>}
+        {commentPart && (
+          <span className="text-[#64748b] italic">{commentPart}</span>
+        )}
       </>
     );
   };
 
   // Format directory tree line (tree pipes, folders, files, comments)
   const highlightTreeLine = (line: string) => {
-    const hashIndex = line.indexOf('#');
+    const hashIndex = line.indexOf("#");
     let pathPart = line;
-    let commentPart = '';
+    let commentPart = "";
 
     if (hashIndex !== -1) {
       pathPart = line.slice(0, hashIndex);
@@ -129,22 +229,28 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
 
     // Split leading indentation / guides from name
     const match = pathPart.match(/^([\s│├──└──]*)(.*)$/);
-    const guides = match ? match[1] : '';
+    const guides = match ? match[1] : "";
     const name = match ? match[2].trimEnd() : pathPart;
 
-    const isFolder = name.endsWith('/');
-    const isFile = name.includes('.');
+    const isFolder = name.endsWith("/");
+    const isFile = name.includes(".");
 
     return (
       <span className="flex items-center">
         <span className="text-[#475569] select-none">{guides}</span>
-        <span className={isFolder ? 'text-[#38bdf8] font-medium' : isFile ? 'text-[#98c379]' : 'text-neutral-200'}>
+        <span
+          className={
+            isFolder
+              ? "text-[#38bdf8] font-medium"
+              : isFile
+                ? "text-[#98c379]"
+                : "text-neutral-200"
+          }
+        >
           {name}
         </span>
         {commentPart && (
-          <span className="text-[#64748b] italic ml-2">
-            {commentPart}
-          </span>
+          <span className="text-[#64748b] italic ml-2">{commentPart}</span>
         )}
       </span>
     );
@@ -160,7 +266,7 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
             <span className="size-2.5 rounded-full bg-[#ffbd2e]" />
             <span className="size-2.5 rounded-full bg-[#27c93f]" />
           </div>
-          {filename && (
+          {(title || filename) && (
             <div className="flex items-center gap-1.5 ml-2">
               {isTree ? (
                 <Terminal size={12} className="text-[#38bdf8]" />
@@ -168,15 +274,20 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
                 <FileCode size={12} className="text-[#e5c07b]" />
               )}
               <span className="font-mono text-[11px] text-neutral-300 font-medium">
-                {filename}
+                {title || filename}
               </span>
+              {title && filename && (
+                <span className="font-mono text-[10px] text-neutral-500">
+                  {filename}
+                </span>
+              )}
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-3">
           <span className="font-mono text-[10px] text-neutral-500 uppercase tracking-wider hidden sm:inline-block">
-            {isTree ? 'Tree' : language}
+            {isTree ? "Tree" : language}
           </span>
           <button
             type="button"
@@ -200,10 +311,10 @@ export default function CodeBlock({ code, filename, language = 'typescript', isT
       </div>
 
       {/* Code Body with Line Numbers Gutter (Scrollbar hidden) */}
-      <div 
+      <div
         data-code-block="true"
         className="overflow-x-auto p-4 sm:p-5 font-mono text-xs leading-relaxed bg-[#080a0f] no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <table className="w-full border-collapse">
           <tbody>

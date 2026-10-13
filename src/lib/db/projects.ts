@@ -1,5 +1,5 @@
-import { executeSql, escapeSqlString, escapeSqlJson } from '@/lib/postgres';
-import { ensurePortfolioTables } from './schema';
+import { executeSql, escapeSqlString, escapeSqlJson } from "@/lib/postgres";
+import { ensurePortfolioTables } from "./schema";
 
 export interface DbProjectRow {
   id: string;
@@ -8,9 +8,11 @@ export interface DbProjectRow {
   tagline: string;
   category: string;
   featured: boolean;
+  featured_sort_order: number;
   role: string;
   year: string;
   target_audience: string;
+  why_i_built_this?: string;
   overview: string;
   problem: string;
   solution: string;
@@ -41,25 +43,29 @@ export interface DbProjectRow {
 export async function getProjectsDb(): Promise<DbProjectRow[]> {
   await ensurePortfolioTables();
   const res = await executeSql<DbProjectRow>(
-    `SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC;`
+    `SELECT * FROM projects ORDER BY sort_order ASC, created_at DESC;`,
   );
   return res.rows;
 }
 
-export async function getProjectBySlugDb(slug: string): Promise<DbProjectRow | null> {
+export async function getProjectBySlugDb(
+  slug: string,
+): Promise<DbProjectRow | null> {
   await ensurePortfolioTables();
   const res = await executeSql<DbProjectRow>(
-    `SELECT * FROM projects WHERE slug = ${escapeSqlString(slug)} LIMIT 1;`
+    `SELECT * FROM projects WHERE slug = ${escapeSqlString(slug)} LIMIT 1;`,
   );
   return res.rows[0] || null;
 }
 
-export async function upsertProjectDb(p: Partial<DbProjectRow> & { id: string; slug: string; title: string }): Promise<DbProjectRow> {
+export async function upsertProjectDb(
+  p: Partial<DbProjectRow> & { id: string; slug: string; title: string },
+): Promise<DbProjectRow> {
   await ensurePortfolioTables();
   const query = `
     INSERT INTO projects (
-      id, slug, title, tagline, category, featured, role, year,
-      target_audience, overview, problem, solution, gradient, accent_color,
+      id, slug, title, tagline, category, featured, featured_sort_order, role, year,
+      target_audience, why_i_built_this, overview, problem, solution, gradient, accent_color,
       preview_image, hover_image, github_url, client_url, server_url, live_url,
       tech_stack, architecture, system_breakdown, challenges, technical_decisions,
       key_features, metrics, directory_tree, code_snippet, backend_architecture,
@@ -68,23 +74,25 @@ export async function upsertProjectDb(p: Partial<DbProjectRow> & { id: string; s
       ${escapeSqlString(p.id)},
       ${escapeSqlString(p.slug)},
       ${escapeSqlString(p.title)},
-      ${escapeSqlString(p.tagline || '')},
-      ${escapeSqlString(p.category || 'Full Stack')},
-      ${p.featured ? 'TRUE' : 'FALSE'},
-      ${escapeSqlString(p.role || '')},
-      ${escapeSqlString(p.year || '')},
-      ${escapeSqlString(p.target_audience || '')},
-      ${escapeSqlString(p.overview || '')},
-      ${escapeSqlString(p.problem || '')},
-      ${escapeSqlString(p.solution || '')},
-      ${escapeSqlString(p.gradient || '')},
-      ${escapeSqlString(p.accent_color || '')},
-      ${escapeSqlString(p.preview_image || '')},
-      ${escapeSqlString(p.hover_image || '')},
-      ${escapeSqlString(p.github_url || '')},
-      ${escapeSqlString(p.client_url || '')},
-      ${escapeSqlString(p.server_url || '')},
-      ${escapeSqlString(p.live_url || '')},
+      ${escapeSqlString(p.tagline || "")},
+      ${escapeSqlString(p.category || "Full Stack")},
+      ${p.featured ? "TRUE" : "FALSE"},
+      ${p.featured_sort_order ?? 0},
+      ${escapeSqlString(p.role || "")},
+      ${escapeSqlString(p.year || "")},
+      ${escapeSqlString(p.target_audience || "")},
+      ${escapeSqlString(p.why_i_built_this || "")},
+      ${escapeSqlString(p.overview || "")},
+      ${escapeSqlString(p.problem || "")},
+      ${escapeSqlString(p.solution || "")},
+      ${escapeSqlString(p.gradient || "")},
+      ${escapeSqlString(p.accent_color || "")},
+      ${escapeSqlString(p.preview_image || "")},
+      ${escapeSqlString(p.hover_image || "")},
+      ${escapeSqlString(p.github_url || "")},
+      ${escapeSqlString(p.client_url || "")},
+      ${escapeSqlString(p.server_url || "")},
+      ${escapeSqlString(p.live_url || "")},
       ${escapeSqlJson(p.tech_stack || [])},
       ${escapeSqlJson(p.architecture || {})},
       ${escapeSqlJson(p.system_breakdown || [])},
@@ -92,7 +100,7 @@ export async function upsertProjectDb(p: Partial<DbProjectRow> & { id: string; s
       ${escapeSqlJson(p.technical_decisions || [])},
       ${escapeSqlJson(p.key_features || [])},
       ${escapeSqlJson(p.metrics || [])},
-      ${escapeSqlString(p.directory_tree || '')},
+      ${escapeSqlString(p.directory_tree || "")},
       ${escapeSqlJson(p.code_snippet || {})},
       ${escapeSqlJson(p.backend_architecture || {})},
       ${escapeSqlJson(p.what_i_learned || [])},
@@ -105,9 +113,11 @@ export async function upsertProjectDb(p: Partial<DbProjectRow> & { id: string; s
       tagline = EXCLUDED.tagline,
       category = EXCLUDED.category,
       featured = EXCLUDED.featured,
+      featured_sort_order = EXCLUDED.featured_sort_order,
       role = EXCLUDED.role,
       year = EXCLUDED.year,
       target_audience = EXCLUDED.target_audience,
+      why_i_built_this = EXCLUDED.why_i_built_this,
       overview = EXCLUDED.overview,
       problem = EXCLUDED.problem,
       solution = EXCLUDED.solution,
@@ -141,7 +151,7 @@ export async function upsertProjectDb(p: Partial<DbProjectRow> & { id: string; s
 export async function deleteProjectDb(id: string): Promise<boolean> {
   await ensurePortfolioTables();
   const res = await executeSql<{ id: string }>(
-    `DELETE FROM projects WHERE id = ${escapeSqlString(id)} RETURNING id;`
+    `DELETE FROM projects WHERE id = ${escapeSqlString(id)} RETURNING id;`,
   );
   return res.rows.length > 0;
 }
@@ -169,23 +179,36 @@ export interface DbFeaturedCaseStudyRow {
   updated_at?: string;
 }
 
-export async function getFeaturedCaseStudiesDb(): Promise<DbFeaturedCaseStudyRow[]> {
+export async function getFeaturedCaseStudiesDb(): Promise<
+  DbFeaturedCaseStudyRow[]
+> {
   await ensurePortfolioTables();
   const res = await executeSql<DbFeaturedCaseStudyRow>(
-    `SELECT * FROM featured_case_studies ORDER BY sort_order ASC, created_at ASC;`
+    `SELECT * FROM featured_case_studies ORDER BY sort_order ASC, created_at ASC;`,
   );
   return res.rows.map((row) => ({
     ...row,
     key_features: Array.isArray(row.key_features)
       ? row.key_features
-      : (typeof row.key_features === 'string' ? JSON.parse(row.key_features) : []),
+      : typeof row.key_features === "string"
+        ? JSON.parse(row.key_features)
+        : [],
     tech_stack: Array.isArray(row.tech_stack)
       ? row.tech_stack
-      : (typeof row.tech_stack === 'string' ? JSON.parse(row.tech_stack) : []),
+      : typeof row.tech_stack === "string"
+        ? JSON.parse(row.tech_stack)
+        : [],
   }));
 }
 
-export async function upsertFeaturedCaseStudyDb(f: Partial<DbFeaturedCaseStudyRow> & { id: string; title: string; tagline: string; overview: string }): Promise<DbFeaturedCaseStudyRow> {
+export async function upsertFeaturedCaseStudyDb(
+  f: Partial<DbFeaturedCaseStudyRow> & {
+    id: string;
+    title: string;
+    tagline: string;
+    overview: string;
+  },
+): Promise<DbFeaturedCaseStudyRow> {
   await ensurePortfolioTables();
   const query = `
     INSERT INTO featured_case_studies (
@@ -194,22 +217,22 @@ export async function upsertFeaturedCaseStudyDb(f: Partial<DbFeaturedCaseStudyRo
       github_url, client_url, server_url, sort_order, updated_at
     ) VALUES (
       ${escapeSqlString(f.id)},
-      ${escapeSqlString(f.slug || f.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'))},
+      ${escapeSqlString(f.slug || f.title.toLowerCase().replace(/[^a-z0-9]+/g, "-"))},
       ${escapeSqlString(f.title)},
       ${escapeSqlString(f.tagline)},
-      ${escapeSqlString(f.category || 'Full Stack')},
-      ${escapeSqlString(f.year || '2026')},
-      ${escapeSqlString(f.preview_image || '')},
-      ${escapeSqlString(f.hover_image || '')},
-      ${escapeSqlString(f.gradient || 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)')},
-      ${escapeSqlString(f.accent_color || '#6366f1')},
+      ${escapeSqlString(f.category || "Full Stack")},
+      ${escapeSqlString(f.year || "2026")},
+      ${escapeSqlString(f.preview_image || "")},
+      ${escapeSqlString(f.hover_image || "")},
+      ${escapeSqlString(f.gradient || "linear-gradient(135deg, #182848 0%, #4b6cb7 100%)")},
+      ${escapeSqlString(f.accent_color || "#6366f1")},
       ${escapeSqlString(f.overview)},
       ${escapeSqlJson(f.key_features || [])},
       ${escapeSqlJson(f.tech_stack || [])},
-      ${escapeSqlString(f.live_url || '')},
-      ${escapeSqlString(f.github_url || '')},
-      ${escapeSqlString(f.client_url || '')},
-      ${escapeSqlString(f.server_url || '')},
+      ${escapeSqlString(f.live_url || "")},
+      ${escapeSqlString(f.github_url || "")},
+      ${escapeSqlString(f.client_url || "")},
+      ${escapeSqlString(f.server_url || "")},
       ${f.sort_order ?? 0},
       CURRENT_TIMESTAMP
     )
@@ -241,27 +264,36 @@ export async function upsertFeaturedCaseStudyDb(f: Partial<DbFeaturedCaseStudyRo
 export async function deleteFeaturedCaseStudyDb(id: string): Promise<boolean> {
   await ensurePortfolioTables();
   const res = await executeSql<{ id: string }>(
-    `DELETE FROM featured_case_studies WHERE id = ${escapeSqlString(id)} RETURNING id;`
+    `DELETE FROM featured_case_studies WHERE id = ${escapeSqlString(id)} RETURNING id;`,
   );
   return res.rows.length > 0;
 }
 
-export async function updateFeaturedCaseStudiesOrderDb(orderedIds: string[]): Promise<void> {
+export async function updateFeaturedProjectsOrderDb(
+  orderedProjects: Array<
+    Pick<DbProjectRow, "id" | "gradient" | "accent_color">
+  >,
+): Promise<void> {
   await ensurePortfolioTables();
-  for (let i = 0; i < orderedIds.length; i++) {
-    const id = orderedIds[i];
+  await executeSql(
+    `UPDATE projects SET featured = false, featured_sort_order = 0 WHERE featured = true;`,
+  );
+  for (let i = 0; i < orderedProjects.length; i++) {
+    const project = orderedProjects[i];
     await executeSql(
-      `UPDATE featured_case_studies SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`
+      `UPDATE projects SET featured = true, featured_sort_order = ${i + 1}, gradient = ${escapeSqlString(project.gradient)}, accent_color = ${escapeSqlString(project.accent_color)} WHERE id = ${escapeSqlString(project.id)};`,
     );
   }
 }
 
-export async function updateProjectsOrderDb(orderedIds: string[]): Promise<void> {
+export async function updateProjectsOrderDb(
+  orderedIds: string[],
+): Promise<void> {
   await ensurePortfolioTables();
   for (let i = 0; i < orderedIds.length; i++) {
     const id = orderedIds[i];
     await executeSql(
-      `UPDATE projects SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`
+      `UPDATE projects SET sort_order = ${i + 1} WHERE id = ${escapeSqlString(id)};`,
     );
   }
 }
@@ -270,8 +302,11 @@ export async function updateProjectsOrderDb(orderedIds: string[]): Promise<void>
  * Fetch featured projects directly from PostgreSQL for Homepage
  */
 export async function getFeaturedProjectsDb(): Promise<any[]> {
-  await ensurePortfolioTables();
-  const rows = await getFeaturedCaseStudiesDb();
+  const rows = (await getProjectsDb())
+    .filter((project) => project.featured)
+    .sort(
+      (left, right) => left.featured_sort_order - right.featured_sort_order,
+    );
   return rows.map((row) => ({
     id: row.id,
     slug: row.slug,
@@ -291,7 +326,17 @@ export async function getFeaturedProjectsDb(): Promise<any[]> {
     liveUrl: row.live_url,
     techStack: row.tech_stack || [],
     keyFeatures: row.key_features || [],
+    role: row.role || "",
+    targetAudience: row.target_audience || "",
+    problem: row.problem || "",
+    solution: row.solution || "",
+    architecture: row.architecture || {},
+    systemBreakdown: row.system_breakdown || [],
+    technicalDecisions: row.technical_decisions || [],
+    metrics: row.metrics || [],
+    directoryTree: row.directory_tree,
+    codeSnippet: row.code_snippet,
+    backendArchitecture: row.backend_architecture,
+    whatILearned: row.what_i_learned,
   }));
 }
-
-
