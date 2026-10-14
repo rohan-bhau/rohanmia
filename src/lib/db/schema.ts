@@ -287,6 +287,8 @@ export function ensurePortfolioTables(): Promise<void> {
           id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
           visitor_prompt TEXT NOT NULL,
           admin_prompt TEXT NOT NULL,
+          github_synth_prompt TEXT,
+          skill_classifier_prompt TEXT,
           knowledge_base TEXT,
           tone_rules JSONB DEFAULT '{}'::jsonb,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -315,6 +317,12 @@ export function ensurePortfolioTables(): Promise<void> {
       );
       await executeSql(
         `ALTER TABLE featured_case_studies ADD COLUMN IF NOT EXISTS migrated_to_project BOOLEAN DEFAULT false;`,
+      );
+      await executeSql(
+        `ALTER TABLE ai_system_config ADD COLUMN IF NOT EXISTS github_synth_prompt TEXT;`,
+      );
+      await executeSql(
+        `ALTER TABLE ai_system_config ADD COLUMN IF NOT EXISTS skill_classifier_prompt TEXT;`,
       );
       await executeSql(`
         WITH pending AS (

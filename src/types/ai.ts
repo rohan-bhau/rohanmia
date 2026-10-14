@@ -1,8 +1,3 @@
-/**
- * Type definitions for Aru AI Engine & Autonomous Admin Co-pilot
- * Zero hardcoded fallback credentials or sensitive data.
- */
-
 export type AIMode = 'visitor' | 'admin';
 
 export interface ChatMessage {

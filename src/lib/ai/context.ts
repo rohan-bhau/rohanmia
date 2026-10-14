@@ -7,8 +7,7 @@ import { getAiConfigDb } from "@/lib/db/aiConfig";
 import { GroundedPortfolioContext, AIMode } from "@/types/ai";
 
 /**
- * Securely builds dynamic context grounded in live PostgreSQL database state.
- * Absolutely zero hardcoded fallbacks and zero credential/secret leakage.
+ * Loads dynamic portfolio snapshot from live PostgreSQL database.
  */
 export async function getLiveGroundedContext(): Promise<GroundedPortfolioContext> {
   try {
@@ -68,7 +67,7 @@ export async function getLiveGroundedContext(): Promise<GroundedPortfolioContext
 }
 
 /**
- * Formats the grounded context into a crisp, token-efficient markdown block for system prompt injection.
+ * Formats database context into markdown for runtime system prompt injection.
  */
 export function formatContextForPrompt(ctx: GroundedPortfolioContext): string {
   const projectListStr = ctx.projects
@@ -105,9 +104,8 @@ ${socialsStr || "Direct through website contact form."}
 }
 
 /**
- * Returns the effective system prompt for the specified mode.
- * Fetches the prompt template & rules 100% dynamically from PostgreSQL.
- * Absolutely zero prompt text or instructions are stored in the git codebase!
+ * Returns the effective system prompt for visitor or admin mode.
+ * Prompt templates are loaded dynamically from PostgreSQL.
  */
 export async function getEffectiveSystemPrompt(mode: AIMode): Promise<string> {
   const [dbConfig, groundedCtx] = await Promise.all([
