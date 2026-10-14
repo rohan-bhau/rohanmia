@@ -291,6 +291,7 @@ export function ensurePortfolioTables(): Promise<void> {
           skill_classifier_prompt TEXT,
           knowledge_base TEXT,
           tone_rules JSONB DEFAULT '{}'::jsonb,
+          tools_config JSONB DEFAULT '{}'::jsonb,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`,
       ];
@@ -323,6 +324,9 @@ export function ensurePortfolioTables(): Promise<void> {
       );
       await executeSql(
         `ALTER TABLE ai_system_config ADD COLUMN IF NOT EXISTS skill_classifier_prompt TEXT;`,
+      );
+      await executeSql(
+        `ALTER TABLE ai_system_config ADD COLUMN IF NOT EXISTS tools_config JSONB DEFAULT '{}'::jsonb;`,
       );
       await executeSql(`
         WITH pending AS (

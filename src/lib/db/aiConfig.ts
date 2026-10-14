@@ -9,6 +9,10 @@ export interface DbAiConfigRow {
   skill_classifier_prompt?: string;
   knowledge_base?: string;
   tone_rules?: Record<string, unknown>;
+  tools_config?: {
+    visitor_tools?: any[];
+    admin_tools?: any[];
+  };
   updated_at: string;
 }
 
@@ -29,6 +33,24 @@ export async function getAiConfigDb(): Promise<DbAiConfigRow | null> {
     console.error("Error fetching AI config from PostgreSQL:", error);
     return null;
   }
+}
+
+/**
+ * Fetches tool declarations dynamically from PostgreSQL.
+ * Keeps all function definitions and descriptions 100% in database.
+ */
+export async function getAiToolsDb(mode: "visitor" | "admin"): Promise<any[]> {
+  const config = await getAiConfigDb();
+  if (!config || !config.tools_config) return [];
+
+  const visitorTools = Array.isArray(config.tools_config.visitor_tools)
+    ? config.tools_config.visitor_tools
+    : [];
+  const adminTools = Array.isArray(config.tools_config.admin_tools)
+    ? config.tools_config.admin_tools
+    : [];
+
+  return mode === "admin" ? [...visitorTools, ...adminTools] : visitorTools;
 }
 
 /**
@@ -55,7 +77,7 @@ export async function getPromptTemplateDb(
 }
 
 /**
- * Updates or seeds the AI configuration and prompt templates in PostgreSQL.
+ * Updates or seeds the AI configuration, prompt templates, and tools in PostgreSQL.
  */
 export async function updateAiConfigDb(
   data: Partial<Omit<DbAiConfigRow, "id" | "updated_at">>
@@ -68,15 +90,16 @@ export async function updateAiConfigDb(
     const skillClassifierPrompt = escapeSqlString(data.skill_classifier_prompt || "");
     const knowledgeBase = escapeSqlString(data.knowledge_base || "");
     const toneRules = escapeSqlJson(data.tone_rules || {});
+    const toolsConfig = escapeSqlJson(data.tools_config || {});
 
     const res = await executeSql<DbAiConfigRow>(`
       INSERT INTO ai_system_config (
         id, visitor_prompt, admin_prompt, github_synth_prompt, skill_classifier_prompt,
-        knowledge_base, tone_rules, updated_at
+        knowledge_base, tone_rules, tools_config, updated_at
       )
       VALUES (
         'primary', ${visitorPrompt}, ${adminPrompt}, ${githubSynthPrompt}, ${skillClassifierPrompt},
-        ${knowledgeBase}, ${toneRules}, CURRENT_TIMESTAMP
+        ${knowledgeBase}, ${toneRules}, ${toolsConfig}, CURRENT_TIMESTAMP
       )
       ON CONFLICT (id) DO UPDATE SET
         visitor_prompt = CASE WHEN ${visitorPrompt} != '' THEN ${visitorPrompt} ELSE ai_system_config.visitor_prompt END,
@@ -85,6 +108,7 @@ export async function updateAiConfigDb(
         skill_classifier_prompt = CASE WHEN ${skillClassifierPrompt} != '' THEN ${skillClassifierPrompt} ELSE ai_system_config.skill_classifier_prompt END,
         knowledge_base = CASE WHEN ${knowledgeBase} != '' THEN ${knowledgeBase} ELSE ai_system_config.knowledge_base END,
         tone_rules = ${toneRules},
+        tools_config = CASE WHEN ${toolsConfig}::text != '{}'::text THEN ${toolsConfig} ELSE ai_system_config.tools_config END,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *;
     `);
