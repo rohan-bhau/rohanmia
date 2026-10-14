@@ -283,6 +283,14 @@ export function ensurePortfolioTables(): Promise<void> {
           source VARCHAR(64) DEFAULT 'chatbot',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`,
+        `CREATE TABLE IF NOT EXISTS ai_system_config (
+          id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
+          visitor_prompt TEXT NOT NULL,
+          admin_prompt TEXT NOT NULL,
+          knowledge_base TEXT,
+          tone_rules JSONB DEFAULT '{}'::jsonb,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
       ];
 
       const techItemsStatementIndex = ddlStatements.findIndex((sql) =>
