@@ -44,8 +44,6 @@ export async function getLiveGroundedContext(): Promise<GroundedPortfolioContext
       rotatingRoles: heroData?.rotating_roles || ["Full-Stack Software Engineer", "Next.js Specialist", "UI/UX Craftsman"],
       stats: [
         { label: "Completed Projects", value: String(projects.length) },
-        { label: "Years Experience", value: "3+" },
-        { label: "Availability", value: "Available for high-impact contracts & full-time roles" },
       ],
       projects: sanitizedProjects,
       categories: sanitizedCategories,
@@ -125,4 +123,5 @@ export async function getEffectiveSystemPrompt(mode: AIMode): Promise<string> {
 
   return `${basePrompt}\n\n${dynamicGrounding}${extraKnowledge}`.trim();
 }
+
 
