@@ -166,15 +166,25 @@ export async function getCalendlyAvailability({
 
 export async function getContactData() {
   try {
+    const { getCachedSiteSettings, getCachedPublicLinks } = await import('@/lib/publicData');
+    const [settings, links] = await Promise.all([
+      getCachedSiteSettings(),
+      getCachedPublicLinks(),
+    ]);
+
+    const email =
+      settings?.contact_email ||
+      process.env.CONTACT_EMAIL ||
+      process.env.ADMIN_EMAIL ||
+      '';
+
+    const socials = (links || [])
+      .filter((l) => l.active)
+      .map((l) => ({ name: l.title, url: l.href }));
+
     return {
-      email: 'rohanmia.org@gmail.com',
-      phone: '+880 1234 567890',
-      address: 'Dhaka, Bangladesh',
-      socials: [
-        { name: 'Github', url: 'https://github.com/rohan-bhau' },
-        { name: 'Linkedin', url: 'https://linkedin.com' },
-        { name: 'Twitter', url: 'https://twitter.com' },
-      ],
+      email,
+      socials,
     };
   } catch (error) {
     console.error('Get Contact Error:', error);

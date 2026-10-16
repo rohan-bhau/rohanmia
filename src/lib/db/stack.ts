@@ -28,9 +28,19 @@ export interface DbTechItemRow {
   production_project?: string;
   docs_url?: string;
   brand_color?: string;
+  icon_slug?: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface DbTechCatalogRow {
+  slug: string;
+  name: string;
+  category_name: string;
+  brand_color: string;
+  icon_slug: string;
+  created_at: string;
 }
 
 export async function getTechStackDb(): Promise<DbTechCategoryRow[]> {
@@ -124,7 +134,7 @@ export async function upsertTechItemDb(
   const query = `
     INSERT INTO tech_items (
       id, category_id, category_name, name, version, description,
-      proficiency, is_core, use_case, production_project, docs_url, brand_color, sort_order, updated_at
+      proficiency, is_core, use_case, production_project, docs_url, brand_color, icon_slug, sort_order, updated_at
     ) VALUES (
       ${escapeSqlString(item.id)},
       ${escapeSqlString(item.category_id)},
@@ -138,6 +148,7 @@ export async function upsertTechItemDb(
       ${escapeSqlString(item.production_project || "")},
       ${escapeSqlString(item.docs_url || "")},
       ${escapeSqlString(item.brand_color || "")},
+      ${escapeSqlString(item.icon_slug || "")},
       ${item.sort_order ?? 0},
       CURRENT_TIMESTAMP
     )
@@ -153,12 +164,21 @@ export async function upsertTechItemDb(
       production_project = EXCLUDED.production_project,
       docs_url = EXCLUDED.docs_url,
       brand_color = EXCLUDED.brand_color,
+      icon_slug = COALESCE(NULLIF(EXCLUDED.icon_slug, ''), tech_items.icon_slug),
       sort_order = EXCLUDED.sort_order,
       updated_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
   const res = await executeSql<DbTechItemRow>(query);
   return res.rows[0];
+}
+
+export async function getTechCatalogDb(): Promise<DbTechCatalogRow[]> {
+  await ensurePortfolioTables();
+  const res = await executeSql<DbTechCatalogRow>(
+    `SELECT * FROM tech_catalog ORDER BY name ASC;`
+  );
+  return res.rows;
 }
 
 export async function deleteTechItemDb(id: string): Promise<boolean> {

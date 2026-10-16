@@ -120,7 +120,9 @@ export async function fetchGitHubRepoDetails(
  */
 export async function synthesizeCaseStudyFromRepo(
   meta: GitHubRepoMetadata,
-  liveUrl?: string
+  liveUrl?: string,
+  serverRepoUrl?: string,
+  serverMeta?: GitHubRepoMetadata | null
 ): Promise<SynthesizedCaseStudy> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -128,18 +130,25 @@ export async function synthesizeCaseStudyFromRepo(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
-    generationConfig: {
-      temperature: 0.3,
-      responseMimeType: "application/json",
-    },
-  });
-
   const template = await getPromptTemplateDb("github_synth");
   if (!template) {
     throw new Error("GitHub synthesizer prompt template is not configured in PostgreSQL database.");
   }
+
+  const clientUrl = `https://github.com/${meta.fullName}`;
+  const resolvedServerUrl = serverRepoUrl || (serverMeta ? `https://github.com/${serverMeta.fullName}` : "");
+
+  const backendRepoSection = serverMeta
+    ? `### BACKEND REPOSITORY DATA:
+- Backend Repo: ${serverMeta.fullName}
+- Backend Description: ${serverMeta.description || "Not provided"}
+- Backend Dependencies: ${JSON.stringify(serverMeta.packageJson?.dependencies || {})}
+- Backend File Structure:
+${serverMeta.fileTreeSample?.slice(0, 20).join("\n") || "Not available"}
+- Backend README:
+${serverMeta.readmeContent.slice(0, 2500)}`
+    : (serverRepoUrl ? `### BACKEND REPOSITORY:
+- Backend Repo URL: ${serverRepoUrl}` : "");
 
   const prompt = template
     .replace(/{{FULL_NAME}}/g, meta.fullName)
@@ -147,26 +156,92 @@ export async function synthesizeCaseStudyFromRepo(
     .replace(/{{STARS}}/g, String(meta.stars))
     .replace(/{{TOPICS}}/g, meta.topics.join(", ") || "None")
     .replace(/{{LIVE_URL}}/g, liveUrl || "")
+    .replace(/{{CLIENT_URL}}/g, clientUrl)
+    .replace(/{{SERVER_URL}}/g, resolvedServerUrl)
+    .replace(/{{BACKEND_REPO_DATA}}/g, backendRepoSection)
     .replace(/{{DEPENDENCIES}}/g, JSON.stringify(meta.packageJson?.dependencies || {}))
     .replace(/{{FILE_TREE}}/g, meta.fileTreeSample?.slice(0, 25).join("\n") || "Not available")
     .replace(/{{README}}/g, meta.readmeContent.slice(0, 3500));
 
-  const result = await model.generateContent(prompt);
-  const responseText = result.response.text();
+  let responseText = "";
+  let lastErr: any = null;
+
+  const CASCADE_MODELS = [
+    "gemini-3.8-flash",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-flash-latest",
+    "gemini-flash-lite-latest",
+  ];
+
+  for (const mName of CASCADE_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: mName,
+        generationConfig: {
+          temperature: 0.3,
+          responseMimeType: "application/json",
+        },
+      });
+      const result = await model.generateContent(prompt);
+      responseText = result.response.text();
+      if (responseText) break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+
+  if (!responseText) {
+    throw lastErr || new Error("Failed to synthesize repository across all models");
+  }
   const parsed = JSON.parse(responseText) as SynthesizedCaseStudy;
 
   // Enforce required fields
   if (!parsed.slug) {
     parsed.slug = meta.repo.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   }
+  if (!parsed.clientUrl) {
+    parsed.clientUrl = clientUrl;
+  }
+  if (!parsed.serverUrl && resolvedServerUrl) {
+    parsed.serverUrl = resolvedServerUrl;
+  }
   if (!parsed.githubUrl) {
-    parsed.githubUrl = `https://github.com/${meta.fullName}`;
+    parsed.githubUrl = clientUrl;
+  }
+  if (!parsed.liveUrl && liveUrl) {
+    parsed.liveUrl = liveUrl;
   }
   if (!parsed.year) {
     parsed.year = new Date().getFullYear().toString();
   }
   if (!parsed.gradient) {
     parsed.gradient = "linear-gradient(135deg, rgba(14,165,233,0.15) 0%, rgba(3,7,18,0.95) 100%)";
+  }
+  if (!parsed.accentColor) {
+    parsed.accentColor = "#0ea5e9";
+  }
+
+  // Normalize keyFeatures to { title, description }[]
+  if (Array.isArray(parsed.keyFeatures) && parsed.keyFeatures.length > 0) {
+    parsed.keyFeatures = parsed.keyFeatures.map((f: any, idx: number) => {
+      if (typeof f === "string") return { title: f, description: "" };
+      return {
+        title: f?.title || `Feature 0${idx + 1}`,
+        description: f?.description || "",
+      };
+    });
+  } else if (Array.isArray(parsed.highlights) && parsed.highlights.length > 0) {
+    parsed.keyFeatures = parsed.highlights.map((h, idx) => ({
+      title: `Key Architectural Feature 0${idx + 1}`,
+      description: typeof h === "string" ? h : (h as any).title || "",
+    }));
+  }
+
+  // Ensure whyIBuiltThis exists
+  if (!parsed.whyIBuiltThis) {
+    parsed.whyIBuiltThis = parsed.overview || parsed.tagline || "Engineered to deliver high-performance, resilient modern architecture.";
   }
 
   return parsed;

@@ -14,6 +14,7 @@ export interface MiniProjectCardData {
   slug: string;
   tagline: string;
   previewImage?: string;
+  hoverImage?: string;
   category: string;
   year: string;
   techStack: string[];
@@ -23,7 +24,9 @@ export interface MiniProjectCardData {
 export type ActionPromptType = 
   | 'meeting_redirect' 
   | 'upload_project_image' 
-  | 'confirm_action';
+  | 'confirm_action'
+  | 'form_add_skill'
+  | 'form_add_project';
 
 export interface ActionPromptData {
   type: ActionPromptType;
@@ -67,15 +70,24 @@ export interface SynthesizedCaseStudy {
   tagline: string;
   category: string;
   year: string;
+  role?: string;
+  targetAudience?: string;
+  whyIBuiltThis?: string;
+  overview?: string;
+  problem?: string;
+  solution?: string;
   liveUrl?: string;
   githubUrl: string;
+  clientUrl?: string;
+  serverUrl?: string;
   previewImage?: string;
   hoverImage?: string;
   accentColor: string;
   gradient: string;
   techStack: string[];
-  metrics: Array<{ label: string; value: string }>;
+  metrics: Array<{ label: string; value: string; description?: string }>;
   highlights: string[];
+  keyFeatures?: Array<{ title: string; description: string }>;
   challenges: Array<{
     title: string;
     problem: string;
@@ -83,6 +95,17 @@ export interface SynthesizedCaseStudy {
     impact: string;
     tag: string;
   }>;
+  technicalDecisions?: Array<{
+    decision: string;
+    rationale: string;
+    tradeoff: string;
+  }>;
+  systemBreakdown?: Array<{
+    layer: string;
+    description: string;
+    technologies: string[];
+  }>;
+  whatILearned?: string[];
   architectureTree?: string;
   backendArchitecture?: {
     overview: string;
@@ -92,6 +115,7 @@ export interface SynthesizedCaseStudy {
     };
   };
   codeSnippet?: {
+    title?: string;
     filename: string;
     code: string;
   };
@@ -152,4 +176,19 @@ export interface GroundedPortfolioContext {
     skills: string[];
   }>;
   socials: Record<string, string>;
+  education?: Array<{
+    institution: string;
+    degree: string;
+    period: string;
+    location: string;
+    tag?: string;
+  }>;
+  careerExperiences?: Array<{
+    role: string;
+    company: string;
+    period: string;
+    description: string;
+    skills?: string[];
+  }>;
+  aboutBioParagraphs?: string[];
 }

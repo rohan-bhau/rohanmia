@@ -156,9 +156,18 @@ export function ensurePortfolioTables(): Promise<void> {
           production_project TEXT,
           docs_url TEXT,
           brand_color VARCHAR(32),
+          icon_slug VARCHAR(128),
           sort_order INT DEFAULT 0,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        )`,
+        `CREATE TABLE IF NOT EXISTS tech_catalog (
+          slug VARCHAR(128) PRIMARY KEY,
+          name VARCHAR(128) NOT NULL,
+          category_name VARCHAR(64) NOT NULL,
+          brand_color VARCHAR(32) NOT NULL,
+          icon_slug VARCHAR(128) NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )`,
         `CREATE TABLE IF NOT EXISTS hero_content (
           id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
@@ -238,7 +247,7 @@ export function ensurePortfolioTables(): Promise<void> {
           id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
           site_title VARCHAR(255) DEFAULT 'MD Rohan Mia | Full-Stack Software Engineer',
           meta_description TEXT,
-          contact_email VARCHAR(255) DEFAULT 'rohanmia.org@gmail.com',
+          contact_email VARCHAR(255) DEFAULT '',
           social_links JSONB DEFAULT '{}'::jsonb,
           resume_url TEXT,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -290,6 +299,7 @@ export function ensurePortfolioTables(): Promise<void> {
           github_synth_prompt TEXT,
           skill_classifier_prompt TEXT,
           knowledge_base TEXT,
+          avatar_url TEXT,
           tone_rules JSONB DEFAULT '{}'::jsonb,
           tools_config JSONB DEFAULT '{}'::jsonb,
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -327,6 +337,9 @@ export function ensurePortfolioTables(): Promise<void> {
       );
       await executeSql(
         `ALTER TABLE ai_system_config ADD COLUMN IF NOT EXISTS tools_config JSONB DEFAULT '{}'::jsonb;`,
+      );
+      await executeSql(
+        `ALTER TABLE tech_items ADD COLUMN IF NOT EXISTS icon_slug VARCHAR(128);`,
       );
       await executeSql(`
         WITH pending AS (

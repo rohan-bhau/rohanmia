@@ -23,7 +23,7 @@ export async function getSettings(): Promise<Pick<
         site_title: "MD Rohan Mia | Full-Stack Software Engineer",
         meta_description:
           "Portfolio of MD Rohan Mia (Bhau) - Full-Stack Developer specializing in Next.js 16, TypeScript, high-performance UI and distributed backends.",
-        contact_email: "rohanmia.org@gmail.com",
+        contact_email: process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || "",
         resume_url: "/resume.pdf",
       });
       updateTag(PUBLIC_DATA_TAGS.settings);
@@ -54,7 +54,7 @@ export async function fetchAdminSettings(): Promise<{
         site_title: "MD Rohan Mia | Full-Stack Software Engineer",
         meta_description:
           "Portfolio of MD Rohan Mia (Bhau) - Full-Stack Developer specializing in Next.js 16, TypeScript, high-performance UI and distributed backends.",
-        contact_email: "rohanmia.org@gmail.com",
+        contact_email: process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || "",
         resume_url: "/resume.pdf",
       });
     }

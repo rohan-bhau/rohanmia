@@ -83,6 +83,14 @@ export default async function RootLayout({
       ? cookieAccent
       : 'cyan';
 
+  const [settings, { links }] = await Promise.all([
+    getSettings(),
+    import('@/actions/adminLinks').then(m => m.getPublicLinks()).catch(() => ({ links: [] })),
+  ]);
+
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/+$/, '');
+  const activeSocials = (links || []).filter(l => l.active).map(l => l.href);
+
   return (
     <html lang="en" className="dark" data-accent={initialAccent} suppressHydrationWarning>
       <body
@@ -96,10 +104,10 @@ export default async function RootLayout({
               "@type": "Person",
               name: "MD Rohan Mia",
               alternateName: ["Rohan Bhau", "Rohan Mia", "rohan-bhau"],
-              url: "https://rohanmia.vercel.app",
-              image: "https://res.cloudinary.com/dzni0yyle/image/upload/v1778155735/portfolio_cms/fcprc2kqkcmxitdibzcn.png",
-              jobTitle: "Frontend & MERN Stack Developer",
-              description: "MD Rohan Mia, also known as Rohan Bhau, is a Frontend and MERN Stack Developer from Dhaka, Bangladesh. Specializing in React, Next.js, Tailwind CSS, Node.js, and MongoDB.",
+              url: baseUrl,
+              image: "/profile.png",
+              jobTitle: settings?.site_title?.split('|')[1]?.trim() || "Full-Stack Software Engineer",
+              description: settings?.meta_description || "Portfolio of MD Rohan Mia - Full Stack Developer & Creative Engineer.",
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "Dhaka",
@@ -107,16 +115,9 @@ export default async function RootLayout({
               },
               knowsAbout: [
                 "React", "Next.js", "Tailwind CSS", "Node.js",
-                "MongoDB", "Express.js", "Figma", "REST API",
-                "HTML", "Frontend Development", "MERN Stack",
+                "TypeScript", "PostgreSQL", "Full-Stack Development",
               ],
-              sameAs: [
-                "https://www.linkedin.com/in/rohan-mia/",
-                "https://www.facebook.com/bhau.rohan",
-                "https://www.instagram.com/__rohan.bhau/",
-                "https://x.com/_Rohan_Bhau",
-                "https://github.com/rohan-bhau",
-              ],
+              sameAs: activeSocials,
             }),
           }}
         />

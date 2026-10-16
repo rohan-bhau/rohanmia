@@ -32,13 +32,10 @@ export default function AdminSettingsPage() {
   const [isPending, startTransition] = useTransition();
 
   const [formData, setFormData] = useState({
-    site_title:
-      "MD Rohan Mia | Full-Stack Software Engineer & Creative Developer",
-    meta_description:
-      "Personal portfolio and engineering chronicle of MD Rohan Mia. Specializing in high-performance Next.js systems, distributed architectures, and bespoke interactive web experiences.",
-    contact_email: "rohanmia.org@gmail.com",
-    resume_url:
-      "https://drive.google.com/file/d/1d1K3fJnkLDyc5ExLN8nYC_09e0e5ZCfi/view?usp=sharing",
+    site_title: "",
+    meta_description: "",
+    contact_email: "",
+    resume_url: "",
   });
 
   const loadSettings = useCallback(async () => {
@@ -47,16 +44,10 @@ export default function AdminSettingsPage() {
     if (res.success && res.settings) {
       setSettings(res.settings);
       setFormData({
-        site_title:
-          res.settings.site_title ||
-          "MD Rohan Mia | Full-Stack Software Engineer & Creative Developer",
-        meta_description:
-          res.settings.meta_description ||
-          "Personal portfolio and engineering chronicle of MD Rohan Mia. Specializing in high-performance Next.js systems, distributed architectures, and bespoke interactive web experiences.",
-        contact_email: res.settings.contact_email || "rohanmia.org@gmail.com",
-        resume_url:
-          res.settings.resume_url ||
-          "https://drive.google.com/file/d/1d1K3fJnkLDyc5ExLN8nYC_09e0e5ZCfi/view?usp=sharing",
+        site_title: res.settings.site_title || "",
+        meta_description: res.settings.meta_description || "",
+        contact_email: res.settings.contact_email || "",
+        resume_url: res.settings.resume_url || "",
       });
     } else {
       showToast(res.error || "Failed to load settings", "error");
@@ -444,7 +435,7 @@ export default function AdminSettingsPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, contact_email: e.target.value })
                   }
-                  placeholder="rohanmia.org@gmail.com"
+                  placeholder="contact@example.com"
                   className="w-full px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-xs sm:text-sm text-white focus:outline-none focus:border-white/30 transition-colors font-mono"
                 />
                 <p className="text-[11px] text-neutral-500 font-mono">

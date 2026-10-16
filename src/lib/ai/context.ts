@@ -1,5 +1,6 @@
 import { getProjectsDb } from "@/lib/db/projects";
 import { getTechStackDb } from "@/lib/db/stack";
+import { getAboutContentDb } from "@/lib/db/content";
 import { getHeroData } from "@/actions/adminHero";
 import { getSettings } from "@/actions/adminSettings";
 import { getPublicLinks } from "@/actions/adminLinks";
@@ -11,9 +12,10 @@ import { GroundedPortfolioContext, AIMode } from "@/types/ai";
  */
 export async function getLiveGroundedContext(): Promise<GroundedPortfolioContext> {
   try {
-    const [projects, techStack, heroData, settings, links] = await Promise.all([
+    const [projects, techStack, aboutContent, heroData, settings, links] = await Promise.all([
       getProjectsDb().catch(() => []),
       getTechStackDb().catch(() => []),
+      getAboutContentDb().catch(() => null),
       getHeroData().catch(() => null),
       getSettings().catch(() => null),
       getPublicLinks().catch(() => ({ links: [], socialMap: {} })),
@@ -37,29 +39,57 @@ export async function getLiveGroundedContext(): Promise<GroundedPortfolioContext
       skills: (cat.items || []).map((item) => item.name),
     }));
 
+    const sanitizedEducation = Array.isArray(aboutContent?.education)
+      ? aboutContent.education.map((e: any) => ({
+          institution: String(e.institution || ""),
+          degree: String(e.degree || ""),
+          period: String(e.period || ""),
+          location: String(e.location || ""),
+          tag: e.tag ? String(e.tag) : undefined,
+        }))
+      : [];
+
+    const sanitizedCareer = Array.isArray(aboutContent?.career_experiences)
+      ? aboutContent.career_experiences.map((c: any) => ({
+          role: String(c.role || ""),
+          company: String(c.company || ""),
+          period: String(c.period || ""),
+          description: String(c.description || ""),
+          skills: Array.isArray(c.skills) ? c.skills : [],
+        }))
+      : [];
+
+    const ownerFullName = [heroData?.name, heroData?.surname].filter(Boolean).join(" ").trim();
+
     return {
-      siteTitle: settings?.site_title || "MD Rohan Mia | Full-Stack Software Engineer",
-      ownerName: `${heroData?.name || "MD Rohan"} ${heroData?.surname || "Mia"}`.trim(),
-      bio: heroData?.bio || "Full-Stack Software Engineer specializing in modern Next.js, TypeScript, PostgreSQL, and scalable web architectures.",
-      rotatingRoles: heroData?.rotating_roles || ["Full-Stack Software Engineer", "Next.js Specialist", "UI/UX Craftsman"],
+      siteTitle: settings?.site_title || "",
+      ownerName: ownerFullName,
+      bio: heroData?.bio || "",
+      rotatingRoles: Array.isArray(heroData?.rotating_roles) ? heroData.rotating_roles : [],
       stats: [
         { label: "Completed Projects", value: String(projects.length) },
       ],
       projects: sanitizedProjects,
       categories: sanitizedCategories,
       socials: links?.socialMap || {},
+      education: sanitizedEducation,
+      careerExperiences: sanitizedCareer,
+      aboutBioParagraphs: Array.isArray(aboutContent?.bio_paragraphs) ? aboutContent.bio_paragraphs : [],
     };
   } catch (error) {
     console.error("Error grounding AI context from PostgreSQL:", error);
     return {
-      siteTitle: "MD Rohan Mia | Full-Stack Software Engineer",
-      ownerName: "MD Rohan Mia",
-      bio: "Full-Stack Software Engineer specializing in Next.js, TypeScript, and high-performance applications.",
-      rotatingRoles: ["Full-Stack Software Engineer"],
-      stats: [{ label: "Availability", value: "Available" }],
+      siteTitle: "",
+      ownerName: "",
+      bio: "",
+      rotatingRoles: [],
+      stats: [],
       projects: [],
       categories: [],
       socials: {},
+      education: [],
+      careerExperiences: [],
+      aboutBioParagraphs: [],
     };
   }
 }
@@ -67,7 +97,7 @@ export async function getLiveGroundedContext(): Promise<GroundedPortfolioContext
 /**
  * Formats database context into markdown for runtime system prompt injection.
  */
-export function formatContextForPrompt(ctx: GroundedPortfolioContext): string {
+export function formatContextForPrompt(ctx: GroundedPortfolioContext, mode: AIMode = "visitor"): string {
   const projectListStr = ctx.projects
     .map(
       (p, i) =>
@@ -83,12 +113,48 @@ export function formatContextForPrompt(ctx: GroundedPortfolioContext): string {
     .map(([platform, url]) => `- ${platform}: ${url}`)
     .join("\n");
 
+  const educationStr = ctx.education && ctx.education.length > 0
+    ? ctx.education
+        .map(
+          (e) =>
+            `- **${e.degree}** at **${e.institution}** (${e.period}), Location: ${e.location}${e.tag ? ` [${e.tag}]` : ""}`
+        )
+        .join("\n")
+    : "No academic records registered in database.";
+
+  const careerStr = ctx.careerExperiences && ctx.careerExperiences.length > 0
+    ? ctx.careerExperiences
+        .map(
+          (c) =>
+            `- **${c.role}** at **${c.company}** (${c.period}): ${c.description}${c.skills && c.skills.length > 0 ? ` | Skills: ${c.skills.join(", ")}` : ""}`
+        )
+        .join("\n")
+    : "No career records registered in database.";
+
+  const bioStr = ctx.aboutBioParagraphs && ctx.aboutBioParagraphs.length > 0
+    ? ctx.aboutBioParagraphs.join("\n\n")
+    : (ctx.bio || "No biography provided in database.");
+
+  const adminRouteStr =
+    mode === "admin"
+      ? "- **Admin Studio / Control Room (/control-room-internal)**: Dedicated management dashboard for Hero, Projects, Stack, About, Gallery, Guestbook, Inquiries, Settings, and Aru AI.\n"
+      : "";
+
   return `
 ### LIVE POSTGRESQL PORTFOLIO KNOWLEDGE BASE (REALTIME):
-- **Owner**: ${ctx.ownerName} (Known online and casually as "Bhau" or "Rohan Bhau")
-- **Bio**: ${ctx.bio}
-- **Roles**: ${ctx.rotatingRoles.join(" | ")}
-- **Key Stats**: ${ctx.stats.map((s) => `${s.label}: ${s.value}`).join(" | ")}
+${ctx.ownerName ? `- **Owner**: ${ctx.ownerName} (Known online as "Bhau" or "Rohan Bhau")` : ""}
+${ctx.bio ? `- **Primary Bio**: ${ctx.bio}` : ""}
+${ctx.rotatingRoles.length > 0 ? `- **Roles**: ${ctx.rotatingRoles.join(" | ")}` : ""}
+${ctx.stats.length > 0 ? `- **Key Stats**: ${ctx.stats.map((s) => `${s.label}: ${s.value}`).join(" | ")}` : ""}
+
+### EDUCATION & ACADEMIC BACKGROUND (VERIFIED):
+${educationStr}
+
+### CAREER & PROFESSIONAL WORK HISTORY (VERIFIED):
+${careerStr}
+
+### DETAILED ABOUT PROFILE:
+${bioStr}
 
 ### VERIFIED PROJECTS IN DATABASE:
 ${projectListStr || "No projects currently in database."}
@@ -98,7 +164,16 @@ ${techCategoriesStr || "No tech categories currently in database."}
 
 ### SOCIALS & LINKS:
 ${socialsStr || "Direct through website contact form."}
-`;
+
+### WEBSITE STRUCTURE & SITEMAP:
+- **Homepage (/)**: Hero intro, featured case studies, skills showcase, client reviews, interactive booking widget.
+- **About (/about)**: Detailed biography, academic background, professional experience, engineering principles, and core competencies.
+- **Projects (/projects & /projects/[slug])**: Comprehensive directory of all engineered applications with live demos, GitHub repositories, architecture trees, challenges, and code snippets.
+- **Tech Stack (/tech-stack)**: Deep categorized skills inventory (Frontend, Backend, Databases, DevOps, Tools).
+- **Gallery (/gallery)**: Visual snapshots, workspace, and developer lifestyle moments.
+- **Guestbook (/guestbook)**: Public community message wall where visitors can leave notes.
+- **Contact (/contact & /contact#meeting)**: Direct inquiry form, email channel, and interactive calendar meeting booking scheduler.
+${adminRouteStr}`;
 }
 
 /**
@@ -116,7 +191,7 @@ export async function getEffectiveSystemPrompt(mode: AIMode): Promise<string> {
       ? dbConfig?.admin_prompt || ""
       : dbConfig?.visitor_prompt || "";
 
-  const dynamicGrounding = formatContextForPrompt(groundedCtx);
+  const dynamicGrounding = formatContextForPrompt(groundedCtx, mode);
   const extraKnowledge = dbConfig?.knowledge_base
     ? `\n### DOMAIN KNOWLEDGE BASE:\n${dbConfig.knowledge_base}`
     : "";

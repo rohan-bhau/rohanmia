@@ -1,7 +1,7 @@
 import { getProjectsDb } from '@/lib/db/projects';
 
 export default async function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://rohanmia.com';
+  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/+$/, '');
 
   const projects = await getProjectsDb().catch(() => []);
   const projectUrls = (projects || []).map((project) => ({

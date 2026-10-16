@@ -13,19 +13,32 @@ import {
   Calendar,
   ArrowUpRight,
   ShieldCheck,
+  ShieldAlert,
+  CheckCircle2,
   Terminal,
   Copy,
   Check,
   Upload,
+  ArrowRight,
+  Plus,
+  Trash2,
+  FolderPlus,
+  ImageIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { chatWithAru } from "@/actions/ai";
+import { chatWithAru, getAruAvatar } from "@/actions/ai";
 import { saveLead } from "@/actions/leads";
 import { uploadImage } from "@/actions/upload";
-import { commitProjectWithImage } from "@/actions/aiAdmin";
+import {
+  commitProjectWithImage,
+  applyStagedContentUpdate,
+  manageSkillAutonomous,
+  stageProjectFromGitHub,
+  createProjectAutonomous,
+} from "@/actions/aiAdmin";
 import { MiniProjectCardData, ActionPromptData } from "@/types/ai";
 import Tooltip from "../shared/Tooltip";
 
@@ -53,11 +66,11 @@ function TypewriterContent({
   renderFn: (txt: string) => React.ReactNode;
   onDone?: () => void;
 }) {
-  const [displayedLength, setDisplayedLength] = useState(isTyping ? 0 : content.length);
+  const [typedLength, setTypedLength] = useState(0);
+  const displayedLength = isTyping ? typedLength : content.length;
 
   useEffect(() => {
     if (!isTyping) {
-      setDisplayedLength(content.length);
       return;
     }
     let current = 0;
@@ -65,11 +78,11 @@ function TypewriterContent({
     const interval = setInterval(() => {
       current += step;
       if (current >= content.length) {
-        setDisplayedLength(content.length);
+        setTypedLength(content.length);
         clearInterval(interval);
         if (onDone) onDone();
       } else {
-        setDisplayedLength(current);
+        setTypedLength(current);
       }
     }, 12);
     return () => clearInterval(interval);
@@ -125,22 +138,723 @@ function playChime(type: "open" | "send" | "receive") {
   }
 }
 
+/**
+ * Interactive inline form for adding a Tech Stack skill directly from chat.
+ */
+function InlineAddSkillForm({
+  msgId,
+  onSuccess,
+}: {
+  msgId: string;
+  onSuccess: (skillName: string, category: string) => void;
+}) {
+  const [skillName, setSkillName] = useState("");
+  const [category, setCategory] = useState("Backend");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const categories = ["Frontend", "Backend", "Database", "DevOps", "Tools"];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!skillName.trim()) {
+      setError("Please enter a skill or technology name.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await manageSkillAutonomous("add", skillName.trim(), category);
+      if (res.success) {
+        setSubmitted(true);
+        onSuccess(skillName.trim(), category);
+      } else {
+        setError(res.message || "Failed to add skill");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Unexpected error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold">
+        <CheckCircle2 size={16} className="shrink-0 text-emerald-400" />
+        <span>Skill <strong>&quot;{skillName}&quot;</strong> successfully added to <strong>{category}</strong> in PostgreSQL!</span>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="p-3 rounded-xl border border-primary/30 bg-black/40 space-y-3 text-xs">
+      <div className="space-y-1">
+        <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+          Skill / Technology Name:
+        </label>
+        <input
+          type="text"
+          value={skillName}
+          onChange={(e) => setSkillName(e.target.value)}
+          placeholder="e.g. Apache Kafka, Redis, Docker, GraphQL"
+          className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-medium"
+          disabled={loading}
+          autoFocus
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+          Target Category:
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setCategory(cat)}
+              className={`px-2 py-1 rounded-md text-[10.5px] font-mono font-medium transition-all ${
+                category === cat
+                  ? "bg-primary text-white shadow-sm shadow-primary/40 font-bold border border-primary"
+                  : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/10"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {error && (
+        <div className="text-[11px] text-red-400 flex items-center gap-1 font-medium">
+          <X size={12} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading || !skillName.trim()}
+        className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 disabled:opacity-40 cursor-pointer"
+      >
+        {loading ? (
+          <>
+            <Loader2 size={12} className="animate-spin" />
+            <span>Adding to Tech Stack...</span>
+          </>
+        ) : (
+          <>
+            <Plus size={12} />
+            <span>Add Skill to PostgreSQL</span>
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
+/**
+ * Interactive inline form for adding a Case Study project directly from chat.
+ */
+function InlineAddProjectForm({
+  msgId,
+  onStagedProject,
+  onCreatedManual,
+}: {
+  msgId: string;
+  onStagedProject: (project: any) => void;
+  onCreatedManual: (title: string, slug: string) => void;
+}) {
+  const [mode, setMode] = useState<"github" | "manual">("github");
+  const [repoUrl, setRepoUrl] = useState("");
+  const [serverRepoUrl, setServerRepoUrl] = useState("");
+  const [liveUrl, setLiveUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [category, setCategory] = useState("Full Stack");
+  const [techStack, setTechStack] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGitHubSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!repoUrl.trim()) {
+      setError("Please provide a valid GitHub repository URL.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await stageProjectFromGitHub(
+        repoUrl.trim(),
+        liveUrl.trim() || undefined,
+        serverRepoUrl.trim() || undefined
+      );
+      if (res.success && res.project) {
+        onStagedProject(res.project);
+      } else {
+        setError(res.message || "Failed to analyze GitHub repository");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Unexpected error analyzing repo");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !tagline.trim()) {
+      setError("Please provide project title and tagline.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const stackArr = techStack
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const res = await createProjectAutonomous({
+        title: title.trim(),
+        tagline: tagline.trim(),
+        category,
+        techStack: stackArr.length > 0 ? stackArr : ["Next.js", "TypeScript", "PostgreSQL"],
+        liveUrl: liveUrl.trim() || undefined,
+        githubUrl: repoUrl.trim() || undefined,
+        clientUrl: repoUrl.trim() || undefined,
+        serverUrl: serverRepoUrl.trim() || undefined,
+      });
+      if (res.success && res.slug) {
+        onCreatedManual(title.trim(), res.slug);
+      } else {
+        setError(res.message || "Failed to create project");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Unexpected error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-3 rounded-xl border border-primary/30 bg-black/40 space-y-3 text-xs">
+      <div className="flex rounded-lg bg-white/5 p-0.5 border border-white/10">
+        <button
+          type="button"
+          onClick={() => { setMode("github"); setError(null); }}
+          className={`flex-1 py-1 rounded-md text-[10px] font-mono font-bold uppercase transition-all ${
+            mode === "github" ? "bg-primary text-white shadow" : "text-white/60 hover:text-white"
+          }`}
+        >
+          From GitHub Repo
+        </button>
+        <button
+          type="button"
+          onClick={() => { setMode("manual"); setError(null); }}
+          className={`flex-1 py-1 rounded-md text-[10px] font-mono font-bold uppercase transition-all ${
+            mode === "manual" ? "bg-primary text-white shadow" : "text-white/60 hover:text-white"
+          }`}
+        >
+          Quick Manual Draft
+        </button>
+      </div>
+
+      {mode === "github" ? (
+        <form onSubmit={handleGitHubSubmit} className="space-y-2.5">
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Frontend / Main Repo URL:
+            </label>
+            <input
+              type="text"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              placeholder="e.g. https://github.com/rohan-bhau/my-project"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+              disabled={loading}
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Backend Repo URL (Optional):
+            </label>
+            <input
+              type="text"
+              value={serverRepoUrl}
+              onChange={(e) => setServerRepoUrl(e.target.value)}
+              placeholder="e.g. https://github.com/rohan-bhau/my-project-server"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Live Demo URL (Optional):
+            </label>
+            <input
+              type="text"
+              value={liveUrl}
+              onChange={(e) => setLiveUrl(e.target.value)}
+              placeholder="https://myproject.app"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+              disabled={loading}
+            />
+          </div>
+
+          {error && (
+            <div className="text-[11px] text-red-400 flex items-center gap-1 font-medium">
+              <X size={12} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !repoUrl.trim()}
+            className="w-full py-2 px-3 rounded-lg bg-primary hover:brightness-110 active:scale-[0.98] text-white text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/30 disabled:opacity-40 cursor-pointer"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                <span>Analyzing GitHub Repo(s)...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={12} />
+                <span>Analyze & Stage Case Study</span>
+              </>
+            )}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleManualSubmit} className="space-y-2.5">
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Project Title:
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Distributed Task Orchestrator"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-medium"
+              disabled={loading}
+              autoFocus
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Tagline / Short Summary:
+            </label>
+            <input
+              type="text"
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              placeholder="e.g. High-throughput job processing engine with Kafka and Go"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-medium"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Tech Stack (Comma Separated):
+            </label>
+            <input
+              type="text"
+              value={techStack}
+              onChange={(e) => setTechStack(e.target.value)}
+              placeholder="Next.js, TypeScript, PostgreSQL, Tailwind"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+                Frontend Repo (Optional):
+              </label>
+              <input
+                type="text"
+                value={repoUrl}
+                onChange={(e) => setRepoUrl(e.target.value)}
+                placeholder="https://github.com/..."
+                className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+                Backend Repo (Optional):
+              </label>
+              <input
+                type="text"
+                value={serverRepoUrl}
+                onChange={(e) => setServerRepoUrl(e.target.value)}
+                placeholder="https://github.com/..."
+                className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[10px] font-mono uppercase text-white/60 tracking-wider font-bold">
+              Live Demo URL (Optional):
+            </label>
+            <input
+              type="text"
+              value={liveUrl}
+              onChange={(e) => setLiveUrl(e.target.value)}
+              placeholder="https://myproject.app"
+              className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-xs focus:outline-none focus:border-primary transition-all font-mono"
+              disabled={loading}
+            />
+          </div>
+
+          {error && (
+            <div className="text-[11px] text-red-400 flex items-center gap-1 font-medium">
+              <X size={12} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !title.trim() || !tagline.trim()}
+            className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/30 disabled:opacity-40 cursor-pointer"
+          >
+            {loading ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                <span>Publishing to Database...</span>
+              </>
+            ) : (
+              <>
+                <Plus size={12} />
+                <span>Save Case Study to Database</span>
+              </>
+            )}
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Dual Image Uploader widget for Staged Case Study projects:
+ * Slot 1: Main Thumbnail (Default Card Cover - Required)
+ * Slot 2: Hover Showcase Image (Revealed on Card Hover - Optional)
+ */
+function DualProjectImageUploader({
+  msgId,
+  stagedProject,
+  onPublished,
+}: {
+  msgId: string;
+  stagedProject: any;
+  onPublished: (slug: string, card: MiniProjectCardData) => void;
+}) {
+  const [mainFile, setMainFile] = useState<File | null>(null);
+  const [mainPreview, setMainPreview] = useState<string | null>(null);
+  const [hoverFile, setHoverFile] = useState<File | null>(null);
+  const [hoverPreview, setHoverPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const mainInputRef = useRef<HTMLInputElement>(null);
+  const hoverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleMainChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMainFile(file);
+      setMainPreview(URL.createObjectURL(file));
+      setError(null);
+    }
+  };
+
+  const handleHoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setHoverFile(file);
+      setHoverPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!mainFile) {
+      setError("Please select the Main Thumbnail image before publishing.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      // 1. Upload Main Thumbnail
+      const formDataMain = new FormData();
+      formDataMain.append("file", mainFile);
+      const resMain = await uploadImage(formDataMain);
+      if (!resMain.success || !resMain.url) {
+        throw new Error(resMain.error || "Failed to upload main thumbnail image");
+      }
+
+      // 2. Upload Hover Image if selected, otherwise fallback to main
+      let hoverUrl = resMain.url;
+      if (hoverFile) {
+        const formDataHover = new FormData();
+        formDataHover.append("file", hoverFile);
+        const resHover = await uploadImage(formDataHover);
+        if (resHover.success && resHover.url) {
+          hoverUrl = resHover.url;
+        }
+      }
+
+      // 3. Commit project with both preview and hover image URLs
+      const commitRes = await commitProjectWithImage(stagedProject, resMain.url, hoverUrl);
+      if (!commitRes.success || !commitRes.slug) {
+        throw new Error(commitRes.message || "Failed to commit project");
+      }
+
+      const publishedSlug: string = commitRes.slug;
+      const newCard: MiniProjectCardData = {
+        title: String(stagedProject.title || "Project"),
+        slug: publishedSlug,
+        tagline: String(stagedProject.tagline || ""),
+        previewImage: resMain.url,
+        category: String(stagedProject.category || "Full-Stack"),
+        year: String(stagedProject.year || new Date().getFullYear()),
+        techStack: Array.isArray(stagedProject.techStack) ? stagedProject.techStack : [],
+        liveUrl: stagedProject.liveUrl ? String(stagedProject.liveUrl) : undefined,
+      };
+
+      onPublished(publishedSlug, newCard);
+    } catch (err: any) {
+      setError(err?.message || "Failed to upload and publish project");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-3 rounded-xl border border-primary/30 bg-black/50 space-y-3 text-xs">
+      {/* Header Info */}
+      <div className="flex items-start justify-between gap-2 border-b border-white/10 pb-2">
+        <div>
+          <div className="text-[11px] font-bold text-white flex items-center gap-1.5">
+            <Sparkles size={13} className="text-primary" />
+            <span>{stagedProject?.title || "Case Study Staged"}</span>
+          </div>
+          <div className="text-[10px] text-white/50 line-clamp-1">
+            {stagedProject?.tagline || "Complete technical case study synthesized"}
+          </div>
+        </div>
+        <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-primary/20 text-primary border border-primary/30 shrink-0">
+          {stagedProject?.category || "Full Stack"}
+        </span>
+      </div>
+
+      {/* Synthesis Summary Badges */}
+      <div className="flex flex-wrap gap-1.5 text-[9px] font-mono text-white/70">
+        {Array.isArray(stagedProject?.keyFeatures) && stagedProject.keyFeatures.length > 0 && (
+          <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+            ✓ {stagedProject.keyFeatures.length} Key Features
+          </span>
+        )}
+        {Array.isArray(stagedProject?.technicalDecisions) && stagedProject.technicalDecisions.length > 0 && (
+          <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10">
+            ✓ {stagedProject.technicalDecisions.length} Decisions
+          </span>
+        )}
+        {stagedProject?.clientUrl && (
+          <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-cyan-400">
+            ✓ Frontend Repo
+          </span>
+        )}
+        {stagedProject?.serverUrl && (
+          <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-emerald-400">
+            ✓ Backend Repo
+          </span>
+        )}
+      </div>
+
+      {/* Dual Image Slots */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+        {/* Slot 1: Main Thumbnail */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-mono">
+            <span className="font-bold text-white/80">1. Main Thumbnail</span>
+            <span className="text-[9px] text-emerald-400 font-bold">Required</span>
+          </div>
+          <input
+            ref={mainInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={loading}
+            onChange={handleMainChange}
+          />
+          {mainPreview ? (
+            <div className="relative group rounded-lg overflow-hidden border border-emerald-500/40 aspect-video bg-black/60">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={mainPreview}
+                alt="Main Preview"
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => mainInputRef.current?.click()}
+                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-[10px] font-bold text-white"
+              >
+                <Upload size={12} />
+                <span>Change</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => mainInputRef.current?.click()}
+              className="w-full aspect-video rounded-lg border-2 border-dashed border-primary/40 bg-white/5 hover:bg-primary/10 hover:border-primary transition-all flex flex-col items-center justify-center gap-1.5 text-white/70 hover:text-white cursor-pointer"
+            >
+              <Upload size={16} className="text-primary" />
+              <span className="text-[10px] font-bold">Choose Main Cover</span>
+              <span className="text-[8px] text-white/40">Portfolio card default</span>
+            </button>
+          )}
+        </div>
+
+        {/* Slot 2: Hover Showcase Image */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-mono">
+            <span className="font-bold text-white/80">2. Hover Reveal</span>
+            <span className="text-[9px] text-white/40">Optional</span>
+          </div>
+          <input
+            ref={hoverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            disabled={loading}
+            onChange={handleHoverChange}
+          />
+          {hoverPreview ? (
+            <div className="relative group rounded-lg overflow-hidden border border-primary/40 aspect-video bg-black/60">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={hoverPreview}
+                alt="Hover Preview"
+                className="w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => hoverInputRef.current?.click()}
+                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-[10px] font-bold text-white"
+              >
+                <Upload size={12} />
+                <span>Change</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => hoverInputRef.current?.click()}
+              className="w-full aspect-video rounded-lg border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/40 transition-all flex flex-col items-center justify-center gap-1.5 text-white/70 hover:text-white cursor-pointer"
+            >
+              <ImageIcon size={16} className="text-white/40" />
+              <span className="text-[10px] font-bold">Choose Hover Image</span>
+              <span className="text-[8px] text-white/40">Shown on card hover</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {error && (
+        <div className="text-[11px] text-red-400 flex items-center gap-1 font-medium">
+          <X size={12} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Publish Button */}
+      <button
+        type="button"
+        disabled={loading || !mainFile}
+        onClick={handlePublish}
+        className="w-full py-2.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-[0.98] text-white text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md shadow-emerald-950/40 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+      >
+        {loading ? (
+          <>
+            <Loader2 size={13} className="animate-spin" />
+            <span>Uploading Images & Publishing to PostgreSQL...</span>
+          </>
+        ) : (
+          <>
+            <Sparkles size={13} />
+            <span>Publish Case Study to Portfolio</span>
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
 export default function Chatbot() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const isAdmin =
     (session?.user as any)?.role === "admin" &&
     (session?.user as any)?.isAdmin === true;
 
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [avatarUrl, setAvatarUrl] = useState("/aru-avatar.png");
+
+  useEffect(() => {
+    getAruAvatar().then((url) => {
+      if (url) setAvatarUrl(url);
+    });
+  }, []);
+
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       id: "init",
       role: "bot",
-      content:
-        "Hello! I am Aru, personal AI concierge for Rohan Mia. How can I assist you with his projects, architecture, or scheduling today?",
+      content: isAdmin
+        ? "Welcome back, Bhau! I'm your executive co-pilot. I can help you audit portfolio case studies, synthesize GitHub repos into drafts, manage your tech stack, or pull the daily briefing. What would you like to work on?"
+        : "Hello! I'm Aru. Whether you're exploring Rohan's engineering projects, inquiring about architecture and tech stack, or looking to schedule a direct call, I'm here to help. What would you like to explore today?",
     },
   ]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      setMessages((prev) => {
+        if (prev.length === 1 && prev[0].id === "init") {
+          return [
+            {
+              id: "init",
+              role: "bot",
+              content:
+                "Welcome back, Bhau! I'm your executive co-pilot. I can help you audit portfolio case studies, synthesize GitHub repos into drafts, manage your tech stack, or pull the daily briefing. What would you like to work on?",
+            },
+          ];
+        }
+        return prev;
+      });
+    }
+  }, [isAdmin]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isIdentified, setIsIdentified] = useState(() => {
@@ -167,6 +881,41 @@ export default function Chatbot() {
   });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [uploadingForMsgId, setUploadingForMsgId] = useState<string | null>(null);
+  const [stagedState, setStagedState] = useState<
+    Record<string, { status: "idle" | "applying" | "approved" | "discarded"; message?: string }>
+  >({});
+
+  const handleApproveStaged = async (msgId: string, actionType: string, payload: any) => {
+    setStagedState((prev) => ({ ...prev, [msgId]: { status: "applying" } }));
+    try {
+      const res = await applyStagedContentUpdate(actionType, payload);
+      if (res.success) {
+        setStagedState((prev) => ({
+          ...prev,
+          [msgId]: { status: "approved", message: res.message },
+        }));
+        if (soundEnabled) playChime("receive");
+        router.refresh();
+      } else {
+        setStagedState((prev) => ({
+          ...prev,
+          [msgId]: { status: "idle", message: res.message || "Failed to apply changes." },
+        }));
+      }
+    } catch (err: any) {
+      setStagedState((prev) => ({
+        ...prev,
+        [msgId]: { status: "idle", message: err?.message || "Error applying update." },
+      }));
+    }
+  };
+
+  const handleDiscardStaged = (msgId: string) => {
+    setStagedState((prev) => ({
+      ...prev,
+      [msgId]: { status: "discarded", message: "Staged changes discarded. Live site was NOT modified." },
+    }));
+  };
 
   const isReadyForChat = isIdentified || isAdmin;
 
@@ -261,12 +1010,16 @@ export default function Chatbot() {
 
       try {
         const vid = typeof window !== "undefined" ? localStorage.getItem("visitor_id") : null;
+        const savedEmail = typeof window !== "undefined" ? localStorage.getItem("visitor_email") : null;
+        const savedName = typeof window !== "undefined" ? localStorage.getItem("visitor_name") : null;
+        const visitorMeta = savedEmail && savedName ? { name: savedName, email: savedEmail } : null;
+
         const updatedHistory = [...messages, userMessage].map((m) => ({
           role: m.role,
           content: m.content,
         }));
 
-        const result = await chatWithAru(updatedHistory, textToSend, vid);
+        const result = await chatWithAru(updatedHistory, textToSend, vid, visitorMeta);
 
         if (result.success && result.content) {
           const botMsg: ChatMessage = {
@@ -326,7 +1079,7 @@ export default function Chatbot() {
         {
           id: "greet",
           role: "bot",
-          content: `Welcome, ${visitorInfo.name}! I am ready to guide you through Rohan's engineering case studies, tech stack, or schedule a conversation. What would you like to explore?`,
+          content: `Welcome, ${visitorInfo.name}! It's a pleasure to connect with you. I can guide you through Rohan's verified case studies, system architecture, or help coordinate a direct conversation. What would you like to explore?`,
         },
       ]);
     }
@@ -522,18 +1275,42 @@ export default function Chatbot() {
     return <div key={blockKey} className="space-y-1">{elements}</div>;
   };
 
-  const renderInlineMarkdown = (str: string, keyPrefix: string) => {
-    const tokenRegex = /(\[.*?\]\(.*?\)|\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
-    const tokens = str.split(tokenRegex);
+  const renderInlineMarkdown = (rawStr: string, keyPrefix: string): React.ReactNode => {
+    if (!rawStr) return null;
+
+    // 1. Normalize **[label](url)** or [**label**](url) -> [label](url)
+    let s = rawStr
+      .replace(/\*\*\[(.*?)\]\((.*?)\)\*\*/g, "[$1]($2)")
+      .replace(/\[\*\*(.*?)\*\*\]\((.*?)\)/g, "[$1]($2)");
+
+    // 2. Normalize Project ( /projects/slug ) or **Project** ( /projects/slug ) -> [Project](/projects/slug)
+    s = s.replace(
+      /(^|[\s•*–-])(?:\*\*([^*()]+)\*\*|([A-Z][A-Za-z0-9_ -]+?))\s*\(\s*(\/(?:projects|contact|guestbook|about|gallery|tech-stack|links)[\w/#-]*)\s*\)/g,
+      (m, prefix, g1, g2, url) => {
+        const label = (g1 || g2).trim();
+        return `${prefix}[${label}](${url})`;
+      }
+    );
+
+    // 3. Normalize standalone ( /path ) -> [/path](/path)
+    s = s.replace(
+      /(?<!\])\(\s*(\/(?:projects|contact|guestbook|about|gallery|tech-stack|links)[\w/#-]*)\s*\)/g,
+      " [$1]($1)"
+    );
+
+    // 4. Tokenize markdown links, bold, italics, code, and bare internal paths
+    const tokenRegex = /(\[.*?\]\(.*?\)|\*\*.*?\*\*|\*.*?\*|`.*?`|(?<![\w/])\/(?:projects|contact|guestbook|about|gallery|tech-stack|links)[a-zA-Z0-9_\/#-]*)/g;
+    const tokens = s.split(tokenRegex);
 
     return tokens.map((token, i) => {
       const tokenKey = `${keyPrefix}_tok_${i}`;
+      if (!token) return null;
 
       // Link match [label](url)
       const linkMatch = token.match(/^\[(.*?)\]\((.*?)\)$/);
       if (linkMatch) {
         const label = linkMatch[1];
-        let url = linkMatch[2];
+        let url = linkMatch[2].trim();
         if (url.includes("localhost:3000")) {
           url = url.replace(/https?:\/\/localhost:3000/, "");
         }
@@ -541,20 +1318,36 @@ export default function Chatbot() {
           <Link
             key={tokenKey}
             href={url}
-            className="inline-flex items-center gap-1 text-primary hover:text-primary/80 font-bold underline underline-offset-4 decoration-primary/50 transition-colors mx-0.5"
+            className="inline-flex items-center gap-0.5 text-primary hover:text-primary/80 font-bold underline underline-offset-4 decoration-primary/50 transition-colors mx-0.5"
           >
             <span>{label}</span>
-            <ArrowUpRight size={11} className="inline opacity-70" />
+            <ArrowUpRight size={11} className="inline opacity-80" />
           </Link>
         );
       }
 
-      // Bold match **text**
+      // Bare internal path match (e.g. /projects/vireo or /guestbook)
+      const barePathMatch = token.match(/^\/(?:projects|contact|guestbook|about|gallery|tech-stack|links)[a-zA-Z0-9_\/#-]*$/);
+      if (barePathMatch) {
+        const path = barePathMatch[0];
+        return (
+          <Link
+            key={tokenKey}
+            href={path}
+            className="inline-flex items-center gap-0.5 text-primary hover:text-primary/80 font-semibold underline underline-offset-4 decoration-primary/50 transition-colors mx-0.5 font-mono text-[11px]"
+          >
+            <span>{path}</span>
+            <ArrowUpRight size={11} className="inline opacity-80" />
+          </Link>
+        );
+      }
+
+      // Bold match **text** (recursively render inner text so any inner links work)
       const boldMatch = token.match(/^\*\*(.*?)\*\*$/);
       if (boldMatch) {
         return (
           <strong key={tokenKey} className="font-bold text-white">
-            {boldMatch[1]}
+            {renderInlineMarkdown(boldMatch[1], `${tokenKey}_b`)}
           </strong>
         );
       }
@@ -593,14 +1386,14 @@ export default function Chatbot() {
   const adminSuggestions = [
     { label: "📊 Daily Briefing", query: "Give me the daily executive briefing." },
     { label: "🔍 Audit Portfolio", query: "Audit all case studies for missing fields." },
-    { label: "⚡ Add Tech Skill", query: "Autonomously add Redis to my backend tech stack." },
-    { label: "🚀 Stage GitHub", query: "I have a GitHub repo to synthesize into a case study." },
+    { label: "⚡ Add Tech Skill", query: "I want to add a new tech skill to my stack." },
+    { label: "🚀 Add Project", query: "I want to add a new project to my portfolio." },
   ];
 
   const activeChips = isAdmin ? adminSuggestions : visitorSuggestions;
 
   return (
-    <div className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 md:right-8 z-[70] chatbot-container pointer-events-auto">
+    <div className="fixed bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 md:right-8 z-[70] chatbot-container pointer-events-auto flex justify-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -609,15 +1402,15 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 360 }}
-            className="w-[calc(100vw-2rem)] sm:w-[410px] md:w-[430px] max-h-[calc(100vh-5.5rem)] h-[min(540px,calc(100vh-5.5rem))] border border-white/[0.12] rounded-[24px] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(14,165,233,0.08)] flex flex-col overflow-hidden backdrop-blur-3xl bg-[#0b0d13]/95 pointer-events-auto ring-1 ring-white/[0.08]"
+            className="w-full sm:w-[410px] md:w-[430px] max-h-[calc(100dvh-6.75rem)] h-[min(440px,calc(100dvh-6.75rem))] sm:h-[540px] sm:max-h-[580px] border border-white/[0.12] rounded-[24px] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(14,165,233,0.08)] flex flex-col overflow-hidden backdrop-blur-3xl bg-[#0b0d13]/95 pointer-events-auto ring-1 ring-white/[0.08]"
           >
             {/* Header */}
-            <div className="p-4 md:p-5 border-b border-white/10 flex items-center justify-between pointer-events-auto transition-colors bg-gradient-to-r from-primary/15 via-primary/5 to-transparent">
-              <div className="flex items-center gap-3">
+            <div className="p-3 sm:p-4 border-b border-white/10 flex items-center justify-between pointer-events-auto transition-colors bg-gradient-to-r from-primary/15 via-primary/5 to-transparent shrink-0">
+              <div className="flex items-center gap-2.5 sm:gap-3">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/40 bg-background/50 relative shadow-lg shadow-primary/20">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-primary/40 bg-background/50 relative shadow-lg shadow-primary/20">
                     <Image
-                      src="/aru-avatar.png"
+                      src={avatarUrl}
                       alt="Aru"
                       width={40}
                       height={40}
@@ -629,7 +1422,7 @@ export default function Chatbot() {
                 <div>
                   <h3 className="text-sm font-bold text-white tracking-tight">Aru</h3>
                   <p className="text-[11px] font-medium text-emerald-400 tracking-wide mt-0.5">
-                    Online
+                    {isAdmin ? "Co-pilot • Admin Control" : "Online"}
                   </p>
                 </div>
               </div>
@@ -657,66 +1450,86 @@ export default function Chatbot() {
             {/* Content Area */}
             <div
               ref={containerRef}
-              className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-5 space-y-4 relative z-10 pointer-events-auto touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-4 md:p-5 space-y-3.5 sm:space-y-4 relative z-10 pointer-events-auto touch-pan-y [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               {!isReadyForChat ? (
                 /* Welcome & Lead Identification Card */
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="space-y-3 py-1"
+                  className="space-y-3 py-0.5"
                 >
-                  <div className="p-3.5 rounded-2xl border border-white/10 bg-white/[0.03] space-y-1.5">
-                    <h4 className="text-base font-bold text-white tracking-tight flex items-center gap-1.5">
-                      <span>Hey there!</span>
-                      <span>👋</span>
-                    </h4>
-                    <p className="text-xs text-white/70 leading-relaxed font-normal">
-                      I&apos;m Aru, Rohan&apos;s digital assistant. Ask me anything about his projects, tech stack, or collaborate directly.
+                  <div className="p-3.5 sm:p-4 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                        <span>Welcome! I&apos;m Aru</span>
+                        <span className="text-xl inline-block select-none hover:rotate-12 transition-transform cursor-default">👋</span>
+                      </h4>
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Online
+                      </div>
+                    </div>
+                    <p className="text-xs text-neutral-300 leading-relaxed font-normal">
+                      I&apos;m here to guide you through Rohan&apos;s engineering projects, explore his technical architecture, or help coordinate a direct conversation.
                     </p>
                   </div>
 
-                  <form onSubmit={handleLeadSubmit} className="space-y-2.5">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-primary uppercase tracking-wider ml-1">
-                        Full Name
-                      </label>
-                      <input
-                        required
-                        type="text"
-                        placeholder="e.g. Alex Morgan"
-                        value={visitorInfo.name}
-                        onChange={(e) => setVisitorInfo((prev) => ({ ...prev, name: e.target.value }))}
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors"
-                      />
+                  <form onSubmit={handleLeadSubmit} className="space-y-3">
+                    <div className="p-2.5 sm:p-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.04] space-y-1">
+                      <div className="flex items-center gap-1.5 text-amber-300/90 text-[11px] font-medium">
+                        <Sparkles size={12} className="shrink-0" />
+                        <span>Why introduce yourself?</span>
+                      </div>
+                      <p className="text-[11px] text-neutral-300/90 leading-relaxed font-sans">
+                        Sharing your name and email allows Rohan to review our conversation and follow up with you directly. You can also skip this and browse anonymously as a guest below.
+                      </p>
                     </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-primary uppercase tracking-wider ml-1">
-                        Email Address
-                      </label>
-                      <input
-                        required
-                        type="email"
-                        placeholder="e.g. alex@company.com"
-                        value={visitorInfo.email}
-                        onChange={(e) => setVisitorInfo((prev) => ({ ...prev, email: e.target.value }))}
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors"
-                      />
+
+                    <div className="space-y-2">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono font-medium text-neutral-300 uppercase tracking-wider ml-1">
+                          Your Name <span className="text-neutral-500 normal-case">(For personal follow-up)</span>
+                        </label>
+                        <input
+                          required
+                          type="text"
+                          placeholder="e.g. Alex Morgan"
+                          value={visitorInfo.name}
+                          onChange={(e) => setVisitorInfo((prev) => ({ ...prev, name: e.target.value }))}
+                          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2 text-white text-xs focus:outline-none focus:border-primary transition-colors font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono font-medium text-neutral-300 uppercase tracking-wider ml-1">
+                          Email Address <span className="text-neutral-500 normal-case">(Where Rohan can reach you)</span>
+                        </label>
+                        <input
+                          required
+                          type="email"
+                          placeholder="e.g. alex@company.com"
+                          value={visitorInfo.email}
+                          onChange={(e) => setVisitorInfo((prev) => ({ ...prev, email: e.target.value }))}
+                          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3.5 py-2 text-white text-xs focus:outline-none focus:border-primary transition-colors font-mono"
+                        />
+                      </div>
                     </div>
-                    <div className="pt-1 flex items-center gap-2">
+
+                    <div className="pt-0.5 flex items-center gap-2">
                       <button
                         type="submit"
                         disabled={!visitorInfo.name || !visitorInfo.email}
-                        className="flex-1 py-2.5 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
+                        className="flex-1 py-2 sm:py-2.5 bg-white text-black font-semibold text-xs tracking-tight rounded-xl shadow-md hover:bg-neutral-200 active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
                       >
-                        Start Chat
+                        Introduce &amp; Chat
                       </button>
                       <button
                         type="button"
                         onClick={handleGuestSkip}
-                        className="py-2.5 px-3.5 rounded-xl border border-white/10 bg-white/[0.04] text-[11px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.08] transition-colors whitespace-nowrap cursor-pointer"
+                        className="group py-2 sm:py-2.5 px-3.5 rounded-xl border border-white/10 bg-white/[0.04] text-[11px] font-mono font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1.5"
                       >
-                        Continue as Guest →
+                        <span>Continue as Guest</span>
+                        <ArrowRight size={13} className="text-neutral-400 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
                       </button>
                     </div>
                   </form>
@@ -839,37 +1652,233 @@ export default function Chatbot() {
                               {msg.actionPrompt.message}
                             </p>
 
-                            {/* Inline Image Upload Widget for Staged Project */}
+                            {/* Option B Staged Confirmation Card */}
+                            {msg.actionPrompt.type === "confirm_action" && msg.actionPrompt.meta && (
+                              <div className="pt-1 space-y-2.5">
+                                <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3 space-y-3 shadow-inner">
+                                  {(() => {
+                                    const meta = msg.actionPrompt.meta as any;
+                                    const currentVal = meta.currentValue;
+                                    const proposedVal = meta.proposedValue;
+                                    const state = stagedState[msg.id] || { status: "idle" };
+
+                                    const formatVal = (v: any) => {
+                                      if (v === undefined || v === null || v === "") {
+                                        return <span className="italic opacity-50">Empty</span>;
+                                      }
+                                      if (typeof v === "string") return v;
+                                      if (Array.isArray(v)) {
+                                        return (
+                                          <div className="flex flex-wrap gap-1 mt-1">
+                                            {v.map((item, i) => (
+                                              <span
+                                                key={i}
+                                                className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono text-white/90"
+                                              >
+                                                {typeof item === "string" ? item : JSON.stringify(item)}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        );
+                                      }
+                                      if (typeof v === "object") {
+                                        return (
+                                          <div className="space-y-1.5 mt-1 text-[10.5px]">
+                                            {Object.entries(v).map(([k, val]) => (
+                                              <div key={k} className="flex flex-col gap-0.5">
+                                                <span className="text-white/40 uppercase text-[9px] font-mono tracking-wider font-bold">
+                                                  {k}:
+                                                </span>
+                                                <div className="text-white/90">
+                                                  {Array.isArray(val) ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                      {val.map((item, i) => (
+                                                        <span
+                                                          key={i}
+                                                          className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-mono"
+                                                        >
+                                                          {String(item)}
+                                                        </span>
+                                                      ))}
+                                                    </div>
+                                                  ) : (
+                                                    String(val)
+                                                  )}
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        );
+                                      }
+                                      return String(v);
+                                    };
+
+                                    return (
+                                      <>
+                                        {/* Target and Action Header */}
+                                        <div className="flex items-center justify-between text-[10px] border-b border-amber-500/20 pb-2">
+                                          <span className="font-mono text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                            <ShieldAlert size={12} />
+                                            <span>{meta.targetName || "Database Target"}</span>
+                                          </span>
+                                          <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[9px] uppercase border border-amber-500/30 font-bold">
+                                            Staged Proposal
+                                          </span>
+                                        </div>
+
+                                        {/* Comparison Grid */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                                          {/* Current Value */}
+                                          <div className="rounded-lg bg-black/40 border border-white/5 p-2.5">
+                                            <div className="text-[9px] font-mono uppercase text-red-400/90 mb-1 flex items-center gap-1 font-bold">
+                                              <span>Current (Live Site)</span>
+                                            </div>
+                                            <div className="text-white/70 break-words text-[10.5px]">
+                                              {formatVal(currentVal)}
+                                            </div>
+                                          </div>
+
+                                          {/* Proposed Value */}
+                                          <div className="rounded-lg bg-emerald-950/20 border border-emerald-500/30 p-2.5">
+                                            <div className="text-[9px] font-mono uppercase text-emerald-400 mb-1 flex items-center gap-1 font-bold">
+                                              <Check size={10} />
+                                              <span>Proposed (Stage)</span>
+                                            </div>
+                                            <div className="text-emerald-100 break-words text-[10.5px] font-medium">
+                                              {formatVal(proposedVal)}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* State Feedback or Buttons */}
+                                        {state.status === "approved" ? (
+                                          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold">
+                                            <CheckCircle2 size={15} className="shrink-0 text-emerald-400" />
+                                            <span>{state.message || "Approved & applied to PostgreSQL live site!"}</span>
+                                          </div>
+                                        ) : state.status === "discarded" ? (
+                                          <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white/5 border border-white/10 text-white/50 text-xs font-medium">
+                                            <X size={15} className="shrink-0 text-white/40" />
+                                            <span>{state.message || "Staged update was discarded. Zero changes made."}</span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-2 pt-1">
+                                            {(() => {
+                                              const isDelete = meta.changeType === "delete" || meta.actionType === "delete_project";
+                                              return (
+                                                <>
+                                                  <button
+                                                    type="button"
+                                                    disabled={state.status === "applying"}
+                                                    onClick={() => handleApproveStaged(msg.id, meta.actionType, meta.payload)}
+                                                    className={`flex-1 py-1.5 px-3 rounded-lg active:scale-95 text-white font-bold text-[10.5px] uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer ${
+                                                      isDelete
+                                                        ? "bg-red-600 hover:bg-red-500 shadow-red-900/40"
+                                                        : "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/30"
+                                                    }`}
+                                                  >
+                                                    {state.status === "applying" ? (
+                                                      <>
+                                                        <Loader2 size={12} className="animate-spin" />
+                                                        <span>{isDelete ? "Deleting from PostgreSQL..." : "Applying to PostgreSQL..."}</span>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        {isDelete ? <Trash2 size={12} /> : <ShieldCheck size={12} />}
+                                                        <span>{isDelete ? "Approve & Delete from Live" : "Approve & Apply to Live"}</span>
+                                                      </>
+                                                    )}
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    disabled={state.status === "applying"}
+                                                    onClick={() => handleDiscardStaged(msg.id)}
+                                                    className="py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/70 hover:text-white font-medium text-[10.5px] uppercase tracking-wider border border-white/10 transition-all disabled:opacity-50 cursor-pointer"
+                                                  >
+                                                    {isDelete ? "Cancel / Keep" : "Discard"}
+                                                  </button>
+                                                </>
+                                              );
+                                            })()}
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Inline Form: Add Tech Skill */}
+                            {msg.actionPrompt.type === "form_add_skill" && (
+                              <InlineAddSkillForm
+                                msgId={msg.id}
+                                onSuccess={(name, cat) => {
+                                  router.refresh();
+                                  if (soundEnabled) playChime("receive");
+                                }}
+                              />
+                            )}
+
+                            {/* Inline Form: Add Project */}
+                            {msg.actionPrompt.type === "form_add_project" && (
+                              <InlineAddProjectForm
+                                msgId={msg.id}
+                                onStagedProject={(stagedProject) => {
+                                  setMessages((prev) =>
+                                    prev.map((m) =>
+                                      m.id === msg.id
+                                        ? {
+                                            ...m,
+                                            actionPrompt: {
+                                              type: "upload_project_image",
+                                              title: `Upload Banner for "${stagedProject.title}"`,
+                                              message: `Draft created from GitHub! Upload the preview banner below:`,
+                                              meta: { stagedProject },
+                                            },
+                                          }
+                                        : m
+                                    )
+                                  );
+                                  if (soundEnabled) playChime("receive");
+                                }}
+                                onCreatedManual={(title, slug) => {
+                                  router.refresh();
+                                  if (soundEnabled) playChime("receive");
+                                  setMessages((prev) => [
+                                    ...prev,
+                                    {
+                                      id: `created_${Date.now()}`,
+                                      role: "bot",
+                                      content: `🎉 Project **"${title}"** successfully created and published! You can view it live at [/projects/${slug}](/projects/${slug}).`,
+                                    },
+                                  ]);
+                                }}
+                              />
+                            )}
+
+                            {/* Dual Image Upload Widget for Staged Project (Main Thumbnail + Hover Image) */}
                             {msg.actionPrompt.type === "upload_project_image" &&
                             msg.actionPrompt.meta &&
                             Boolean(msg.actionPrompt.meta.stagedProject) ? (
                               <div className="pt-1">
-                                <label className="flex items-center justify-center gap-2 p-3 rounded-xl border-2 border-dashed border-primary/40 bg-black/40 hover:bg-primary/10 hover:border-primary transition-all cursor-pointer text-xs text-white/90 font-bold">
-                                  {uploadingForMsgId === msg.id ? (
-                                    <>
-                                      <Loader2 size={14} className="animate-spin text-primary" />
-                                      <span>Uploading Banner & Publishing to PostgreSQL...</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Upload size={14} className="text-primary" />
-                                      <span>Click to Select Preview Banner Image</span>
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        disabled={uploadingForMsgId === msg.id}
-                                        onChange={(e) => {
-                                          const file = e.target.files?.[0];
-                                          const proj = msg.actionPrompt?.meta?.stagedProject;
-                                          if (file && proj) {
-                                            handleInlineImageUpload(file, proj, msg.id);
-                                          }
-                                        }}
-                                      />
-                                    </>
-                                  )}
-                                </label>
+                                <DualProjectImageUploader
+                                  msgId={msg.id}
+                                  stagedProject={msg.actionPrompt.meta.stagedProject}
+                                  onPublished={(publishedSlug, card) => {
+                                    router.refresh();
+                                    if (soundEnabled) playChime("receive");
+                                    setMessages((prev) => [
+                                      ...prev,
+                                      {
+                                        id: `pub_${Date.now()}`,
+                                        role: "bot",
+                                        content: `🎉 Project **"${card.title}"** published successfully to PostgreSQL! You can explore the live case study at [/projects/${publishedSlug}](/projects/${publishedSlug}).`,
+                                        miniProjectCard: card,
+                                      },
+                                    ]);
+                                  }}
+                                />
                               </div>
                             ) : null}
 
@@ -918,14 +1927,14 @@ export default function Chatbot() {
 
             {/* Quick Suggestion Chips */}
             {isReadyForChat && (
-              <div className="px-4 py-2 border-t border-white/[0.06] bg-black/40 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex items-center gap-1.5">
+              <div className="px-3 sm:px-4 py-2 border-t border-white/[0.06] bg-black/40 overflow-x-auto touch-pan-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden flex items-center gap-1.5 shrink-0">
                 {activeChips.map((chip, idx) => (
                   <button
                     key={idx}
                     type="button"
                     disabled={isLoading}
                     onClick={() => executeSend(chip.query)}
-                    className="whitespace-nowrap px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight border border-white/10 bg-white/[0.04] text-white/75 hover:text-white hover:border-primary/50 hover:bg-primary/[0.08] transition-all disabled:opacity-40"
+                    className="whitespace-nowrap px-2.5 py-1 rounded-full text-[10px] font-bold tracking-tight border border-white/10 bg-white/[0.04] text-white/75 hover:text-white hover:border-primary/50 hover:bg-primary/[0.08] transition-all disabled:opacity-40 shrink-0"
                   >
                     {chip.label}
                   </button>
@@ -935,7 +1944,7 @@ export default function Chatbot() {
 
             {/* Input Bar */}
             {isReadyForChat && (
-              <div className="p-3 md:p-4 border-t border-white/10 bg-black/60">
+              <div className="p-3 md:p-4 border-t border-white/10 bg-black/60 shrink-0">
                 <form onSubmit={handleSendMessage} className="relative flex items-center">
                   <input
                     type="text"
@@ -988,7 +1997,7 @@ export default function Chatbot() {
             <div className="relative w-full h-full p-1">
               <div className="w-full h-full rounded-full overflow-hidden relative">
                 <Image
-                  src="/aru-avatar.png"
+                  src={avatarUrl}
                   alt="Aru AI"
                   width={64}
                   height={64}

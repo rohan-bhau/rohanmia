@@ -8,6 +8,7 @@ export interface DbAiConfigRow {
   github_synth_prompt?: string;
   skill_classifier_prompt?: string;
   knowledge_base?: string;
+  avatar_url?: string;
   tone_rules?: Record<string, unknown>;
   tools_config?: {
     visitor_tools?: any[];
@@ -89,17 +90,18 @@ export async function updateAiConfigDb(
     const githubSynthPrompt = escapeSqlString(data.github_synth_prompt || "");
     const skillClassifierPrompt = escapeSqlString(data.skill_classifier_prompt || "");
     const knowledgeBase = escapeSqlString(data.knowledge_base || "");
+    const avatarUrl = escapeSqlString(data.avatar_url || "");
     const toneRules = escapeSqlJson(data.tone_rules || {});
     const toolsConfig = escapeSqlJson(data.tools_config || {});
 
     const res = await executeSql<DbAiConfigRow>(`
       INSERT INTO ai_system_config (
         id, visitor_prompt, admin_prompt, github_synth_prompt, skill_classifier_prompt,
-        knowledge_base, tone_rules, tools_config, updated_at
+        knowledge_base, avatar_url, tone_rules, tools_config, updated_at
       )
       VALUES (
         'primary', ${visitorPrompt}, ${adminPrompt}, ${githubSynthPrompt}, ${skillClassifierPrompt},
-        ${knowledgeBase}, ${toneRules}, ${toolsConfig}, CURRENT_TIMESTAMP
+        ${knowledgeBase}, ${avatarUrl}, ${toneRules}, ${toolsConfig}, CURRENT_TIMESTAMP
       )
       ON CONFLICT (id) DO UPDATE SET
         visitor_prompt = CASE WHEN ${visitorPrompt} != '' THEN ${visitorPrompt} ELSE ai_system_config.visitor_prompt END,
@@ -107,6 +109,7 @@ export async function updateAiConfigDb(
         github_synth_prompt = CASE WHEN ${githubSynthPrompt} != '' THEN ${githubSynthPrompt} ELSE ai_system_config.github_synth_prompt END,
         skill_classifier_prompt = CASE WHEN ${skillClassifierPrompt} != '' THEN ${skillClassifierPrompt} ELSE ai_system_config.skill_classifier_prompt END,
         knowledge_base = CASE WHEN ${knowledgeBase} != '' THEN ${knowledgeBase} ELSE ai_system_config.knowledge_base END,
+        avatar_url = CASE WHEN ${avatarUrl} != '' THEN ${avatarUrl} ELSE ai_system_config.avatar_url END,
         tone_rules = ${toneRules},
         tools_config = CASE WHEN ${toolsConfig}::text != '{}'::text THEN ${toolsConfig} ELSE ai_system_config.tools_config END,
         updated_at = CURRENT_TIMESTAMP

@@ -2,12 +2,12 @@
 
 import { v2 as cloudinary } from "cloudinary";
 import { assertAdmin } from "@/lib/admin";
+import {
+  extractCloudinaryPublicId,
+  deleteCloudinaryAsset,
+} from "@/lib/cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+export { extractCloudinaryPublicId };
 
 export interface UploadImageResult {
   success: boolean;
@@ -52,13 +52,14 @@ export async function uploadImage(formData: FormData): Promise<UploadImageResult
   }
 }
 
-export async function deleteImage(publicId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteImage(urlOrPublicId: string): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
-    const result = await cloudinary.uploader.destroy(publicId);
-    return { success: result.result === "ok" };
+    return await deleteCloudinaryAsset(urlOrPublicId);
   } catch (error: any) {
-    console.error("Delete Error:", error);
+    console.error("Cloudinary Delete Error:", error);
     return { success: false, error: error?.message || "Delete failed" };
   }
 }
+
+export const deleteCloudinaryImage = deleteImage;

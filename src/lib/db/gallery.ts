@@ -74,12 +74,12 @@ export async function updateGalleryPhotoDb(id: string, photo: Partial<DbGalleryP
   return res.rows[0] || null;
 }
 
-export async function deleteGalleryPhotoDb(id: string): Promise<boolean> {
+export async function deleteGalleryPhotoDb(id: string): Promise<DbGalleryPhotoRow | null> {
   await ensurePortfolioTables();
-  const res = await executeSql<{ id: string }>(
-    `DELETE FROM gallery_photos WHERE id = ${escapeSqlString(id)} RETURNING id;`
+  const res = await executeSql<DbGalleryPhotoRow>(
+    `DELETE FROM gallery_photos WHERE id = ${escapeSqlString(id)} RETURNING *;`
   );
-  return res.rows.length > 0;
+  return res.rows[0] || null;
 }
 
 export async function updateGalleryPhotosOrderDb(orderedIds: string[]): Promise<void> {

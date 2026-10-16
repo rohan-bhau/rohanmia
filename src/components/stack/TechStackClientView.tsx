@@ -199,7 +199,7 @@ export default function TechStackClientView({ categories = [] }: TechStackClient
                 <div className="flex-1 lg:pl-8 xl:pl-10 mt-8 lg:mt-0">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                     {items.map((item, itemIdx) => {
-                      const iconData = getIconForTech(item.name);
+                      const iconData = getIconForTech(item.name, item.icon_slug);
                       const BrandIcon = iconData.icon;
                       const iconColor = item.brand_color || iconData.color;
 

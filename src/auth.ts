@@ -105,6 +105,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           token.isAdmin === true &&
           userEmail === adminEmail;
 
+        (session.user as any).provider = token.provider;
         session.user.role = isVerifiedAdmin ? 'admin' : 'user';
         session.user.isAdmin = isVerifiedAdmin;
       }

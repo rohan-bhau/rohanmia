@@ -25,6 +25,7 @@ export default async function ControlRoomLayout({
     Boolean(adminEmail) &&
     user?.role === 'admin' && 
     user?.isAdmin === true && 
+    user?.provider === 'credentials' &&
     userEmail === adminEmail;
 
   // Server-only secret path passed into the shell so all links start with secretPath

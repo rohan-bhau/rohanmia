@@ -10,6 +10,7 @@ export async function assertAdmin() {
     Boolean(adminEmail) &&
     user?.role === 'admin' && 
     user?.isAdmin === true && 
+    user?.provider === 'credentials' &&
     userEmail === adminEmail;
 
   if (!isVerifiedAdmin) {
@@ -29,6 +30,7 @@ export async function isAdminSession() {
       Boolean(adminEmail) &&
       user?.role === 'admin' && 
       user?.isAdmin === true && 
+      user?.provider === 'credentials' &&
       userEmail === adminEmail
     );
   } catch {

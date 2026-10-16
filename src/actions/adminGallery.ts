@@ -11,6 +11,7 @@ import {
 } from "@/lib/db/gallery";
 import { revalidatePath, updateTag } from "next/cache";
 import { getCachedGalleryPhotos, PUBLIC_DATA_TAGS } from "@/lib/publicData";
+import { deleteCloudinaryAsset } from "@/lib/cloudinary";
 
 /**
  * Public Server Action to fetch gallery images from PostgreSQL
@@ -56,10 +57,19 @@ export async function saveAdminGalleryPhoto(data: {
 
     let photo: DbGalleryPhotoRow;
     if (data.id) {
+      // Find existing photo to check if image URL was replaced
+      const existingPhotos = await getGalleryPhotosDb();
+      const existingPhoto = existingPhotos.find((p) => p.id === data.id);
+
       const updated = await updateGalleryPhotoDb(data.id, data);
       if (!updated)
         return { success: false, error: "Photo not found to update." };
       photo = updated;
+
+      // If photo src changed, delete the old image from Cloudinary
+      if (existingPhoto?.src && existingPhoto.src !== data.src) {
+        await deleteCloudinaryAsset(existingPhoto.src);
+      }
     } else {
       photo = await insertGalleryPhotoDb(data);
     }
@@ -78,8 +88,14 @@ export async function removeAdminGalleryPhoto(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
-    const deleted = await deleteGalleryPhotoDb(id);
-    if (!deleted) return { success: false, error: "Failed to delete photo." };
+    // 1. Atomically delete and retrieve the deleted photo row
+    const deletedPhoto = await deleteGalleryPhotoDb(id);
+    if (!deletedPhoto) return { success: false, error: "Failed to delete photo or photo not found." };
+
+    // 2. Permanently delete from Cloudinary
+    if (deletedPhoto.src) {
+      await deleteCloudinaryAsset(deletedPhoto.src);
+    }
 
     updateTag(PUBLIC_DATA_TAGS.gallery);
     revalidatePath("/gallery");

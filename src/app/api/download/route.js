@@ -18,7 +18,12 @@ export async function GET(request) {
   // Security: Prevent SSRF by validating that fileUrl points to trusted domains (Cloudinary or local)
   try {
     const parsedUrl = new URL(fileUrl, 'http://localhost');
-    const allowedHosts = ['res.cloudinary.com', 'rohanmia.org', 'rohanmia.com'];
+    const allowedHosts = ['res.cloudinary.com'];
+    if (process.env.NEXT_PUBLIC_BASE_URL) {
+      try {
+        allowedHosts.push(new URL(process.env.NEXT_PUBLIC_BASE_URL).hostname);
+      } catch {}
+    }
     const isLocal = fileUrl.startsWith('/') || parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1';
     const isAllowedHost = allowedHosts.some(host => parsedUrl.hostname === host || parsedUrl.hostname.endsWith('.' + host));
 
