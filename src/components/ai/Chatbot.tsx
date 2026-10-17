@@ -924,6 +924,7 @@ export default function Chatbot() {
   const scrollTarget = useRef(0);
   const animationFrame = useRef<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Liquid smooth scroll physics
   useEffect(() => {
@@ -1005,6 +1006,9 @@ export default function Chatbot() {
 
       setMessages((prev) => [...prev, userMessage]);
       setInput("");
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
       setIsLoading(true);
       if (soundEnabled) playChime("send");
 
@@ -1053,9 +1057,26 @@ export default function Chatbot() {
     [isLoading, messages, soundEnabled]
   );
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     executeSend(input);
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  };
+
+  const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim() && !isLoading) {
+        handleSendMessage();
+      }
+    }
   };
 
   const handleLeadSubmit = async (e: React.FormEvent) => {
@@ -1945,22 +1966,24 @@ export default function Chatbot() {
             {/* Input Bar */}
             {isReadyForChat && (
               <div className="p-3 md:p-4 border-t border-white/10 bg-black/60 shrink-0">
-                <form onSubmit={handleSendMessage} className="relative flex items-center">
-                  <input
-                    type="text"
+                <form onSubmit={handleSendMessage} className="relative flex items-end gap-2 bg-white/[0.04] border border-white/10 rounded-2xl p-1.5 focus-within:border-primary/60 transition-all">
+                  <textarea
+                    ref={textareaRef}
+                    rows={1}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={handleTextareaChange}
+                    onKeyDown={handleTextareaKeyDown}
                     placeholder={
                       isAdmin
-                        ? "Execute co-pilot command (e.g. daily briefing)..."
-                        : "Ask about Rohan's projects, architecture, or stack..."
+                        ? "Execute co-pilot command (Shift+Enter for newline)..."
+                        : "Ask about Rohan's projects, architecture... (Shift+Enter for newline)"
                     }
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3 pr-12 text-white text-xs focus:outline-none focus:border-primary/60 transition-all font-medium placeholder:text-white/30"
+                    className="flex-1 bg-transparent border-0 px-3 py-2 text-white text-xs focus:outline-none font-medium placeholder:text-white/30 resize-none max-h-28 min-h-[36px] leading-relaxed [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                   />
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-primary/20 text-primary hover:bg-primary hover:text-white rounded-lg flex items-center justify-center transition-all disabled:opacity-20 cursor-pointer shadow-sm"
+                    className="w-8 h-8 shrink-0 bg-primary/20 text-primary hover:bg-primary hover:text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-20 cursor-pointer shadow-sm mb-0.5 mr-0.5 active:scale-95"
                     aria-label="Send message"
                   >
                     <Send size={14} />
