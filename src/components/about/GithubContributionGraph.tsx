@@ -15,11 +15,13 @@ interface DayContribution {
 interface GithubContributionGraphProps {
   totalContributions?: number;
   contributions?: DayContribution[];
+  githubUrl?: string;
 }
 
 export default function GithubContributionGraph({
   totalContributions,
   contributions,
+  githubUrl,
 }: GithubContributionGraphProps) {
   const { currentTheme } = useThemeAccent();
   const [hoveredDay, setHoveredDay] = useState<DayContribution | null>(null);
@@ -132,12 +134,12 @@ export default function GithubContributionGraph({
           </div>
           <div>
             <a 
-              href="https://github.com/rohan-bhau"
+              href={githubUrl || "/links"}
               target="_blank"
               rel="noopener noreferrer"
               className="text-white font-medium hover:underline flex items-center gap-1.5"
             >
-              <span>@rohan-bhau</span>
+              <span>{githubUrl ? `@${githubUrl.split('/').filter(Boolean).pop()}` : 'GitHub'}</span>
               <ArrowUpRight size={13} className="text-neutral-400" />
             </a>
             <p className="text-xs text-neutral-400 font-mono">Contribution Graph</p>

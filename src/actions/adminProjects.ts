@@ -14,8 +14,9 @@ import {
   updateProjectsOrderDb,
 } from "@/lib/db/projects";
 import { revalidatePath, updateTag } from "next/cache";
-import { getCachedFeaturedProjects, PUBLIC_DATA_TAGS } from "@/lib/publicData";
+import { getCachedFeaturedProjects, getCachedProjects, PUBLIC_DATA_TAGS } from "@/lib/publicData";
 import { getProjectPalette } from "@/lib/constants/projectPalette";
+import { deleteCloudinaryAsset } from "@/lib/cloudinary";
 
 /**
  * Public & Admin Server Action to fetch featured case studies directly from PostgreSQL
@@ -25,6 +26,31 @@ export async function getFeaturedProjects(): Promise<any[]> {
     return await getCachedFeaturedProjects();
   } catch (error) {
     console.error("getFeaturedProjects error:", error);
+    return [];
+  }
+}
+
+/**
+ * Public Server Action to fetch all projects dynamically from PostgreSQL for search palettes.
+ */
+export async function getPublicProjectsList(): Promise<Array<{
+  title: string;
+  slug: string;
+  tagline: string;
+  category: string;
+  techStack: string[];
+}>> {
+  try {
+    const list = await getCachedProjects();
+    return list.map((p) => ({
+      title: p.title,
+      slug: p.slug,
+      tagline: p.tagline || "",
+      category: p.category || "Full Stack",
+      techStack: Array.isArray(p.tech_stack) ? p.tech_stack : [],
+    }));
+  } catch (error) {
+    console.error("getPublicProjectsList error:", error);
     return [];
   }
 }
@@ -85,6 +111,12 @@ export async function saveAdminFeaturedCaseStudy(
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
 
+    let existingFeatured: DbFeaturedCaseStudyRow | undefined;
+    if (data.id) {
+      const allFeatured = await getFeaturedCaseStudiesDb();
+      existingFeatured = allFeatured.find((f) => f.id === data.id);
+    }
+
     const saved = await upsertFeaturedCaseStudyDb({
       ...data,
       id,
@@ -108,6 +140,25 @@ export async function saveAdminFeaturedCaseStudy(
       sort_order: data.sort_order !== undefined ? Number(data.sort_order) : 0,
     });
 
+    // Delete old Cloudinary images if replaced
+    if (existingFeatured) {
+      if (
+        existingFeatured.preview_image &&
+        data.preview_image !== undefined &&
+        existingFeatured.preview_image !== data.preview_image
+      ) {
+        await deleteCloudinaryAsset(existingFeatured.preview_image);
+      }
+      if (
+        existingFeatured.hover_image &&
+        data.hover_image !== undefined &&
+        existingFeatured.hover_image !== data.hover_image &&
+        existingFeatured.hover_image !== data.preview_image
+      ) {
+        await deleteCloudinaryAsset(existingFeatured.hover_image);
+      }
+    }
+
     revalidatePath("/projects");
     revalidatePath("/");
     updateTag(PUBLIC_DATA_TAGS.projects);
@@ -125,6 +176,13 @@ export async function removeAdminFeaturedCaseStudy(
     const deleted = await deleteFeaturedCaseStudyDb(id);
     if (!deleted) {
       return { success: false, error: "Failed to delete featured case study." };
+    }
+
+    if (deleted.preview_image) {
+      await deleteCloudinaryAsset(deleted.preview_image);
+    }
+    if (deleted.hover_image && deleted.hover_image !== deleted.preview_image) {
+      await deleteCloudinaryAsset(deleted.hover_image);
     }
 
     revalidatePath("/projects");
@@ -211,9 +269,11 @@ export async function saveAdminProject(
     const id = projectData.id || `proj_${Date.now()}`;
 
     let existingProject: DbProjectRow | undefined;
-    if (projectData.id) {
+    if (projectData.id || projectData.slug) {
       const allProjects = await getProjectsDb();
-      existingProject = allProjects.find((p) => p.id === projectData.id);
+      existingProject = allProjects.find(
+        (p) => p.id === projectData.id || (projectData.slug && p.slug === projectData.slug)
+      );
     }
 
     const saved = await upsertProjectDb({
@@ -241,6 +301,26 @@ export async function saveAdminProject(
           : (existingProject?.sort_order ?? 0),
     });
 
+    // Delete old Cloudinary image if preview_image was replaced or removed
+    if (existingProject) {
+      if (
+        existingProject.preview_image &&
+        projectData.preview_image !== undefined &&
+        existingProject.preview_image !== projectData.preview_image
+      ) {
+        await deleteCloudinaryAsset(existingProject.preview_image);
+      }
+      // Delete old hover_image if replaced or removed
+      if (
+        existingProject.hover_image &&
+        projectData.hover_image !== undefined &&
+        existingProject.hover_image !== projectData.hover_image &&
+        existingProject.hover_image !== projectData.preview_image
+      ) {
+        await deleteCloudinaryAsset(existingProject.hover_image);
+      }
+    }
+
     revalidatePath("/projects");
     revalidatePath(`/projects/${saved.slug}`);
     revalidatePath("/");
@@ -258,7 +338,7 @@ export async function toggleFeaturedProject(
   try {
     await assertAdmin();
     const projects = await getProjectsDb();
-    const target = projects.find((p) => p.id === id);
+    const target = projects.find((p) => p.id === id || p.slug === id);
     if (!target) return { success: false, error: "Project not found" };
 
     await upsertProjectDb({
@@ -280,16 +360,24 @@ export async function removeAdminProject(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
-    const projects = await getProjectsDb();
-    const project = projects.find((entry) => entry.id === id);
+    // 1. Atomically delete from database and retrieve the deleted row
     const deleted = await deleteProjectDb(id);
     if (!deleted) {
-      return { success: false, error: "Failed to delete project." };
+      return { success: false, error: "Failed to delete project or project not found." };
     }
 
-    if (project?.featured) {
+    // 2. Permanently delete project images from Cloudinary upon removal
+    if (deleted.preview_image) {
+      await deleteCloudinaryAsset(deleted.preview_image);
+    }
+    if (deleted.hover_image && deleted.hover_image !== deleted.preview_image) {
+      await deleteCloudinaryAsset(deleted.hover_image);
+    }
+
+    if (deleted.featured) {
+      const projects = await getProjectsDb();
       const remainingFeatured = projects
-        .filter((entry) => entry.featured && entry.id !== id)
+        .filter((entry) => entry.featured && entry.id !== deleted.id && entry.slug !== deleted.slug)
         .sort(
           (left, right) => left.featured_sort_order - right.featured_sort_order,
         );
@@ -306,7 +394,7 @@ export async function removeAdminProject(
     }
 
     revalidatePath("/projects");
-    if (project) revalidatePath(`/projects/${project.slug}`);
+    if (deleted.slug) revalidatePath(`/projects/${deleted.slug}`);
     revalidatePath("/");
     updateTag(PUBLIC_DATA_TAGS.projects);
     return { success: true };

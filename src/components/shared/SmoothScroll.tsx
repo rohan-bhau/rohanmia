@@ -1,9 +1,10 @@
 'use client';
 
+import React from 'react';
 import { ReactLenis } from 'lenis/react';
 import { usePathname } from 'next/navigation';
 
-export default function SmoothScroll({ children }) {
+export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdmin = pathname?.includes('control-room-internal');
 
@@ -12,9 +13,8 @@ export default function SmoothScroll({ children }) {
   }
 
   return (
-    <ReactLenis root options={{ lerp: 0.1, duration: 1.5, smoothTouch: true }}>
+    <ReactLenis root options={{ lerp: 0.1, duration: 1.5, syncTouch: true }}>
       {children}
     </ReactLenis>
   );
 }
-

@@ -2,7 +2,7 @@
 
 import { assertAdmin } from '@/lib/admin';
 import { executeSql, escapeSqlString } from '@/lib/postgres';
-import { DbContactMessageRow, DbMeetingBookingRow, cancelMeetingBooking } from '@/lib/db/contact';
+import { DbContactMessageRow, DbMeetingBookingRow, cancelMeetingBooking, getMeetingBookingById } from '@/lib/db/contact';
 import { revalidatePath } from 'next/cache';
 
 export async function fetchAdminContactData(): Promise<{
@@ -55,8 +55,26 @@ export async function removeContactMessage(id: string): Promise<{ success: boole
 export async function cancelBookingAdmin(id: string, reason: string): Promise<{ success: boolean; error?: string }> {
   try {
     await assertAdmin();
-    const ok = await cancelMeetingBooking(id, reason);
+    const booking = await getMeetingBookingById(id);
+    if (!booking) {
+      return { success: false, error: 'Meeting record not found.' };
+    }
+
+    const cleanReason = (reason || '').trim() || 'Cancelled by Host';
+    const ok = await cancelMeetingBooking(id, cleanReason);
     if (!ok) return { success: false, error: 'Failed to cancel meeting.' };
+
+    try {
+      const { sendMeetingCancellationEmails } = await import('@/lib/email');
+      await sendMeetingCancellationEmails({
+        booking,
+        reason: cleanReason,
+      });
+    } catch (emailErr) {
+      console.error('Failed to send cancellation email:', emailErr);
+    }
+
+    revalidatePath('/control-room-internal/contact');
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

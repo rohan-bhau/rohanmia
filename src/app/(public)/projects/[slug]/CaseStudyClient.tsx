@@ -469,8 +469,8 @@ export default function CaseStudyClient({
         </section>
 
         {/* SECTION 02: Key Features */}
-        {project.keyFeatures.some(
-          (feature) => feature.title.trim() || feature.description.trim(),
+        {(project.keyFeatures || []).some(
+          (feature) => feature?.title?.trim() || feature?.description?.trim(),
         ) && (
           <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10 py-12 sm:py-16 border-t border-white/[0.08]">
             <div className="md:col-span-4 lg:col-span-3 md:sticky md:top-28 md:self-start space-y-1.5">
@@ -483,10 +483,10 @@ export default function CaseStudyClient({
             </div>
 
             <div className="md:col-span-8 lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-3 md:pl-6 md:border-l border-white/[0.08]">
-              {project.keyFeatures
+              {(project.keyFeatures || [])
                 .filter(
                   (feature) =>
-                    feature.title.trim() || feature.description.trim(),
+                    feature?.title?.trim() || feature?.description?.trim(),
                 )
                 .map((feature, index) => (
                   <article

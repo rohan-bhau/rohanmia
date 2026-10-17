@@ -108,39 +108,39 @@ export async function upsertProjectDb(
       CURRENT_TIMESTAMP
     )
     ON CONFLICT (id) DO UPDATE SET
-      slug = EXCLUDED.slug,
-      title = EXCLUDED.title,
-      tagline = EXCLUDED.tagline,
-      category = EXCLUDED.category,
+      slug = COALESCE(NULLIF(EXCLUDED.slug, ''), projects.slug),
+      title = COALESCE(NULLIF(EXCLUDED.title, ''), projects.title),
+      tagline = CASE WHEN EXCLUDED.tagline != '' THEN EXCLUDED.tagline ELSE projects.tagline END,
+      category = COALESCE(NULLIF(EXCLUDED.category, ''), projects.category),
       featured = EXCLUDED.featured,
       featured_sort_order = EXCLUDED.featured_sort_order,
-      role = EXCLUDED.role,
-      year = EXCLUDED.year,
-      target_audience = EXCLUDED.target_audience,
-      why_i_built_this = EXCLUDED.why_i_built_this,
-      overview = EXCLUDED.overview,
-      problem = EXCLUDED.problem,
-      solution = EXCLUDED.solution,
-      gradient = EXCLUDED.gradient,
-      accent_color = EXCLUDED.accent_color,
-      preview_image = EXCLUDED.preview_image,
-      hover_image = EXCLUDED.hover_image,
-      github_url = EXCLUDED.github_url,
-      client_url = EXCLUDED.client_url,
-      server_url = EXCLUDED.server_url,
-      live_url = EXCLUDED.live_url,
-      tech_stack = EXCLUDED.tech_stack,
-      architecture = EXCLUDED.architecture,
-      system_breakdown = EXCLUDED.system_breakdown,
-      challenges = EXCLUDED.challenges,
-      technical_decisions = EXCLUDED.technical_decisions,
-      key_features = EXCLUDED.key_features,
-      metrics = EXCLUDED.metrics,
-      directory_tree = EXCLUDED.directory_tree,
-      code_snippet = EXCLUDED.code_snippet,
-      backend_architecture = EXCLUDED.backend_architecture,
-      what_i_learned = EXCLUDED.what_i_learned,
-      sort_order = EXCLUDED.sort_order,
+      role = CASE WHEN EXCLUDED.role != '' THEN EXCLUDED.role ELSE projects.role END,
+      year = CASE WHEN EXCLUDED.year != '' THEN EXCLUDED.year ELSE projects.year END,
+      target_audience = CASE WHEN EXCLUDED.target_audience != '' THEN EXCLUDED.target_audience ELSE projects.target_audience END,
+      why_i_built_this = CASE WHEN EXCLUDED.why_i_built_this != '' THEN EXCLUDED.why_i_built_this ELSE projects.why_i_built_this END,
+      overview = CASE WHEN EXCLUDED.overview != '' THEN EXCLUDED.overview ELSE projects.overview END,
+      problem = CASE WHEN EXCLUDED.problem != '' THEN EXCLUDED.problem ELSE projects.problem END,
+      solution = CASE WHEN EXCLUDED.solution != '' THEN EXCLUDED.solution ELSE projects.solution END,
+      gradient = CASE WHEN EXCLUDED.gradient != '' THEN EXCLUDED.gradient ELSE projects.gradient END,
+      accent_color = CASE WHEN EXCLUDED.accent_color != '' THEN EXCLUDED.accent_color ELSE projects.accent_color END,
+      preview_image = CASE WHEN EXCLUDED.preview_image != '' THEN EXCLUDED.preview_image ELSE projects.preview_image END,
+      hover_image = CASE WHEN EXCLUDED.hover_image != '' THEN EXCLUDED.hover_image ELSE projects.hover_image END,
+      github_url = CASE WHEN EXCLUDED.github_url != '' THEN EXCLUDED.github_url ELSE projects.github_url END,
+      client_url = CASE WHEN EXCLUDED.client_url != '' THEN EXCLUDED.client_url ELSE projects.client_url END,
+      server_url = CASE WHEN EXCLUDED.server_url != '' THEN EXCLUDED.server_url ELSE projects.server_url END,
+      live_url = CASE WHEN EXCLUDED.live_url != '' THEN EXCLUDED.live_url ELSE projects.live_url END,
+      tech_stack = CASE WHEN EXCLUDED.tech_stack != '[]'::jsonb THEN EXCLUDED.tech_stack ELSE projects.tech_stack END,
+      architecture = CASE WHEN EXCLUDED.architecture != '{}'::jsonb THEN EXCLUDED.architecture ELSE projects.architecture END,
+      system_breakdown = CASE WHEN EXCLUDED.system_breakdown != '[]'::jsonb THEN EXCLUDED.system_breakdown ELSE projects.system_breakdown END,
+      challenges = CASE WHEN EXCLUDED.challenges != '[]'::jsonb THEN EXCLUDED.challenges ELSE projects.challenges END,
+      technical_decisions = CASE WHEN EXCLUDED.technical_decisions != '[]'::jsonb THEN EXCLUDED.technical_decisions ELSE projects.technical_decisions END,
+      key_features = CASE WHEN EXCLUDED.key_features != '[]'::jsonb THEN EXCLUDED.key_features ELSE projects.key_features END,
+      metrics = CASE WHEN EXCLUDED.metrics != '[]'::jsonb THEN EXCLUDED.metrics ELSE projects.metrics END,
+      directory_tree = CASE WHEN EXCLUDED.directory_tree != '' THEN EXCLUDED.directory_tree ELSE projects.directory_tree END,
+      code_snippet = CASE WHEN EXCLUDED.code_snippet != '{}'::jsonb THEN EXCLUDED.code_snippet ELSE projects.code_snippet END,
+      backend_architecture = CASE WHEN EXCLUDED.backend_architecture != '{}'::jsonb THEN EXCLUDED.backend_architecture ELSE projects.backend_architecture END,
+      what_i_learned = CASE WHEN EXCLUDED.what_i_learned != '[]'::jsonb THEN EXCLUDED.what_i_learned ELSE projects.what_i_learned END,
+      sort_order = COALESCE(EXCLUDED.sort_order, projects.sort_order),
       updated_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
@@ -148,12 +148,13 @@ export async function upsertProjectDb(
   return res.rows[0];
 }
 
-export async function deleteProjectDb(id: string): Promise<boolean> {
+export async function deleteProjectDb(idOrSlug: string): Promise<DbProjectRow | null> {
   await ensurePortfolioTables();
-  const res = await executeSql<{ id: string }>(
-    `DELETE FROM projects WHERE id = ${escapeSqlString(id)} RETURNING id;`,
+  const escaped = escapeSqlString(idOrSlug);
+  const res = await executeSql<DbProjectRow>(
+    `DELETE FROM projects WHERE id = ${escaped} OR slug = ${escaped} RETURNING *;`,
   );
-  return res.rows.length > 0;
+  return res.rows[0] || null;
 }
 
 export interface DbFeaturedCaseStudyRow {
@@ -237,23 +238,23 @@ export async function upsertFeaturedCaseStudyDb(
       CURRENT_TIMESTAMP
     )
     ON CONFLICT (id) DO UPDATE SET
-      slug = EXCLUDED.slug,
-      title = EXCLUDED.title,
-      tagline = EXCLUDED.tagline,
-      category = EXCLUDED.category,
-      year = EXCLUDED.year,
-      preview_image = EXCLUDED.preview_image,
-      hover_image = EXCLUDED.hover_image,
-      gradient = EXCLUDED.gradient,
-      accent_color = EXCLUDED.accent_color,
-      overview = EXCLUDED.overview,
-      key_features = EXCLUDED.key_features,
-      tech_stack = EXCLUDED.tech_stack,
-      live_url = EXCLUDED.live_url,
-      github_url = EXCLUDED.github_url,
-      client_url = EXCLUDED.client_url,
-      server_url = EXCLUDED.server_url,
-      sort_order = EXCLUDED.sort_order,
+      slug = COALESCE(NULLIF(EXCLUDED.slug, ''), featured_case_studies.slug),
+      title = COALESCE(NULLIF(EXCLUDED.title, ''), featured_case_studies.title),
+      tagline = CASE WHEN EXCLUDED.tagline != '' THEN EXCLUDED.tagline ELSE featured_case_studies.tagline END,
+      category = COALESCE(NULLIF(EXCLUDED.category, ''), featured_case_studies.category),
+      year = CASE WHEN EXCLUDED.year != '' THEN EXCLUDED.year ELSE featured_case_studies.year END,
+      preview_image = CASE WHEN EXCLUDED.preview_image != '' THEN EXCLUDED.preview_image ELSE featured_case_studies.preview_image END,
+      hover_image = CASE WHEN EXCLUDED.hover_image != '' THEN EXCLUDED.hover_image ELSE featured_case_studies.hover_image END,
+      gradient = CASE WHEN EXCLUDED.gradient != '' THEN EXCLUDED.gradient ELSE featured_case_studies.gradient END,
+      accent_color = CASE WHEN EXCLUDED.accent_color != '' THEN EXCLUDED.accent_color ELSE featured_case_studies.accent_color END,
+      overview = CASE WHEN EXCLUDED.overview != '' THEN EXCLUDED.overview ELSE featured_case_studies.overview END,
+      key_features = CASE WHEN EXCLUDED.key_features != '[]'::jsonb THEN EXCLUDED.key_features ELSE featured_case_studies.key_features END,
+      tech_stack = CASE WHEN EXCLUDED.tech_stack != '[]'::jsonb THEN EXCLUDED.tech_stack ELSE featured_case_studies.tech_stack END,
+      live_url = CASE WHEN EXCLUDED.live_url != '' THEN EXCLUDED.live_url ELSE featured_case_studies.live_url END,
+      github_url = CASE WHEN EXCLUDED.github_url != '' THEN EXCLUDED.github_url ELSE featured_case_studies.github_url END,
+      client_url = CASE WHEN EXCLUDED.client_url != '' THEN EXCLUDED.client_url ELSE featured_case_studies.client_url END,
+      server_url = CASE WHEN EXCLUDED.server_url != '' THEN EXCLUDED.server_url ELSE featured_case_studies.server_url END,
+      sort_order = COALESCE(EXCLUDED.sort_order, featured_case_studies.sort_order),
       updated_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
@@ -261,12 +262,13 @@ export async function upsertFeaturedCaseStudyDb(
   return res.rows[0];
 }
 
-export async function deleteFeaturedCaseStudyDb(id: string): Promise<boolean> {
+export async function deleteFeaturedCaseStudyDb(idOrSlug: string): Promise<DbFeaturedCaseStudyRow | null> {
   await ensurePortfolioTables();
-  const res = await executeSql<{ id: string }>(
-    `DELETE FROM featured_case_studies WHERE id = ${escapeSqlString(id)} RETURNING id;`,
+  const escaped = escapeSqlString(idOrSlug);
+  const res = await executeSql<DbFeaturedCaseStudyRow>(
+    `DELETE FROM featured_case_studies WHERE id = ${escaped} OR slug = ${escaped} RETURNING *;`,
   );
-  return res.rows.length > 0;
+  return res.rows[0] || null;
 }
 
 export async function updateFeaturedProjectsOrderDb(

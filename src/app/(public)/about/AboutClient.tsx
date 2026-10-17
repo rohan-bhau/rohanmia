@@ -495,6 +495,7 @@ export default function AboutClient({
               <GithubContributionGraph
                 totalContributions={githubStats.totalContributions}
                 contributions={githubStats.contributions}
+                githubUrl={socialMap.github || "/links"}
               />
             </div>
 

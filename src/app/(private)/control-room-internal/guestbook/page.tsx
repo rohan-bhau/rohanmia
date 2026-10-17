@@ -513,10 +513,7 @@ export default function AdminGuestbookPage() {
             const themeConfig =
               THEME_STYLES[paletteTheme] || THEME_STYLES.violet;
             const Doodle = themeConfig.DoodleComponent;
-            const isAdminMessage =
-              entry.provider === "admin" ||
-              entry.email === "rohanmia.org@gmail.com" ||
-              entry.name === "Rohan Mia";
+            const isAdminMessage = entry.provider === "admin";
 
             return (
               <div

@@ -2,6 +2,7 @@
 
 import { executeSql } from '@/lib/postgres';
 import { ensurePortfolioTables, ensureContactAndBookingTables, ensureGuestbookTable } from '@/lib/db/schema';
+import { assertAdmin } from '@/lib/admin';
 
 export interface OverviewAnalyticsData {
   visitorStats: {
@@ -31,6 +32,7 @@ export interface OverviewAnalyticsData {
 }
 
 export async function getOverviewAnalytics(): Promise<OverviewAnalyticsData> {
+  await assertAdmin();
   await Promise.all([
     ensurePortfolioTables(),
     ensureContactAndBookingTables(),

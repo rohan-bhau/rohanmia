@@ -35,7 +35,7 @@ export async function createAdminGuestbookEntry(data: {
     const adminEmail =
       process.env.ADMIN_EMAIL?.trim() ||
       (session?.user as any)?.email ||
-      "rohanmia.org@gmail.com";
+      "";
     const cleanMessage = data.message?.trim();
     if (!cleanMessage) {
       return { success: false, error: "Message cannot be empty." };

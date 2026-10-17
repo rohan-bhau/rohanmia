@@ -6,6 +6,7 @@ import { assertAdmin } from "@/lib/admin";
 import { revalidatePath, updateTag } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
 import { getCachedHeroContent, PUBLIC_DATA_TAGS } from "@/lib/publicData";
+import { deleteCloudinaryAsset } from "@/lib/cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -182,6 +183,12 @@ export async function uploadHeroProfileImage(formData: FormData) {
           .end(buffer);
       },
     );
+
+    // Check if replacing existing profile image
+    const currentHero = await getHeroData();
+    if (currentHero?.profile_image && currentHero.profile_image !== uploadRes.url) {
+      await deleteCloudinaryAsset(currentHero.profile_image);
+    }
 
     // Update in database
     await saveHeroData({ profile_image: uploadRes.url });

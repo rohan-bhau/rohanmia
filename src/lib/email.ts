@@ -11,7 +11,7 @@ export interface GuestbookEmailPayload {
 /**
  * Generate plain-text email for inbox deliverability and anti-spam compliance
  */
-export function generateGuestbookEmailText(name: string, message: string): string {
+export function generateGuestbookEmailText(name: string, message: string, senderEmail?: string): string {
   const currentYear = new Date().getFullYear();
 
   return `Thanks for signing the guestbook!
@@ -27,8 +27,7 @@ Feel free to reply directly to this email anytime if you ever want to connect, t
 Best regards,
 Rohan Mia
 
-(c) ${currentYear} Rohan Mia. All rights reserved.
-rohanmia.org@gmail.com`;
+(c) ${currentYear} Rohan Mia. All rights reserved.${senderEmail ? `\n${senderEmail}` : ''}`;
 }
 
 function escapeHtml(str: string): string {
@@ -44,7 +43,7 @@ function escapeHtml(str: string): string {
  * Generate clean, professional HTML confirmation email (Zero horizontal scrollbar, 100% email-client compatible)
  * Exactly matches the design in Image 2: Dark Midnight Navy header with Guestbook Wall pill, clean note card, tinted footer.
  */
-export function generateGuestbookEmailHtml(name: string, message: string): string {
+export function generateGuestbookEmailHtml(name: string, message: string, senderEmail?: string): string {
   const currentYear = new Date().getFullYear();
   const safeName = escapeHtml(name);
   const safeMessage = escapeHtml(message);
@@ -153,15 +152,16 @@ export function generateGuestbookEmailHtml(name: string, message: string): strin
             </td>
           </tr>
 
-          <!-- Footer Section (Different Tinted Background #f1f5f9 with Distinct Top Border) -->
+          <!-- Footer Section -->
           <tr>
             <td style="padding: 22px 36px; background-color: #f1f5f9; border-top: 1px solid #e2e8f0; text-align: center;">
               <p style="margin: 0 0 5px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #64748b; line-height: 1.5;">
                 &copy; ${currentYear} Rohan Mia. All rights reserved.
               </p>
+              ${senderEmail ? `
               <p style="margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; color: #0284c7; line-height: 1.4;">
-                <a href="mailto:rohanmia.org@gmail.com" style="color: #0284c7; text-decoration: underline;">rohanmia.org@gmail.com</a>
-              </p>
+                <a href="mailto:${escapeHtml(senderEmail)}" style="color: #0284c7; text-decoration: underline;">${escapeHtml(senderEmail)}</a>
+              </p>` : ''}
             </td>
           </tr>
 
@@ -184,10 +184,10 @@ export async function sendGuestbookConfirmationEmail({
   name,
   message
 }: GuestbookEmailPayload): Promise<{ success: boolean; provider: string; error?: string }> {
-  const htmlContent = generateGuestbookEmailHtml(name, message);
-  const textContent = generateGuestbookEmailText(name, message);
-  const subject = `Rohan Mia \u2014 Thanks for signing my guestbook, ${name}!`;
-  const senderEmail = process.env.EMAIL_FROM || 'rohanmia.org@gmail.com';
+  const senderEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.ADMIN_EMAIL || '';
+  const htmlContent = generateGuestbookEmailHtml(name, message, senderEmail);
+  const textContent = generateGuestbookEmailText(name, message, senderEmail);
+  const subject = `Thanks for signing my guestbook, ${name}!`;
   const cleanPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
 
   // 1. Try Resend if configured
@@ -504,9 +504,9 @@ export async function sendMeetingBookingEmails(
   const adminEmail = (process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || '').trim();
   const cleanPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
 
-  const siteUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://rohanmia.org').replace(/\/+$/, '');
+  const siteUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/+$/, '');
   const cancelUrl = `${siteUrl}/cancel-meeting?id=${booking.bookingId || ''}`;
-  const rescheduleUrl = 'https://calendly.com/rohanmia/meeting';
+  const rescheduleUrl = `${siteUrl}/contact#meeting`;
 
   // Parse start date & time
   let startDate = new Date();
@@ -530,7 +530,8 @@ export async function sendMeetingBookingEmails(
 
   const startIcs = formatIcsTimestamp(startDate);
   const endIcs = formatIcsTimestamp(endDate);
-  const uid = `meet-${Date.now()}-${Math.random().toString(36).substring(2, 8)}@rohanmia.org`;
+  const domain = siteUrl ? new URL(siteUrl).hostname : 'portfolio.local';
+  const uid = `meet-${Date.now()}-${Math.random().toString(36).substring(2, 8)}@${domain}`;
 
   const humanDate = formatHumanDate(booking.date);
   const timeRange = formatTimeRange(booking.timeSlot, duration);
@@ -842,7 +843,8 @@ export async function sendMeetingCancellationEmails({
   const timezone = booking.timezone || 'Asia/Dhaka';
   const adminEmail = (process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL || '').trim();
   const cleanPassword = (process.env.SMTP_PASSWORD || '').replace(/\s+/g, '');
-  const rescheduleUrl = 'https://calendly.com/rohanmia/meeting';
+  const siteUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/+$/, '');
+  const rescheduleUrl = siteUrl ? `${siteUrl}/contact#meeting` : '/contact#meeting';
 
   // Parse start date & time
   let startDate = new Date();
@@ -866,7 +868,8 @@ export async function sendMeetingCancellationEmails({
 
   const startIcs = formatIcsTimestamp(startDate);
   const endIcs = formatIcsTimestamp(endDate);
-  const uid = `meet-${booking.id || Date.now()}@rohanmia.org`;
+  const domain = siteUrl ? new URL(siteUrl).hostname : 'portfolio.local';
+  const uid = `meet-${booking.id || Date.now()}@${domain}`;
 
   const humanDate = formatHumanDate(booking.date);
   const timeRange = formatTimeRange(booking.time_slot, duration);

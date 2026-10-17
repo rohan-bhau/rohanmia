@@ -49,7 +49,15 @@ function mapDbProject(project: DbProjectRow): CaseStudy {
     systemBreakdown: project.system_breakdown || [],
     challenges: project.challenges || [],
     technicalDecisions: project.technical_decisions || [],
-    keyFeatures: project.key_features || [],
+    keyFeatures: (project.key_features || []).map((feat: any, idx: number) => {
+      if (typeof feat === "string") {
+        return { title: feat, description: "" };
+      }
+      return {
+        title: feat?.title || `Feature ${idx + 1}`,
+        description: feat?.description || "",
+      };
+    }),
     metrics: project.metrics || [],
     directoryTree: project.directory_tree,
     codeSnippet: project.code_snippet,

@@ -31,7 +31,7 @@ import {
 import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import { useThemeAccent } from "@/components/theme/ThemeProvider";
 import { sendMessage } from "@/actions/contact";
-import { ALL_PROJECTS } from "@/data/projects";
+import { getPublicProjectsList } from "@/actions/adminProjects";
 import { toast } from "sonner";
 
 type PaletteView = "search" | "reachout" | "contact";
@@ -83,9 +83,24 @@ export default function CommandPalette() {
     github?: string;
     twitter?: string;
   }>({});
+  const [projectsList, setProjectsList] = useState<
+    Array<{
+      title: string;
+      slug: string;
+      tagline: string;
+      category: string;
+      techStack: string[];
+    }>
+  >([]);
 
   useEffect(() => {
     if (open) {
+      getPublicProjectsList()
+        .then((projects) => {
+          if (Array.isArray(projects)) setProjectsList(projects);
+        })
+        .catch(() => {});
+
       import("@/actions/adminSettings")
         .then((m) => m.getSettings())
         .then((s) => {
@@ -310,7 +325,7 @@ export default function CommandPalette() {
   // Search filtering
   const q = searchQuery.trim().toLowerCase();
   const filteredProjects = q
-    ? ALL_PROJECTS.filter(
+    ? projectsList.filter(
         (p) =>
           p.title.toLowerCase().includes(q) ||
           p.tagline.toLowerCase().includes(q) ||
@@ -690,7 +705,7 @@ export default function CommandPalette() {
 
                           <div className="grid grid-cols-3 gap-2">
                             <a
-                              href="https://github.com/rohan-bhau"
+                              href={socials.github || "/links"}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
@@ -709,7 +724,7 @@ export default function CommandPalette() {
                             </a>
 
                             <a
-                              href="https://www.linkedin.com/in/rohan-mia/"
+                              href={socials.linkedin || "/links"}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"
@@ -728,7 +743,7 @@ export default function CommandPalette() {
                             </a>
 
                             <a
-                              href="https://x.com/_Rohan_Bhau"
+                              href={socials.twitter || "/links"}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs font-medium text-zinc-300 hover:text-white transition-all group"

@@ -24,6 +24,7 @@ import {
   Eye,
   SlidersHorizontal,
   BarChart3,
+  Bot,
 } from "lucide-react";
 import AnimatedLogo from "@/components/shared/AnimatedLogo";
 import { logoutFromControlRoom } from "@/actions/stealthAuth";
@@ -113,6 +114,7 @@ function AdminShellContent({
     { name: "Guestbook", href: `${basePath}/guestbook`, icon: BookOpen },
     { name: "Links", href: `${basePath}/links`, icon: Globe },
     { name: "Contact", href: `${basePath}/contact`, icon: Mail },
+    { name: "Aru AI", href: `${basePath}/aru`, icon: Bot },
     { name: "Settings", href: `${basePath}/settings`, icon: Settings },
   ];
 
@@ -141,6 +143,7 @@ function AdminShellContent({
     if (pathname.includes("/guestbook")) return "Guestbook Ledger";
     if (pathname.includes("/links")) return "Social Links";
     if (pathname.includes("/contact")) return "Client Inquiries";
+    if (pathname.includes("/aru")) return "Aru AI Co-pilot";
     if (pathname.includes("/settings")) return "Site Settings";
     return "Studio Engine";
   };

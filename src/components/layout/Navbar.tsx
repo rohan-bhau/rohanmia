@@ -264,7 +264,7 @@ export default function Navbar() {
           TOP HEADER (Desktop + Mobile Brand Bar)
          ======================================================== */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[80] transition-all duration-300 ${
           isScrolled
             ? "py-2.5 sm:py-3 bg-[#08090a]/85 backdrop-blur-xl border-b border-white/[0.06] shadow-sm"
             : "py-4 sm:py-5 bg-transparent"

@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Tooltip({ text, children, position = "top" }) {
+interface TooltipProps {
+  text: string;
+  children: React.ReactNode;
+  position?: "top" | "bottom" | "left" | "right";
+}
+
+export default function Tooltip({ text, children, position = "top" }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
-  const triggerRef = useRef(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -41,7 +47,7 @@ export default function Tooltip({ text, children, position = "top" }) {
     setIsVisible(true);
   };
 
-  const positions = {
+  const positions: Record<"top" | "bottom" | "left" | "right", string> = {
     top: "-translate-x-1/2 -translate-y-full mb-4",
     bottom: "-translate-x-1/2 mt-4",
     left: "-translate-x-full -translate-y-1/2 mr-4",

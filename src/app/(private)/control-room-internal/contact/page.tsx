@@ -15,6 +15,8 @@ import {
   Reply,
   CheckCircle2,
   Calendar,
+  CalendarX,
+  AlertCircle,
   User,
   MessageSquare,
 } from "lucide-react";
@@ -52,9 +54,11 @@ export default function AdminContactPage() {
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(
     null,
   );
-  const [cancellingBookingId, setCancellingBookingId] = useState<string | null>(
-    null,
-  );
+  const [cancellingBooking, setCancellingBooking] =
+    useState<DbMeetingBookingRow | null>(null);
+  const [cancellationReason, setCancellationReason] =
+    useState<string>("Schedule conflict");
+  const [customReasonText, setCustomReasonText] = useState<string>("");
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -117,28 +121,41 @@ export default function AdminContactPage() {
   };
 
   const confirmCancelBooking = async () => {
-    if (!cancellingBookingId) return;
+    if (!cancellingBooking) return;
+    const finalReason =
+      cancellationReason === "Custom"
+        ? customReasonText.trim() || "Cancelled by Host"
+        : customReasonText.trim()
+          ? `${cancellationReason}: ${customReasonText.trim()}`
+          : cancellationReason;
+
     startTransition(async () => {
-      const res = await cancelBookingAdmin(
-        cancellingBookingId,
-        "Cancelled via Studio Console",
-      );
+      const res = await cancelBookingAdmin(cancellingBooking.id, finalReason);
       if (res.success) {
-        showToast("Meeting cancelled.", "success");
+        showToast(
+          `Meeting cancelled. Cancellation email sent to ${cancellingBooking.email}`,
+          "success",
+        );
         setBookings((prev) =>
           prev.map((b) =>
-            b.id === cancellingBookingId ? { ...b, status: "cancelled" } : b,
+            b.id === cancellingBooking.id
+              ? { ...b, status: "cancelled", cancellation_reason: finalReason }
+              : b,
           ),
         );
-        if (selectedBooking?.id === cancellingBookingId) {
+        if (selectedBooking?.id === cancellingBooking.id) {
           setSelectedBooking((prev) =>
-            prev ? { ...prev, status: "cancelled" } : null,
+            prev
+              ? { ...prev, status: "cancelled", cancellation_reason: finalReason }
+              : null,
           );
         }
+        setCancellingBooking(null);
+        setCustomReasonText("");
+        setCancellationReason("Schedule conflict");
       } else {
         showToast(res.error || "Failed to cancel meeting", "error");
       }
-      setCancellingBookingId(null);
     });
   };
 
@@ -422,17 +439,33 @@ export default function AdminContactPage() {
                   {b.status}
                 </span>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeletingBookingId(b.id);
-                  }}
-                  className="p-1.5 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                  title="Delete Booking Record"
-                >
-                  <Trash2 size={13} />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  {b.status !== "cancelled" && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCancellingBooking(b);
+                      }}
+                      className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                      title="Cancel Call & Dispatch Email"
+                    >
+                      <CalendarX size={13} />
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeletingBookingId(b.id);
+                    }}
+                    className="p-1.5 rounded-lg text-neutral-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    title="Delete Booking Record"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -663,15 +696,17 @@ export default function AdminContactPage() {
               {selectedBooking.status !== "cancelled" ? (
                 <button
                   type="button"
-                  onClick={() => setCancellingBookingId(selectedBooking.id)}
-                  className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-mono transition-colors cursor-pointer"
+                  onClick={() => setCancellingBooking(selectedBooking)}
+                  className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-mono transition-colors cursor-pointer flex items-center gap-1.5"
                 >
-                  Cancel Call
+                  <CalendarX size={13} />
+                  <span>Cancel Call</span>
                 </button>
               ) : (
-                <span className="text-xs font-mono text-rose-400">
-                  Meeting Cancelled
-                </span>
+                <div className="text-xs font-mono text-rose-400 flex items-center gap-1.5">
+                  <span className="size-1.5 rounded-full bg-rose-500" />
+                  <span>Meeting Cancelled</span>
+                </div>
               )}
 
               <button
@@ -687,29 +722,132 @@ export default function AdminContactPage() {
         )}
       </AdminModal>
 
-      {/* Delete Message Confirmation */}
-      <ConfirmModal
-        isOpen={Boolean(deletingMsgId)}
-        title="Delete Message?"
-        description="Are you sure you want to permanently delete this client message from PostgreSQL?"
-        confirmText="Delete"
-        confirmVariant="danger"
-        isLoading={isPending}
-        onConfirm={confirmDeleteMsg}
-        onClose={() => setDeletingMsgId(null)}
-      />
+      {/* Cancel Booking Modal with Reason & Email Dispatch */}
+      <AdminModal
+        isOpen={Boolean(cancellingBooking)}
+        onClose={() => {
+          if (!isPending) setCancellingBooking(null);
+        }}
+        title="Cancel Scheduled Call"
+        subtitle={
+          cancellingBooking
+            ? `With ${cancellingBooking.name} (${cancellingBooking.email})`
+            : "Cancel meeting & dispatch email"
+        }
+        maxWidth="max-w-lg"
+      >
+        {cancellingBooking && (
+          <div className="space-y-4">
+            {/* Meeting Summary */}
+            <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-white font-semibold flex items-center gap-1.5">
+                  <Calendar size={13} className="text-sky-400" />
+                  {cancellingBooking.date} &bull; {cancellingBooking.time_slot}
+                </span>
+                <span className="text-neutral-400">
+                  {cancellingBooking.duration || 30} mins
+                </span>
+              </div>
+              <p className="text-xs text-neutral-300">
+                <span className="text-neutral-500 font-mono">Topic:</span>{" "}
+                {cancellingBooking.topic}
+              </p>
+            </div>
 
-      {/* Cancel Booking Confirmation */}
-      <ConfirmModal
-        isOpen={Boolean(cancellingBookingId)}
-        title="Cancel Scheduled Call?"
-        description="Are you sure you want to cancel this discovery call? The status will be marked as cancelled in PostgreSQL."
-        confirmText="Cancel Call"
-        confirmVariant="danger"
-        isLoading={isPending}
-        onConfirm={confirmCancelBooking}
-        onClose={() => setCancellingBookingId(null)}
-      />
+            {/* Quick Reason Selection */}
+            <div className="space-y-2">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block font-semibold">
+                Cancellation Reason:
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Schedule conflict",
+                  "Need to reschedule",
+                  "Personal emergency",
+                  "Topic already resolved",
+                  "Custom",
+                ].map((reasonOption) => {
+                  const isSelected = cancellationReason === reasonOption;
+                  return (
+                    <button
+                      key={reasonOption}
+                      type="button"
+                      onClick={() => setCancellationReason(reasonOption)}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-mono transition-all border ${
+                        isSelected
+                          ? "bg-rose-500/20 border-rose-500/40 text-rose-300 font-semibold"
+                          : "bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      {reasonOption}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Optional Note or Custom Reason */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block">
+                {cancellationReason === "Custom"
+                  ? "Enter Custom Reason:"
+                  : "Additional Note for Attendee (Optional):"}
+              </label>
+              <textarea
+                value={customReasonText}
+                onChange={(e) => setCustomReasonText(e.target.value)}
+                placeholder={
+                  cancellationReason === "Custom"
+                    ? "Explain why the session is being cancelled..."
+                    : "e.g. Please feel free to pick another convenient time slot at /contact#meeting..."
+                }
+                rows={3}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-white/30 focus:outline-none focus:border-rose-500/50 font-sans resize-none transition-colors"
+              />
+            </div>
+
+            {/* Informational Email Notice */}
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5 text-xs text-amber-200/90 leading-relaxed">
+              <AlertCircle size={15} className="shrink-0 mt-0.5 text-amber-400" />
+              <span>
+                Cancelling will automatically send an official notification email with calendar (.ics) removal to{" "}
+                <strong className="text-white font-mono">{cancellingBooking.email}</strong>.
+              </span>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-3 border-t border-white/[0.08] flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => setCancellingBooking(null)}
+                className="px-4 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-neutral-300 transition-colors disabled:opacity-40"
+              >
+                Keep Meeting
+              </button>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={confirmCancelBooking}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-xs font-mono font-semibold text-white transition-all flex items-center gap-2 shadow-lg shadow-rose-900/40 disabled:opacity-50 cursor-pointer"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Cancelling &amp; Notifying...</span>
+                  </>
+                ) : (
+                  <>
+                    <CalendarX size={13} />
+                    <span>Confirm &amp; Send Email</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </AdminModal>
 
       {/* Delete Booking Confirmation */}
       <ConfirmModal

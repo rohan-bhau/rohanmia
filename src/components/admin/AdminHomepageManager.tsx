@@ -31,7 +31,6 @@ import { useThemeAccent } from '@/components/theme/ThemeProvider';
 import { useAdminMode } from './AdminModeContext';
 import TechBadge from '@/components/ui/TechBadge';
 import TechAutocompleteInput from '@/components/ui/TechAutocompleteInput';
-import { FEATURED_CASE_STUDIES } from '@/data/projects';
 
 interface AdminHomepageManagerProps {
   heroData: HeroData;
@@ -660,12 +659,9 @@ export default function AdminHomepageManager({
             {/* Featured Projects Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {featuredProjects.map((project) => {
-                const matchStatic = FEATURED_CASE_STUDIES.find(
-                  (p) => p.id === project.id || p.slug === project.slug
-                );
-                const previewImg = project.previewImage || project.preview_image || matchStatic?.previewImage;
-                const hoverImg = project.hoverImage || project.hover_image || matchStatic?.hoverImage || previewImg;
-                const gradient = project.gradient || matchStatic?.gradient || 'linear-gradient(145deg, #181924 0%, #0d0f14 100%)';
+                const previewImg = project.previewImage || project.preview_image || '';
+                const hoverImg = project.hoverImage || project.hover_image || previewImg || '';
+                const gradient = project.gradient || 'linear-gradient(145deg, #181924 0%, #0d0f14 100%)';
 
                 return (
                   <div 

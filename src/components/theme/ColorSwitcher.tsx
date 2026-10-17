@@ -98,7 +98,7 @@ export default function ColorSwitcher({ variant = 'inline', className = '' }: Co
             <>
               {/* Backdrop */}
               <div 
-                className="fixed inset-0 z-40" 
+                className="fixed inset-0 z-[85]" 
                 onClick={() => setIsOpen(false)} 
               />
               <motion.div
@@ -106,7 +106,7 @@ export default function ColorSwitcher({ variant = 'inline', className = '' }: Co
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 6, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="absolute right-0 mt-2 w-64 p-3 rounded-2xl bg-[#0f1115]/95 border border-white/[0.1] backdrop-blur-2xl shadow-2xl z-50 space-y-2"
+                className="absolute right-0 mt-2 w-64 p-3 rounded-2xl bg-[#0f1115]/95 border border-white/[0.1] backdrop-blur-2xl shadow-2xl z-[90] space-y-2"
               >
                 <div className="flex items-center justify-between pb-2 border-b border-white/[0.08] px-1">
                   <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">

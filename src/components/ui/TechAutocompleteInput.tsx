@@ -168,7 +168,7 @@ export default function TechAutocompleteInput({
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <TechBadge name={item.name} size="sm" />
+                    <TechBadge name={item.name} iconSlug={item.icon_slug} size="sm" />
                   </div>
                   {item.category_name && (
                     <span className="text-[10px] font-mono text-neutral-500">

@@ -347,6 +347,7 @@ export default function AdminTechStackManager({
     category_id: string;
     docs_url?: string;
     brand_color?: string;
+    icon_slug?: string;
   } | null>(null);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
@@ -396,7 +397,7 @@ export default function AdminTechStackManager({
     const selectedCat = categories.find(
       (c) => c.id === editingItem.category_id,
     );
-    const iconData = getIconForTech(editingItem.name.trim());
+    const iconData = getIconForTech(editingItem.name.trim(), editingItem.icon_slug);
     const brandColor = editingItem.brand_color || iconData.color || "#38bdf8";
     const itemId = editingItem.id || `tech_${Date.now()}`;
 
@@ -413,6 +414,7 @@ export default function AdminTechStackManager({
       production_project: "",
       docs_url: editingItem.docs_url?.trim() || "",
       brand_color: brandColor,
+      icon_slug: editingItem.icon_slug || "",
       sort_order: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -847,7 +849,7 @@ export default function AdminTechStackManager({
                   ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                       {items.map((item, itemIdx) => {
-                        const iconData = getIconForTech(item.name);
+                        const iconData = getIconForTech(item.name, item.icon_slug);
                         const BrandIcon = iconData.icon;
                         const iconColor = item.brand_color || iconData.color;
 
@@ -1046,7 +1048,7 @@ export default function AdminTechStackManager({
               {showSuggestions && filteredSuggestions.length > 0 && (
                 <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-xl bg-[#0c0e14] border border-white/[0.15] shadow-2xl p-1.5 space-y-0.5 max-h-48 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                   {filteredSuggestions.map((sugg, sIdx) => {
-                    const iconData = getIconForTech(sugg.name);
+                    const iconData = getIconForTech(sugg.name, sugg.icon_slug);
                     const Icon = iconData.icon;
                     return (
                       <button
@@ -1056,6 +1058,7 @@ export default function AdminTechStackManager({
                           setEditingItem({
                             ...editingItem,
                             name: sugg.name,
+                            icon_slug: sugg.icon_slug,
                             brand_color:
                               sugg.brand_color || iconData.color || "#38bdf8",
                           });

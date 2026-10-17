@@ -4,6 +4,7 @@ import { assertAdmin } from "@/lib/admin";
 import { updateAboutContentDb, DbAboutContentRow } from "@/lib/db/content";
 import { revalidatePath, updateTag } from "next/cache";
 import { getCachedAboutContent, PUBLIC_DATA_TAGS } from "@/lib/publicData";
+import { deleteCloudinaryAsset } from "@/lib/cloudinary";
 
 export async function getAboutData(): Promise<DbAboutContentRow> {
   try {
@@ -69,6 +70,28 @@ export async function saveAdminAbout(
 }> {
   try {
     await assertAdmin();
+
+    // If carousel items are updated, clean up any removed carousel slide images from Cloudinary
+    if (data.carousel_items && Array.isArray(data.carousel_items)) {
+      const prevContent = await getAboutData();
+      const prevUrls = new Set<string>(
+        (prevContent.carousel_items || [])
+          .map((item: any) => item?.image)
+          .filter(Boolean)
+      );
+      const newUrls = new Set<string>(
+        data.carousel_items
+          .map((item: any) => item?.image)
+          .filter(Boolean)
+      );
+
+      for (const oldUrl of prevUrls) {
+        if (!newUrls.has(oldUrl)) {
+          await deleteCloudinaryAsset(oldUrl);
+        }
+      }
+    }
+
     const updated = await updateAboutContentDb(data);
     updateTag(PUBLIC_DATA_TAGS.about);
     revalidatePath("/about");
