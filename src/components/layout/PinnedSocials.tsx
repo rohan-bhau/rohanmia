@@ -49,7 +49,6 @@ export default function PinnedSocials({ socialMap = {} }: PinnedSocialsProps) {
               href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              title={social.name}
               aria-label={social.name}
               whileHover={{ scale: 1.15, x: 2 }}
               whileTap={{ scale: 0.95 }}
@@ -63,7 +62,7 @@ export default function PinnedSocials({ socialMap = {} }: PinnedSocialsProps) {
               <Icon size={16} className="relative z-10 group-hover:text-primary transition-colors" />
 
               {/* Tooltip on right */}
-              <span className="absolute left-12 px-2.5 py-1 rounded-lg bg-[#0d0f12] border border-white/10 text-[10px] font-mono text-foreground opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap shadow-xl">
+              <span className="absolute left-12 px-2.5 py-1 rounded-xl bg-[#0a0d14]/95 border border-white/[0.12] text-[11px] font-sans font-medium text-white/90 opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-200 whitespace-nowrap shadow-[0_8px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl translate-x-1 group-hover:translate-x-0">
                 {social.name}
               </span>
             </motion.a>

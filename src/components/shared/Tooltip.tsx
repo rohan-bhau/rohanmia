@@ -1,27 +1,43 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useThemeAccent } from "@/components/theme/ThemeProvider";
 
 interface TooltipProps {
   text: string;
   children: React.ReactNode;
   position?: "top" | "bottom" | "left" | "right";
+  delayMs?: number;
 }
 
-export default function Tooltip({ text, children, position = "top" }: TooltipProps) {
+const emptySubscribe = () => () => {};
+
+export default function Tooltip({
+  text,
+  children,
+  position = "top",
+  delayMs = 120,
+}: TooltipProps) {
+  const { currentTheme } = useThemeAccent();
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  const isMounted = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setMounted(true), 0);
-    return () => window.clearTimeout(timeout);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
-  const updateCoords = () => {
+  const updateCoords = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       let x = rect.left + rect.width / 2;
@@ -39,19 +55,28 @@ export default function Tooltip({ text, children, position = "top" }: TooltipPro
 
       setCoords({ x, y });
     }
-  };
+  }, [position]);
 
   const handleMouseEnter = () => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) return;
     updateCoords();
-    setIsVisible(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      updateCoords();
+      setIsVisible(true);
+    }, delayMs);
+  };
+
+  const handleMouseLeave = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setIsVisible(false);
   };
 
   const positions: Record<"top" | "bottom" | "left" | "right", string> = {
-    top: "-translate-x-1/2 -translate-y-full mb-4",
-    bottom: "-translate-x-1/2 mt-4",
-    left: "-translate-x-full -translate-y-1/2 mr-4",
-    right: "ml-4 -translate-y-1/2",
+    top: "-translate-x-1/2 -translate-y-full mb-2.5",
+    bottom: "-translate-x-1/2 mt-2.5",
+    left: "-translate-x-full -translate-y-1/2 mr-3",
+    right: "ml-3 -translate-y-1/2",
   };
 
   return (
@@ -60,19 +85,20 @@ export default function Tooltip({ text, children, position = "top" }: TooltipPro
         ref={triggerRef}
         className="inline-block"
         onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setIsVisible(false)}
+        onMouseLeave={handleMouseLeave}
       >
         {children}
       </div>
 
-      {mounted &&
+      {isMounted &&
         isVisible &&
         createPortal(
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              exit={{ opacity: 0, scale: 0.94 }}
+              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "fixed",
                 top: coords.y,
@@ -82,11 +108,23 @@ export default function Tooltip({ text, children, position = "top" }: TooltipPro
               }}
               className={positions[position]}
             >
-              <div className="relative bg-zinc-950/95 border border-white/20 px-4 py-2 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-3xl min-w-max">
-                <span className="text-[11px] font-black text-white uppercase tracking-[0.2em] whitespace-nowrap block drop-shadow-sm">
+              <div
+                className="relative flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#0a0d14]/95 border border-white/[0.12] shadow-[0_12px_32px_rgba(0,0,0,0.7)] backdrop-blur-2xl min-w-max"
+                style={{
+                  boxShadow: `0 10px 30px rgba(0,0,0,0.8), 0 0 14px ${currentTheme.glow}`,
+                }}
+              >
+                {/* Glowing Theme Accent Dot */}
+                <span
+                  className="size-1.5 rounded-full shrink-0"
+                  style={{
+                    backgroundColor: currentTheme.primary,
+                    boxShadow: `0 0 6px ${currentTheme.primary}`,
+                  }}
+                />
+                <span className="text-[11px] font-sans font-medium text-white/90 tracking-tight whitespace-nowrap drop-shadow-sm select-none">
                   {text}
                 </span>
-                <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
               </div>
             </motion.div>
           </AnimatePresence>,
