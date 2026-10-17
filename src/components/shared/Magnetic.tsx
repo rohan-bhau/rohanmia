@@ -1,13 +1,19 @@
 'use client';
 
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useRef, useState } from 'react';
 
-export default function Magnetic({ children, strength = 0.5 }) {
-  const ref = useRef(null);
+interface MagneticProps {
+  children: React.ReactNode;
+  strength?: number;
+}
+
+export default function Magnetic({ children, strength = 0.5 }: MagneticProps) {
+  const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
     const { clientX, clientY } = e;
     const { left, top, width, height } = ref.current.getBoundingClientRect();
     const x = (clientX - (left + width / 2)) * strength;

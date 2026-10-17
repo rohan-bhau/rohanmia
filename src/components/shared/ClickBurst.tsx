@@ -1,15 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+interface Particle {
+  id: number;
+  angle: number;
+  distance: number;
+  size: number;
+  color: string;
+  delay: number;
+  duration: number;
+}
+
+interface Burst {
+  id: number;
+  x: number;
+  y: number;
+  particles: Particle[];
+}
+
 export default function ClickBurst() {
-  const [bursts, setBursts] = useState([]);
+  const [bursts, setBursts] = useState<Burst[]>([]);
 
   useEffect(() => {
-    const handleClick = (e) => {
+    const handleClick = (e: MouseEvent) => {
       // Only fire for interactive elements
-      const target = e.target;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
       const isInteractive = 
         target.closest('button') || 
         target.closest('a') || 
@@ -21,7 +40,7 @@ export default function ClickBurst() {
       const id = Date.now();
       const colors = ['#a855f7', '#ec4899', '#06b6d4']; // Purple, Pink, Cyan
       
-      const newBurst = {
+      const newBurst: Burst = {
         id,
         x: e.clientX,
         y: e.clientY,
@@ -32,8 +51,8 @@ export default function ClickBurst() {
           size: 6 + Math.random() * 10,
           color: colors[Math.floor(Math.random() * colors.length)],
           delay: Math.random() * 0.1,
-          duration: 0.8 + Math.random() * 0.4
-        }))
+          duration: 0.8 + Math.random() * 0.4,
+        })),
       };
 
       setBursts(prev => [...prev, newBurst]);
@@ -65,12 +84,12 @@ export default function ClickBurst() {
                   y: Math.sin(p.angle) * p.distance,
                   opacity: [0, 1, 0],
                   scale: [0, 1.2, 0],
-                  rotate: 45 + (Math.random() * 90)
+                  rotate: 45 + (Math.random() * 90),
                 }}
                 transition={{ 
                   duration: p.duration, 
                   delay: p.delay,
-                  ease: [0.16, 1, 0.3, 1] 
+                  ease: [0.16, 1, 0.3, 1],
                 }}
                 className="absolute rounded-[2px]"
                 style={{ 
@@ -78,9 +97,9 @@ export default function ClickBurst() {
                   height: p.size,
                   background: `radial-gradient(circle at center, white, ${p.color})`,
                   boxShadow: `0 0 15px ${p.color}, 0 0 30px ${p.color}44`,
-                  marginLeft: -p.size/2,
-                  marginTop: -p.size/2,
-                  filter: 'blur(0.5px)'
+                  marginLeft: -p.size / 2,
+                  marginTop: -p.size / 2,
+                  filter: 'blur(0.5px)',
                 }}
               />
             ))}

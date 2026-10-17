@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Home, ArrowLeft } from "lucide-react";
@@ -61,46 +61,60 @@ export default function NotFound() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-6"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
         >
           <Magnetic>
-            <Link href="/">
-              <button className="group flex items-center gap-3 px-8 py-4 bg-primary text-white font-bold rounded-2xl shadow-[0_0_30px_rgba(14,165,233,0.3)] hover:shadow-[0_0_50px_rgba(14,165,233,0.5)] transition-all">
-                <Home size={20} />
-                <span>Return Base</span>
-              </button>
+            <Link
+              href="/"
+              className="btn btn-primary flex items-center gap-2 group w-full sm:w-auto"
+            >
+              <Home className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
+              <span>Return Home</span>
             </Link>
           </Magnetic>
 
           <Magnetic>
             <button
               onClick={() => window.history.back()}
-              className="flex items-center gap-3 px-8 py-4 glass border-white/10 text-white font-bold rounded-2xl hover:bg-white/5 transition-all"
+              className="btn btn-secondary flex items-center gap-2 group w-full sm:w-auto"
             >
-              <ArrowLeft size={20} />
-              <span>Previous Sector</span>
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+              <span>Previous Page</span>
             </button>
           </Magnetic>
         </motion.div>
 
-        {/* Decorative Particles */}
+        {/* Terminal aesthetic coordinates */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="pt-12 text-xs font-mono text-gray-400/40 uppercase tracking-widest"
+        >
+          ERR_PAGE_NOT_FOUND // 0x00000194 // COORD: [UNKNOWN]
+        </motion.div>
+      </div>
+
+      {/* Floating particles background effect */}
+      <div className="absolute inset-0 pointer-events-none -z-10">
         {particles.map((p, i) => (
           <motion.div
             key={i}
+            className="absolute w-1 h-1 bg-white/20 rounded-full"
+            style={{
+              top: p.top,
+              left: p.left,
+            }}
             animate={{
               y: [0, -100, 0],
               x: [0, p.x, 0],
-              opacity: [0, 0.5, 0],
+              opacity: [0.2, 0.8, 0.2],
             }}
             transition={{
               duration: p.duration,
               repeat: Infinity,
               delay: p.delay,
-            }}
-            className="absolute w-1 h-1 bg-primary rounded-full blur-[1px]"
-            style={{
-              top: p.top,
-              left: p.left,
+              ease: "easeInOut",
             }}
           />
         ))}
