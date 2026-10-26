@@ -135,7 +135,9 @@ export async function saveHeroData(data: Partial<HeroData>) {
 
     await executeSql(query);
     updateTag(PUBLIC_DATA_TAGS.hero);
+    updateTag(PUBLIC_DATA_TAGS.seo);
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     revalidatePath("/control-room-internal");
     return { success: true, hero: updated };
   } catch (error: any) {

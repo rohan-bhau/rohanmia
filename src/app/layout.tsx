@@ -7,7 +7,6 @@ import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
 import Preloader from "@/components/shared/Preloader";
 import { Toaster } from "sonner";
-import { getSettings } from "@/actions/adminSettings";
 import { cookies } from "next/headers";
 import { AccentColor } from "@/types/theme";
 
@@ -34,42 +33,17 @@ const instrumentSerif = Instrument_Serif({
   style: ["normal", "italic"],
 });
 
+import { buildDynamicMetadata, getBaseSiteUrl } from "@/lib/seo/metadata";
+import { getCachedSeoSettings } from "@/lib/publicData";
+import {
+  generatePersonJsonLd,
+  generateWebSiteJsonLd,
+  serializeJsonLd,
+} from "@/lib/seo/jsonLd";
+
 export async function generateMetadata() {
-  const settings = await getSettings();
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-  return {
-    metadataBase: new URL(baseUrl),
-    title: settings?.site_title || "MD Rohan Mia | Full-Stack Software Engineer",
-    description: settings?.meta_description || "Portfolio of MD Rohan Mia - Full Stack Developer & Creative Engineer.",
-    keywords: ["Portfolio", "Full-Stack Developer", "Next.js", "TypeScript", "PostgreSQL"],
-
-    verification: {
-      google: "yH9eJO5yYLc4wgh3jwtqR_QE28Vsc1SrST5teq331do",
-    },
-
-    icons: {
-      icon: [
-        { url: "/favicon.png" },
-        { url: "/favicon.ico" }
-      ],
-      shortcut: "/favicon.png",
-      apple: "/favicon.png",
-    },
-    openGraph: {
-      title: settings?.site_title || "MD Rohan Mia",
-      description: settings?.meta_description || "Full-Stack Developer",
-      images: ["/profile.png"],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: settings?.site_title || "MD Rohan Mia",
-      description: settings?.meta_description || "Full-Stack Developer",
-      images: ["/profile.png"],
-    },
-  };
+  return await buildDynamicMetadata({ path: "/" });
 }
-
 
 export default async function RootLayout({
   children,
@@ -83,44 +57,42 @@ export default async function RootLayout({
       ? cookieAccent
       : 'cyan';
 
-  const [settings, { links }] = await Promise.all([
-    getSettings(),
+  const [seoSettings, { links }] = await Promise.all([
+    getCachedSeoSettings().catch(() => null),
     import('@/actions/adminLinks').then(m => m.getPublicLinks()).catch(() => ({ links: [] })),
   ]);
 
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/+$/, '');
   const activeSocials = (links || []).filter(l => l.active).map(l => l.href);
+  const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
+
+  const personJsonLd = seoSettings
+    ? generatePersonJsonLd(seoSettings, baseUrl, activeSocials)
+    : null;
+  const webSiteJsonLd = seoSettings
+    ? generateWebSiteJsonLd(seoSettings, baseUrl)
+    : null;
 
   return (
     <html lang="en" className="dark" data-accent={initialAccent} suppressHydrationWarning>
       <body
         className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
       >
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Person",
-              name: "MD Rohan Mia",
-              alternateName: ["Rohan Bhau", "Rohan Mia", "rohan-bhau"],
-              url: baseUrl,
-              image: "/profile.png",
-              jobTitle: settings?.site_title?.split('|')[1]?.trim() || "Full-Stack Software Engineer",
-              description: settings?.meta_description || "Portfolio of MD Rohan Mia - Full Stack Developer & Creative Engineer.",
-              address: {
-                "@type": "PostalAddress",
-                addressLocality: "Dhaka",
-                addressCountry: "BD",
-              },
-              knowsAbout: [
-                "React", "Next.js", "Tailwind CSS", "Node.js",
-                "TypeScript", "PostgreSQL", "Full-Stack Development",
-              ],
-              sameAs: activeSocials,
-            }),
-          }}
-        />
+        {personJsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: serializeJsonLd(personJsonLd),
+            }}
+          />
+        )}
+        {webSiteJsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: serializeJsonLd(webSiteJsonLd),
+            }}
+          />
+        )}
 
         <Providers initialAccent={initialAccent}>
           <Preloader />

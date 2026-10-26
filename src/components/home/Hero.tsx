@@ -355,7 +355,12 @@ export default function Hero({
                   {data.profile_image ? (
                     <Image
                       src={data.profile_image}
-                      alt={`${data.name} ${data.surname}`.trim() || "Profile"}
+                      alt={
+                        `${data.name} ${data.surname}`.trim()
+                          ? `${data.name} ${data.surname} (Rohan Bhau) — Full Stack Developer in Bangladesh`
+                          : "Md Rohan Mia (Rohan Bhau) — Full Stack Developer in Bangladesh"
+                      }
+                      title={`${data.name} ${data.surname}`.trim() || "Md Rohan Mia"}
                       fill
                       className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
                       priority

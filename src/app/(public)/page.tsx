@@ -8,12 +8,13 @@ import { getBentoData } from '@/actions/adminBento';
 import { getFeaturedProjects } from '@/actions/adminProjects';
 import { getPublicLinks } from '@/actions/adminLinks';
 
+import { buildDynamicMetadata } from '@/lib/seo/metadata';
+
 export const revalidate = 60; // 0ms instantaneous visitor load with background revalidation
 
-export const metadata = {
-  title: 'MD Rohan Mia | Full Stack Software Engineer',
-  description: 'Specializing in Next.js 16 architectures, type-safe full-stack platforms, and cinematic UI/UX.',
-};
+export async function generateMetadata() {
+  return await buildDynamicMetadata({ path: "/" });
+}
 
 export default async function Home() {
   const [{ socialMap }, heroData, bentoData, featuredProjects] = await Promise.all([

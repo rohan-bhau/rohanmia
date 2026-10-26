@@ -94,8 +94,10 @@ export async function saveAdminAbout(
 
     const updated = await updateAboutContentDb(data);
     updateTag(PUBLIC_DATA_TAGS.about);
+    updateTag(PUBLIC_DATA_TAGS.seo);
     revalidatePath("/about");
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     revalidatePath("/control-room-internal/about");
     return { success: true, content: updated };
   } catch (err: any) {

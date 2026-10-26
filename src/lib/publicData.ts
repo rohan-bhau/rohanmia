@@ -13,6 +13,7 @@ import { fetchAllEntries } from "@/lib/db/guestbook";
 import { getLinksDb } from "@/lib/db/links";
 import { getFeaturedProjectsDb, getProjectsDb } from "@/lib/db/projects";
 import { getTechStackDb } from "@/lib/db/stack";
+import { getSeoSettingsDb, getAllPageSeoDb, getPageSeoDb } from "@/lib/db/seo";
 
 export const PUBLIC_DATA_TAGS = {
   about: "public-about",
@@ -24,6 +25,7 @@ export const PUBLIC_DATA_TAGS = {
   projects: "public-projects",
   settings: "public-settings",
   stack: "public-stack",
+  seo: "public-seo",
 } as const;
 
 const cacheOptions = (tag: string) => ({
@@ -91,3 +93,23 @@ export const getCachedTechStack = unstable_cache(
   ["public-tech-stack"],
   cacheOptions(PUBLIC_DATA_TAGS.stack),
 );
+
+export const getCachedSeoSettings = unstable_cache(
+  getSeoSettingsDb,
+  ["public-seo-settings"],
+  cacheOptions(PUBLIC_DATA_TAGS.seo),
+);
+
+export const getCachedAllPageSeo = unstable_cache(
+  getAllPageSeoDb,
+  ["public-all-page-seo"],
+  cacheOptions(PUBLIC_DATA_TAGS.seo),
+);
+
+export const getCachedPageSeo = (pagePath: string) =>
+  unstable_cache(
+    () => getPageSeoDb(pagePath),
+    [`public-page-seo-${pagePath}`],
+    cacheOptions(PUBLIC_DATA_TAGS.seo),
+  )();
+

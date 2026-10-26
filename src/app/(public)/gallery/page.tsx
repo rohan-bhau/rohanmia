@@ -1,13 +1,13 @@
 import { getGalleryImages } from "@/actions/adminGallery";
 import GalleryClient from "@/components/gallery/GalleryClient";
 
+import { buildDynamicMetadata } from "@/lib/seo/metadata";
+
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Gallery & Visual Archive | MD Rohan Mia",
-  description:
-    "Curated visual chronicle of personal moments, travels, engineering work, and memories.",
-};
+export async function generateMetadata() {
+  return await buildDynamicMetadata({ path: "/gallery" });
+}
 
 export default async function GalleryPage() {
   const images = await getGalleryImages();

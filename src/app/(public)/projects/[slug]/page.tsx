@@ -66,39 +66,47 @@ function mapDbProject(project: DbProjectRow): CaseStudy {
   };
 }
 
+import { buildDynamicMetadata, getBaseSiteUrl } from "@/lib/seo/metadata";
+import { getCachedSeoSettings } from "@/lib/publicData";
+import { generateProjectJsonLd, serializeJsonLd } from "@/lib/seo/jsonLd";
+
 export async function generateMetadata({ params }: CaseStudyPageProps) {
   const { slug } = await params;
   const dbP = await getProjectBySlugDb(slug);
   if (!dbP) notFound();
-  const project = mapDbProject(dbP);
 
-  return {
-    title: `${project.title} — System Architecture Case Study | Rohan Mia`,
-    description: `${project.title}: ${project.tagline}. ${project.overview}`,
-    openGraph: {
-      title: `${project.title} — System Architecture Case Study`,
-      description: project.tagline,
-      images: [
-        {
-          url: project.previewImage,
-          width: 1200,
-          height: 630,
-          alt: project.title,
-        },
-      ],
+  return await buildDynamicMetadata({
+    path: `/projects/${slug}`,
+    project: {
+      title: dbP.title,
+      tagline: dbP.tagline || undefined,
+      overview: dbP.overview || undefined,
+      seo_title: (dbP as any).seo_title,
+      seo_description: (dbP as any).seo_description,
+      canonical_url: (dbP as any).canonical_url,
+      og_image: (dbP as any).og_image || dbP.preview_image,
+      og_image_alt: (dbP as any).og_image_alt || dbP.title,
+      no_index: (dbP as any).no_index,
+      keywords: (dbP as any).keywords,
+      preview_image: dbP.preview_image,
     },
-  };
+  });
 }
 
 export default async function ProjectCaseStudyPage({
   params,
 }: CaseStudyPageProps) {
   const { slug } = await params;
-  const dbProjects = await getProjectsDb();
+  const [dbProjects, seoSettings] = await Promise.all([
+    getProjectsDb(),
+    getCachedSeoSettings().catch(() => null),
+  ]);
+
   const projectIndex = dbProjects.findIndex((entry) => entry.slug === slug);
   if (projectIndex === -1) notFound();
 
-  const project = mapDbProject(dbProjects[projectIndex]);
+  const rawProject = dbProjects[projectIndex];
+  const project = mapDbProject(rawProject);
   const prev =
     dbProjects.length > 1
       ? mapDbProject(
@@ -112,7 +120,37 @@ export default async function ProjectCaseStudyPage({
       ? mapDbProject(dbProjects[(projectIndex + 1) % dbProjects.length])
       : null;
 
+  const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
+  const projectJsonLd = seoSettings
+    ? generateProjectJsonLd(
+        {
+          slug: rawProject.slug,
+          title: rawProject.title,
+          tagline: rawProject.tagline,
+          overview: rawProject.overview,
+          preview_image: rawProject.preview_image,
+          live_url: rawProject.live_url,
+          github_url: rawProject.github_url,
+          tech_stack: rawProject.tech_stack,
+          created_at: rawProject.created_at,
+          updated_at: rawProject.updated_at,
+        },
+        seoSettings,
+        baseUrl
+      )
+    : null;
+
   return (
-    <CaseStudyClient project={project} prevProject={prev} nextProject={next} />
+    <>
+      {projectJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(projectJsonLd),
+          }}
+        />
+      )}
+      <CaseStudyClient project={project} prevProject={prev} nextProject={next} />
+    </>
   );
 }
