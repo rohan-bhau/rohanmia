@@ -9,6 +9,7 @@ import Preloader from "@/components/shared/Preloader";
 import { Toaster } from "sonner";
 import { cookies } from "next/headers";
 import { AccentColor } from "@/types/theme";
+import { auth } from "@/auth";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -57,7 +58,8 @@ export default async function RootLayout({
       ? cookieAccent
       : 'cyan';
 
-  const [seoSettings, { links }] = await Promise.all([
+  const [session, seoSettings, { links }] = await Promise.all([
+    auth().catch(() => null),
     getCachedSeoSettings().catch(() => null),
     import('@/actions/adminLinks').then(m => m.getPublicLinks()).catch(() => ({ links: [] })),
   ]);
@@ -94,7 +96,7 @@ export default async function RootLayout({
           />
         )}
 
-        <Providers initialAccent={initialAccent}>
+        <Providers initialAccent={initialAccent} session={session}>
           <Preloader />
           <Background />
           <Toaster theme="dark" richColors position="top-right" />

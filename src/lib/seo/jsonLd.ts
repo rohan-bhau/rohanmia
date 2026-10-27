@@ -13,9 +13,34 @@ export function generatePersonJsonLd(
   activeSocials: string[] = []
 ) {
   const cleanBase = baseUrl ? baseUrl.replace(/\/+$/, "") : "";
+  let baseHostname = "";
+  if (cleanBase) {
+    try {
+      baseHostname = new URL(cleanBase).hostname.toLowerCase();
+    } catch {
+      // Ignore parse failure on base URL
+    }
+  }
+
   const allSocials = Array.from(
     new Set([...(seo.social_profiles || []), ...activeSocials])
-  ).filter(Boolean);
+  )
+    .filter(Boolean)
+    .filter((url): url is string => {
+      const trimmed = url.trim();
+      if (!/^https?:\/\//i.test(trimmed)) {
+        return false;
+      }
+      try {
+        const parsed = new URL(trimmed);
+        if (baseHostname && parsed.hostname.toLowerCase() === baseHostname) {
+          return false;
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    });
 
   const profileImageUrl = seo.profile_image_url || undefined;
 

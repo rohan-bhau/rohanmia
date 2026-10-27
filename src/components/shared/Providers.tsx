@@ -1,6 +1,7 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import React from 'react';
 import SmoothScroll from './SmoothScroll';
 import AnalyticsTracker from './AnalyticsTracker';
@@ -14,13 +15,15 @@ import { AccentColor } from '@/types/theme';
 
 export default function Providers({ 
   children,
-  initialAccent = 'cyan'
+  initialAccent = 'cyan',
+  session = null,
 }: { 
   children: React.ReactNode;
   initialAccent?: AccentColor;
+  session?: Session | null;
 }) {
   return (
-    <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>
+    <SessionProvider session={session} refetchOnWindowFocus={false} refetchInterval={0}>
       <ThemeProvider initialAccent={initialAccent}>
         <BookingProvider>
           <ToastProvider>
