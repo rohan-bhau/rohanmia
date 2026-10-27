@@ -19,6 +19,13 @@ import GithubContributionGraph from "@/components/about/GithubContributionGraph"
 import fallbackContributions from "@/data/github-contributions.json";
 import { DbAboutContentRow } from "@/lib/db/content";
 
+function isBotUser(): boolean {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return true;
+  if (navigator.webdriver) return true;
+  const ua = (navigator.userAgent || "").toLowerCase();
+  return /bot|crawler|spider|googlebot|google-inspectiontool|bingbot|yandex|slurp|duckduckbot|baiduspider|headlesschrome/i.test(ua);
+}
+
 export default function AboutClient({
   content: initialContent,
   socialMap: initialSocialMap,
@@ -41,9 +48,20 @@ export default function AboutClient({
   });
 
   useEffect(() => {
-    fetch("/api/github-stats")
-      .then((res) => res.json())
-      .then((data) => {
+    // Avoid triggering crawler-blocked API requests during search engine inspection
+    if (isBotUser()) {
+      return;
+    }
+
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/github-stats");
+        if (!res.ok) return;
+
+        const text = await res.text().catch(() => "");
+        if (!text || !text.trim()) return;
+
+        const data = JSON.parse(text);
         if (data?.success) {
           setGithubStats((prev) => ({
             publicRepos: data.publicRepos ?? prev.publicRepos,
@@ -53,8 +71,28 @@ export default function AboutClient({
             contributions: data.contributions ?? prev.contributions,
           }));
         }
-      })
-      .catch((err) => console.error("Failed to load GitHub stats:", err));
+      } catch {
+        // Silently retain pre-bundled fallback contributions on network or parse failure
+      }
+    };
+
+    let idleHandle: number | undefined;
+    let timerHandle: ReturnType<typeof setTimeout> | undefined;
+
+    if (typeof window.requestIdleCallback === "function") {
+      idleHandle = window.requestIdleCallback(fetchStats, { timeout: 3000 });
+    } else {
+      timerHandle = setTimeout(fetchStats, 1000);
+    }
+
+    return () => {
+      if (idleHandle && typeof window.cancelIdleCallback === "function") {
+        window.cancelIdleCallback(idleHandle);
+      }
+      if (timerHandle) {
+        clearTimeout(timerHandle);
+      }
+    };
   }, []);
 
   // Scroll tracking for Experience Timeline divider & traveling avatar
