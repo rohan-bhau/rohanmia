@@ -21,8 +21,23 @@ export default async function AboutPage() {
   ]);
 
   const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
+  const carouselImageUrls = (content?.carousel_items || [])
+    .map((item: any) =>
+      item?.image
+        ? item.image.startsWith("http")
+          ? item.image
+          : `${baseUrl}${item.image}`
+        : null
+    )
+    .filter((url): url is string => Boolean(url));
+
   const profilePageJsonLd = seoSettings
-    ? generateProfilePageJsonLd(seoSettings, baseUrl, content?.updated_at)
+    ? generateProfilePageJsonLd(
+        seoSettings,
+        baseUrl,
+        content?.updated_at,
+        carouselImageUrls
+      )
     : null;
 
   return (

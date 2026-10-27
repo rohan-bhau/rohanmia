@@ -9,8 +9,7 @@ export function serializeJsonLd(data: unknown): string {
 
 export function generatePersonJsonLd(
   seo: DbSeoSettingsRow,
-  baseUrl: string,
-  activeSocials: string[] = []
+  baseUrl: string
 ) {
   const cleanBase = baseUrl ? baseUrl.replace(/\/+$/, "") : "";
   let baseHostname = "";
@@ -22,18 +21,19 @@ export function generatePersonJsonLd(
     }
   }
 
-  const allSocials = Array.from(
-    new Set([...(seo.social_profiles || []), ...activeSocials])
-  )
-    .filter(Boolean)
+  // Generate sameAs exclusively from explicitly configured social profiles in SEO dashboard
+  const validSocials = Array.from(new Set(seo.social_profiles || []))
+    .map((s) => (typeof s === "string" ? s.trim() : ""))
     .filter((url): url is string => {
-      const trimmed = url.trim();
-      if (!/^https?:\/\//i.test(trimmed)) {
-        return false;
-      }
+      if (!url) return false;
       try {
-        const parsed = new URL(trimmed);
-        if (baseHostname && parsed.hostname.toLowerCase() === baseHostname) {
+        const parsed = new URL(url);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+          return false;
+        }
+        const host = parsed.hostname.toLowerCase();
+        // Exclude self-referential internal domain URLs
+        if (baseHostname && host === baseHostname) {
           return false;
         }
         return true;
@@ -43,6 +43,13 @@ export function generatePersonJsonLd(
     });
 
   const profileImageUrl = seo.profile_image_url || undefined;
+  const primaryTitle = seo.professional_title?.trim() || undefined;
+  const locationParts = [seo.location_locality, seo.location_country].filter(Boolean).join(", ");
+  const disambiguation = seo.primary_name
+    ? `${seo.primary_name}${seo.nickname ? ` (${seo.nickname})` : ""}${primaryTitle ? `, ${primaryTitle}` : ""}${
+        locationParts ? ` based in ${locationParts}` : ""
+      }.`
+    : undefined;
 
   return {
     "@context": "https://schema.org",
@@ -62,13 +69,15 @@ export function generatePersonJsonLd(
           description: seo.profile_image_alt || undefined,
         }
       : undefined,
-    jobTitle: seo.professional_title || undefined,
-    disambiguatingDescription:
-      seo.primary_name && seo.nickname
-        ? `${seo.primary_name} (${seo.nickname}), ${seo.professional_title || ""}${
-            seo.location_locality ? ` in ${seo.location_locality}, ${seo.location_country || ""}` : ""
-          }`.trim()
-        : undefined,
+    jobTitle: primaryTitle,
+    disambiguatingDescription: disambiguation,
+    hasOccupation: primaryTitle
+      ? {
+          "@type": "Occupation",
+          name: primaryTitle,
+          skills: seo.skills?.length ? seo.skills.join(", ") : undefined,
+        }
+      : undefined,
     description: seo.detailed_bio || seo.short_bio || seo.default_meta_description || undefined,
     address:
       seo.location_locality || seo.location_country
@@ -79,7 +88,7 @@ export function generatePersonJsonLd(
           }
         : undefined,
     knowsAbout: seo.skills?.length ? seo.skills : undefined,
-    sameAs: allSocials.length > 0 ? allSocials : undefined,
+    sameAs: validSocials.length > 0 ? validSocials : undefined,
   };
 }
 
@@ -105,9 +114,47 @@ export function generateWebSiteJsonLd(seo: DbSeoSettingsRow, baseUrl: string) {
 export function generateProfilePageJsonLd(
   seo: DbSeoSettingsRow,
   baseUrl: string,
-  dateModified?: string
+  dateModified?: string,
+  pageImages: string[] = []
 ) {
   const cleanBase = baseUrl ? baseUrl.replace(/\/+$/, "") : "";
+  let baseHostname = "";
+  if (cleanBase) {
+    try {
+      baseHostname = new URL(cleanBase).hostname.toLowerCase();
+    } catch {
+      // Ignore parse failure
+    }
+  }
+
+  const validSocials = Array.from(new Set(seo.social_profiles || []))
+    .map((s) => (typeof s === "string" ? s.trim() : ""))
+    .filter((url): url is string => {
+      if (!url) return false;
+      try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return false;
+        if (baseHostname && parsed.hostname.toLowerCase() === baseHostname) return false;
+        return true;
+      } catch {
+        return false;
+      }
+    });
+
+  const allImages = Array.from(
+    new Set([
+      ...(seo.profile_image_url ? [seo.profile_image_url] : []),
+      ...pageImages,
+    ])
+  ).filter(Boolean);
+
+  const primaryTitle = seo.professional_title?.trim() || undefined;
+  const locationParts = [seo.location_locality, seo.location_country].filter(Boolean).join(", ");
+  const disambiguation = seo.primary_name
+    ? `${seo.primary_name}${seo.nickname ? ` (${seo.nickname})` : ""}${primaryTitle ? `, ${primaryTitle}` : ""}${
+        locationParts ? ` based in ${locationParts}` : ""
+      }.`
+    : undefined;
 
   return {
     "@context": "https://schema.org",
@@ -123,17 +170,72 @@ export function generateProfilePageJsonLd(
       : undefined,
     description: seo.detailed_bio || seo.short_bio || undefined,
     dateModified: dateModified || seo.updated_at || undefined,
-    mainEntity: cleanBase
-      ? {
-          "@id": `${cleanBase}#person`,
-        }
-      : undefined,
+    mainEntity: {
+      "@type": "Person",
+      ...(cleanBase ? { "@id": `${cleanBase}#person`, url: cleanBase } : {}),
+      name: seo.primary_name || undefined,
+      alternateName: seo.alternate_names?.length ? seo.alternate_names : undefined,
+      jobTitle: primaryTitle,
+      disambiguatingDescription: disambiguation,
+      description: seo.detailed_bio || seo.short_bio || undefined,
+      image: seo.profile_image_url || undefined,
+      sameAs: validSocials.length > 0 ? validSocials : undefined,
+    },
     primaryImageOfPage:
       cleanBase && seo.profile_image_url
         ? {
             "@id": `${cleanBase}#profile-image`,
           }
         : undefined,
+    image: allImages.length > 0 ? allImages : undefined,
+  };
+}
+
+export function generateImageGalleryJsonLd(
+  photos: Array<{ src: string; title: string; category?: string; caption?: string }>,
+  baseUrl: string,
+  authorName?: string
+) {
+  const cleanBase = baseUrl ? baseUrl.replace(/\/+$/, "") : "";
+  const galleryUrl = cleanBase ? `${cleanBase}/gallery` : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    ...(galleryUrl ? { "@id": `${galleryUrl}#gallery`, url: galleryUrl } : {}),
+    name: authorName ? `Visual Archive & Moments — ${authorName}` : "Visual Archive & Moments",
+    description: authorName
+      ? `Curated visual chronicle of personal milestones, travels, and workspaces by ${authorName}.`
+      : "Curated visual chronicle of personal milestones, travels, and workspaces.",
+    author: cleanBase
+      ? {
+          "@id": `${cleanBase}#person`,
+        }
+      : undefined,
+    image: photos.map((photo, index) => {
+      const fullSrc = photo.src.startsWith("http")
+        ? photo.src
+        : cleanBase
+        ? `${cleanBase}${photo.src}`
+        : photo.src;
+
+      return {
+        "@type": "ImageObject",
+        position: index + 1,
+        contentUrl: fullSrc,
+        url: fullSrc,
+        name: photo.title,
+        caption: photo.caption || photo.title,
+        description: photo.caption || `${photo.title} (${photo.category || "Moment"})`,
+        ...(cleanBase
+          ? {
+              author: {
+                "@id": `${cleanBase}#person`,
+              },
+            }
+          : {}),
+      };
+    }),
   };
 }
 

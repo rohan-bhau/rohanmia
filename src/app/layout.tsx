@@ -58,17 +58,15 @@ export default async function RootLayout({
       ? cookieAccent
       : 'cyan';
 
-  const [session, seoSettings, { links }] = await Promise.all([
+  const [session, seoSettings] = await Promise.all([
     auth().catch(() => null),
     getCachedSeoSettings().catch(() => null),
-    import('@/actions/adminLinks').then(m => m.getPublicLinks()).catch(() => ({ links: [] })),
   ]);
 
-  const activeSocials = (links || []).filter(l => l.active).map(l => l.href);
   const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
 
   const personJsonLd = seoSettings
-    ? generatePersonJsonLd(seoSettings, baseUrl, activeSocials)
+    ? generatePersonJsonLd(seoSettings, baseUrl)
     : null;
   const webSiteJsonLd = seoSettings
     ? generateWebSiteJsonLd(seoSettings, baseUrl)

@@ -1,16 +1,65 @@
 import type { MetadataRoute } from "next";
 import { getProjectSeoListDb, getAllPageSeoDb, getSeoSettingsDb } from "@/lib/db/seo";
 import { getBaseSiteUrl } from "@/lib/seo/metadata";
+import { getCachedAboutContent, getCachedGalleryPhotos } from "@/lib/publicData";
+
+function toAbsoluteUrl(url: string | null | undefined, baseUrl: string): string | null {
+  if (!url || typeof url !== "string") return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  const cleanPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${baseUrl}${cleanPath}`;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [seoSettings, pageSeoList, projects] = await Promise.all([
+  const [seoSettings, pageSeoList, projects, galleryPhotos, aboutContent] = await Promise.all([
     getSeoSettingsDb().catch(() => null),
     getAllPageSeoDb().catch(() => []),
     getProjectSeoListDb().catch(() => []),
+    getCachedGalleryPhotos().catch(() => []),
+    getCachedAboutContent().catch(() => null),
   ]);
 
   const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
-  const profileImage = seoSettings?.profile_image_url || undefined;
+  const profileImage = toAbsoluteUrl(seoSettings?.profile_image_url, baseUrl);
+
+  // Collect about carousel images
+  const aboutCarouselImages: string[] = [];
+  if (profileImage) aboutCarouselImages.push(profileImage);
+  if (aboutContent?.carousel_items && Array.isArray(aboutContent.carousel_items)) {
+    for (const item of aboutContent.carousel_items) {
+      const abs = toAbsoluteUrl(item?.image, baseUrl);
+      if (abs && !aboutCarouselImages.includes(abs)) {
+        aboutCarouselImages.push(abs);
+      }
+    }
+  }
+
+  // Collect published gallery images
+  const galleryImages: string[] = [];
+  if (Array.isArray(galleryPhotos)) {
+    for (const photo of galleryPhotos) {
+      const abs = toAbsoluteUrl(photo?.src, baseUrl);
+      if (abs && !galleryImages.includes(abs)) {
+        galleryImages.push(abs);
+      }
+    }
+  }
+
+  // Collect all projects preview images
+  const projectPreviewImages: string[] = [];
+  if (Array.isArray(projects)) {
+    for (const project of projects) {
+      if (project.no_index) continue;
+      const abs = toAbsoluteUrl(project.preview_image || project.og_image, baseUrl);
+      if (abs && !projectPreviewImages.includes(abs)) {
+        projectPreviewImages.push(abs);
+      }
+    }
+  }
 
   // Build a lookup map of page SEO overrides
   const pageSeoMap = new Map((pageSeoList || []).map((p) => [p.page_path, p]));
@@ -32,12 +81,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       path: "/about",
       priority: 0.9,
       changeFrequency: "monthly",
-      images: profileImage ? [profileImage] : undefined,
+      images: aboutCarouselImages.length > 0 ? aboutCarouselImages : undefined,
     },
     {
       path: "/projects",
       priority: 0.9,
       changeFrequency: "weekly",
+      images: projectPreviewImages.length > 0 ? projectPreviewImages : undefined,
     },
     {
       path: "/tech-stack",
@@ -53,6 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       path: "/gallery",
       priority: 0.7,
       changeFrequency: "monthly",
+      images: galleryImages.length > 0 ? galleryImages : undefined,
     },
     {
       path: "/guestbook",
@@ -106,12 +157,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const projectCanonical =
         project.canonical_url || `${baseUrl}/projects/${project.slug}`;
 
+      const projectImg = toAbsoluteUrl(project.preview_image || project.og_image, baseUrl);
+
       return {
         url: projectCanonical,
         lastModified: lastModDate,
         changeFrequency: "monthly",
         priority: project.featured ? 0.85 : 0.75,
-        images: project.preview_image ? [project.preview_image] : undefined,
+        images: projectImg ? [projectImg] : undefined,
       };
     });
 

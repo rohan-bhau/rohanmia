@@ -260,7 +260,7 @@ export default function AboutClient({
                 >
                   <Image
                     src="/images/about/hero-profile.png"
-                    alt="Rohan"
+                    alt={content?.heading_title || "Portrait"}
                     fill
                     className="object-cover object-top"
                     priority
@@ -294,7 +294,7 @@ export default function AboutClient({
                 >
                   <Image
                     src="/images/about/hero-profile.png"
-                    alt="Rohan"
+                    alt={content?.heading_title || "Portrait"}
                     fill
                     className="object-cover object-top"
                   />

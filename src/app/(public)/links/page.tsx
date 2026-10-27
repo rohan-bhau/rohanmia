@@ -21,15 +21,21 @@ export default async function LinksPage() {
     getCachedSeoSettings().catch(() => null),
   ]);
 
-  const primaryName = seoSettings?.primary_name || (heroData?.name ? `${heroData.name} ${heroData.surname || ''}`.trim() : 'MD Rohan Mia');
+  const primaryName =
+    seoSettings?.primary_name ||
+    (heroData?.name ? `${heroData.name} ${heroData.surname || ''}`.trim() : '');
   const avatarUrl = seoSettings?.profile_image_url || heroData?.profile_image || '';
-  const location = seoSettings ? `${seoSettings.location_locality}, ${seoSettings.location_country}` : 'Dhaka, Bangladesh';
+  const location = [seoSettings?.location_locality, seoSettings?.location_country].filter(Boolean).join(", ");
+  const roles = [
+    seoSettings?.professional_title,
+    ...(heroData?.rotating_roles || []),
+  ].filter((r): r is string => Boolean(r?.trim()));
 
   const profileData = {
     name: primaryName,
-    roles: [seoSettings?.professional_title || 'Full Stack Developer', 'Freelancer'],
+    roles: roles.length > 0 ? roles : undefined,
     avatar: avatarUrl,
-    location: location,
+    location: location || undefined,
     email: socialMap?.email || settings?.contact_email || ''
   };
 

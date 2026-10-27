@@ -143,6 +143,7 @@ export async function saveGlobalSeoSettings(
     updateTag(PUBLIC_DATA_TAGS.settings);
     updateTag(PUBLIC_DATA_TAGS.hero);
     revalidatePath("/", "layout");
+    revalidatePath("/sitemap.xml");
 
     return { success: true, globalSeo: updated };
   } catch (err: any) {

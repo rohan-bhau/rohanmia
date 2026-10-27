@@ -159,6 +159,7 @@ export default function StackedImageCarousel({
                 alt={item.alt || item.title}
                 fill
                 priority={index === 0}
+                loading={index < 3 ? "eager" : "lazy"}
                 className="object-cover object-center pointer-events-none select-none"
                 sizes="(max-width: 768px) 240px, 280px"
               />

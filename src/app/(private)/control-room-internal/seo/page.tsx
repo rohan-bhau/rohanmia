@@ -244,7 +244,7 @@ export default function AdminSeoPage() {
   }
 
   const baseUrl = globalSeo.canonical_base_url || "";
-  const personJsonLd = generatePersonJsonLd(globalSeo, baseUrl, verifiedSocials);
+  const personJsonLd = generatePersonJsonLd(globalSeo, baseUrl);
   const webSiteJsonLd = generateWebSiteJsonLd(globalSeo, baseUrl);
 
   return (
