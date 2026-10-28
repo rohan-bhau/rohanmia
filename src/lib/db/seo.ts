@@ -22,6 +22,7 @@ export interface DbSeoSettingsRow {
   default_og_description: string;
   default_og_image: string;
   google_verification_token: string;
+  google_tag_id: string;
   default_robots_index: boolean;
   default_robots_follow: boolean;
   default_twitter_card: "summary_large_image" | "summary";
@@ -110,6 +111,7 @@ export async function updateSeoSettingsDb(
     { name: "default_og_description", json: false },
     { name: "default_og_image", json: false },
     { name: "google_verification_token", json: false },
+    { name: "google_tag_id", json: false },
     { name: "default_robots_index", json: false },
     { name: "default_robots_follow", json: false },
     { name: "default_twitter_card", json: false },

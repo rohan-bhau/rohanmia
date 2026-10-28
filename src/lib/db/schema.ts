@@ -389,6 +389,7 @@ export function ensurePortfolioTables(): Promise<void> {
           default_og_description TEXT DEFAULT 'Explore the personal portfolio, engineering case studies, and architecture projects of Md Rohan Mia, Full Stack Developer from Dhaka, Bangladesh.',
           default_og_image TEXT DEFAULT '',
           google_verification_token VARCHAR(255) DEFAULT 'yH9eJO5yYLc4wgh3jwtqR_QE28Vsc1SrST5teq331do',
+          google_tag_id VARCHAR(64) DEFAULT 'G-4PP1H13CXG',
           default_robots_index BOOLEAN DEFAULT true,
           default_robots_follow BOOLEAN DEFAULT true,
           default_twitter_card VARCHAR(32) DEFAULT 'summary_large_image',
@@ -429,6 +430,7 @@ export function ensurePortfolioTables(): Promise<void> {
       await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS og_image_alt TEXT;`);
       await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS no_index BOOLEAN DEFAULT false;`);
       await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS keywords JSONB DEFAULT '[]'::jsonb;`);
+      await executeSql(`ALTER TABLE seo_settings ADD COLUMN IF NOT EXISTS google_tag_id VARCHAR(64) DEFAULT 'G-4PP1H13CXG';`);
 
       // Seed initial seo_settings row if not exists, populating profile_image from hero_content if available
       await executeSql(`

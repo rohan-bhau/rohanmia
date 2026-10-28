@@ -64,6 +64,7 @@ export default async function RootLayout({
   ]);
 
   const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
+  const googleTagId = seoSettings?.google_tag_id;
 
   const personJsonLd = seoSettings
     ? generatePersonJsonLd(seoSettings, baseUrl)
@@ -77,6 +78,20 @@ export default async function RootLayout({
       <body
         className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
       >
+        {googleTagId && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${googleTagId}`}
+            />
+            <script
+              id="google-tag"
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', '${googleTagId}');`,
+              }}
+            />
+          </>
+        )}
         {personJsonLd && (
           <script
             type="application/ld+json"

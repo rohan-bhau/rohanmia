@@ -1285,6 +1285,28 @@ export default function AdminSeoPage() {
                   />
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-xs font-mono uppercase text-neutral-400 font-medium block">
+                    Google Tag / Analytics Measurement ID (gtag.js)
+                  </label>
+                  <input
+                    type="text"
+                    value={globalSeo.google_tag_id || ""}
+                    onChange={(e) =>
+                      setGlobalSeo((prev) =>
+                        prev
+                          ? { ...prev, google_tag_id: e.target.value }
+                          : prev
+                      )
+                    }
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-white focus:outline-none focus:border-white/30"
+                    placeholder="G-XXXXXXXXXX"
+                  />
+                  <p className="text-[11px] font-mono text-neutral-500">
+                    Measurement ID for Google Analytics. Automatically injected site-wide.
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/[0.06]">
                   <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1">
                     <div className="flex items-center justify-between text-xs font-mono text-neutral-400">
