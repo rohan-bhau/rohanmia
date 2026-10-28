@@ -158,13 +158,5 @@ export async function buildDynamicMetadata({
       description: ogDescription || undefined,
       images: ogImageUrl ? [ogImageUrl] : undefined,
     },
-    icons: {
-      icon: [
-        { url: "/favicon.png" },
-        { url: "/favicon.ico" },
-      ],
-      shortcut: "/favicon.png",
-      apple: "/favicon.png",
-    },
   };
 }
