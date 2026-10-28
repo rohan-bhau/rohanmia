@@ -106,10 +106,9 @@ export const getCachedAllPageSeo = unstable_cache(
   cacheOptions(PUBLIC_DATA_TAGS.seo),
 );
 
-export const getCachedPageSeo = (pagePath: string) =>
-  unstable_cache(
-    () => getPageSeoDb(pagePath),
-    [`public-page-seo-${pagePath}`],
-    cacheOptions(PUBLIC_DATA_TAGS.seo),
-  )();
+export const getCachedPageSeo = unstable_cache(
+  async (pagePath: string) => getPageSeoDb(pagePath),
+  ["public-page-seo"],
+  cacheOptions(PUBLIC_DATA_TAGS.seo),
+);
 

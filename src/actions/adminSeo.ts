@@ -170,7 +170,9 @@ export async function savePageSeoSettings(
     const updated = await upsertPageSeoDb(data);
 
     updateTag(PUBLIC_DATA_TAGS.seo);
-    revalidatePath(data.page_path);
+    revalidatePath(data.page_path, "page");
+    revalidatePath(data.page_path, "layout");
+    revalidatePath("/", "layout");
     revalidatePath("/sitemap.xml");
 
     return { success: true, pageSeo: updated };
@@ -207,8 +209,11 @@ export async function saveProjectSeoOverrides(
 
     updateTag(PUBLIC_DATA_TAGS.projects);
     updateTag(PUBLIC_DATA_TAGS.seo);
-    revalidatePath("/projects");
-    revalidatePath(`/projects/${projectId}`);
+    revalidatePath("/projects", "page");
+    revalidatePath("/projects", "layout");
+    revalidatePath(`/projects/${projectId}`, "page");
+    revalidatePath(`/projects/${projectId}`, "layout");
+    revalidatePath("/", "layout");
     revalidatePath("/sitemap.xml");
 
     return { success: true };

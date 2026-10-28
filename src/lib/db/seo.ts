@@ -176,38 +176,63 @@ export async function upsertPageSeoDb(
   await ensurePortfolioTables();
   const pagePath = data.page_path.trim();
 
+  // 1. Ensure the row exists
+  await executeSql(`
+    INSERT INTO page_seo (page_path, updated_at)
+    VALUES (${escapeSqlString(pagePath)}, CURRENT_TIMESTAMP)
+    ON CONFLICT (page_path) DO NOTHING;
+  `);
+
+  // 2. Build partial update SET clause ONLY for fields that are defined
+  const setClauses: string[] = [];
+
+  if (data.title !== undefined) {
+    const val = typeof data.title === "string" ? data.title.trim() : data.title;
+    setClauses.push(val ? `title = ${escapeSqlString(val)}` : `title = NULL`);
+  }
+  if (data.description !== undefined) {
+    const val = typeof data.description === "string" ? data.description.trim() : data.description;
+    setClauses.push(val ? `description = ${escapeSqlString(val)}` : `description = NULL`);
+  }
+  if (data.canonical_url !== undefined) {
+    const val = typeof data.canonical_url === "string" ? data.canonical_url.trim() : data.canonical_url;
+    setClauses.push(val ? `canonical_url = ${escapeSqlString(val)}` : `canonical_url = NULL`);
+  }
+  if (data.og_title !== undefined) {
+    const val = typeof data.og_title === "string" ? data.og_title.trim() : data.og_title;
+    setClauses.push(val ? `og_title = ${escapeSqlString(val)}` : `og_title = NULL`);
+  }
+  if (data.og_description !== undefined) {
+    const val = typeof data.og_description === "string" ? data.og_description.trim() : data.og_description;
+    setClauses.push(val ? `og_description = ${escapeSqlString(val)}` : `og_description = NULL`);
+  }
+  if (data.og_image !== undefined) {
+    const val = typeof data.og_image === "string" ? data.og_image.trim() : data.og_image;
+    setClauses.push(val ? `og_image = ${escapeSqlString(val)}` : `og_image = NULL`);
+  }
+  if (data.og_image_alt !== undefined) {
+    const val = typeof data.og_image_alt === "string" ? data.og_image_alt.trim() : data.og_image_alt;
+    setClauses.push(val ? `og_image_alt = ${escapeSqlString(val)}` : `og_image_alt = NULL`);
+  }
+  if (data.twitter_card !== undefined) {
+    setClauses.push(`twitter_card = ${escapeSqlString(data.twitter_card || "summary_large_image")}`);
+  }
+  if (data.robots_index !== undefined) {
+    setClauses.push(`robots_index = ${data.robots_index ? "true" : "false"}`);
+  }
+  if (data.robots_follow !== undefined) {
+    setClauses.push(`robots_follow = ${data.robots_follow ? "true" : "false"}`);
+  }
+  if (data.keywords !== undefined) {
+    setClauses.push(`keywords = ${escapeSqlJson(data.keywords || [])}`);
+  }
+
+  setClauses.push("updated_at = CURRENT_TIMESTAMP");
+
   const query = `
-    INSERT INTO page_seo (
-      page_path, title, description, canonical_url, og_title, og_description,
-      og_image, og_image_alt, twitter_card, robots_index, robots_follow, keywords, updated_at
-    ) VALUES (
-      ${escapeSqlString(pagePath)},
-      ${escapeSqlString(data.title ?? null)},
-      ${escapeSqlString(data.description ?? null)},
-      ${escapeSqlString(data.canonical_url ?? null)},
-      ${escapeSqlString(data.og_title ?? null)},
-      ${escapeSqlString(data.og_description ?? null)},
-      ${escapeSqlString(data.og_image ?? null)},
-      ${escapeSqlString(data.og_image_alt ?? null)},
-      ${escapeSqlString(data.twitter_card ?? "summary_large_image")},
-      ${data.robots_index !== false ? "true" : "false"},
-      ${data.robots_follow !== false ? "true" : "false"},
-      ${escapeSqlJson(data.keywords || [])},
-      CURRENT_TIMESTAMP
-    )
-    ON CONFLICT (page_path) DO UPDATE SET
-      title = EXCLUDED.title,
-      description = EXCLUDED.description,
-      canonical_url = EXCLUDED.canonical_url,
-      og_title = EXCLUDED.og_title,
-      og_description = EXCLUDED.og_description,
-      og_image = EXCLUDED.og_image,
-      og_image_alt = EXCLUDED.og_image_alt,
-      twitter_card = EXCLUDED.twitter_card,
-      robots_index = EXCLUDED.robots_index,
-      robots_follow = EXCLUDED.robots_follow,
-      keywords = EXCLUDED.keywords,
-      updated_at = CURRENT_TIMESTAMP
+    UPDATE page_seo
+    SET ${setClauses.join(", ")}
+    WHERE page_path = ${escapeSqlString(pagePath)}
     RETURNING *;
   `;
 
@@ -245,11 +270,26 @@ export async function updateProjectSeoDb(
   await ensurePortfolioTables();
 
   const updates: string[] = [];
-  if (data.seo_title !== undefined) updates.push(`seo_title = ${escapeSqlString(data.seo_title)}`);
-  if (data.seo_description !== undefined) updates.push(`seo_description = ${escapeSqlString(data.seo_description)}`);
-  if (data.canonical_url !== undefined) updates.push(`canonical_url = ${escapeSqlString(data.canonical_url)}`);
-  if (data.og_image !== undefined) updates.push(`og_image = ${escapeSqlString(data.og_image)}`);
-  if (data.og_image_alt !== undefined) updates.push(`og_image_alt = ${escapeSqlString(data.og_image_alt)}`);
+  if (data.seo_title !== undefined) {
+    const val = typeof data.seo_title === "string" ? data.seo_title.trim() : data.seo_title;
+    updates.push(val ? `seo_title = ${escapeSqlString(val)}` : `seo_title = NULL`);
+  }
+  if (data.seo_description !== undefined) {
+    const val = typeof data.seo_description === "string" ? data.seo_description.trim() : data.seo_description;
+    updates.push(val ? `seo_description = ${escapeSqlString(val)}` : `seo_description = NULL`);
+  }
+  if (data.canonical_url !== undefined) {
+    const val = typeof data.canonical_url === "string" ? data.canonical_url.trim() : data.canonical_url;
+    updates.push(val ? `canonical_url = ${escapeSqlString(val)}` : `canonical_url = NULL`);
+  }
+  if (data.og_image !== undefined) {
+    const val = typeof data.og_image === "string" ? data.og_image.trim() : data.og_image;
+    updates.push(val ? `og_image = ${escapeSqlString(val)}` : `og_image = NULL`);
+  }
+  if (data.og_image_alt !== undefined) {
+    const val = typeof data.og_image_alt === "string" ? data.og_image_alt.trim() : data.og_image_alt;
+    updates.push(val ? `og_image_alt = ${escapeSqlString(val)}` : `og_image_alt = NULL`);
+  }
   if (data.no_index !== undefined) updates.push(`no_index = ${data.no_index ? "true" : "false"}`);
   if (data.keywords !== undefined) updates.push(`keywords = ${escapeSqlJson(data.keywords)}`);
 

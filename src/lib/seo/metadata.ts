@@ -22,9 +22,10 @@ export async function buildDynamicMetadata({
   path,
   project,
 }: BuildMetadataParams): Promise<Metadata> {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const [seoSettings, pageSeo] = await Promise.all([
     getCachedSeoSettings().catch(() => null),
-    getCachedPageSeo(path).catch(() => null),
+    getCachedPageSeo(normalizedPath).catch(() => null),
   ]);
 
   const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);

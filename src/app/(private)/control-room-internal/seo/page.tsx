@@ -146,42 +146,82 @@ export default function AdminSeoPage() {
     });
   };
 
-  const handleSavePage = (updates: Partial<DbPageSeoRow>) => {
-    const updated = { ...activePageSeo, ...updates };
-    setPages((prev) =>
-      prev.some((p) => p.page_path === selectedPagePath)
-        ? prev.map((p) => (p.page_path === selectedPagePath ? updated : p))
-        : [...prev, updated]
-    );
+  const updateActivePageField = (field: keyof DbPageSeoRow, value: any) => {
+    setPages((prev) => {
+      const exists = prev.some((p) => p.page_path === selectedPagePath);
+      if (exists) {
+        return prev.map((p) =>
+          p.page_path === selectedPagePath ? { ...p, [field]: value } : p
+        );
+      }
+      return [...prev, { ...activePageSeo, [field]: value }];
+    });
+  };
 
+  const handleSaveActivePage = () => {
+    const targetPath = selectedPagePath;
+    const pageToSave = pages.find((p) => p.page_path === targetPath) || activePageSeo;
     startTransition(async () => {
       const res = await savePageSeoSettings({
-        ...updates,
-        page_path: selectedPagePath,
+        page_path: targetPath,
+        title: pageToSave.title ?? null,
+        description: pageToSave.description ?? null,
+        canonical_url: pageToSave.canonical_url ?? null,
+        robots_index: pageToSave.robots_index,
+        robots_follow: pageToSave.robots_follow,
       });
-      if (res.success) {
-        showToast("Page SEO updated", "success");
+      if (res.success && res.pageSeo) {
+        setPages((prev) =>
+          prev.some((p) => p.page_path === targetPath)
+            ? prev.map((p) => (p.page_path === targetPath ? res.pageSeo! : p))
+            : [...prev, res.pageSeo!]
+        );
+        showToast("Page SEO saved", "success");
       } else {
         showToast(res.error || "Failed to save page SEO", "error");
       }
     });
   };
 
-  const handleSaveProject = (updates: Partial<DbProjectSeoItem>) => {
+  const updateActiveProjectField = (field: keyof DbProjectSeoItem, value: any) => {
     if (!activeProject) return;
-    const updated = { ...activeProject, ...updates };
     setProjects((prev) =>
-      prev.map((p) => (p.id === activeProject.id ? updated : p))
+      prev.map((p) =>
+        p.id === activeProject.id ? { ...p, [field]: value } : p
+      )
     );
+  };
 
+  const handleSaveActiveProject = () => {
+    if (!activeProject) return;
+    const targetProjectId = activeProject.id;
+    const projectToSave = projects.find((p) => p.id === targetProjectId) || activeProject;
     startTransition(async () => {
-      const res = await saveProjectSeoOverrides(activeProject.id, updates);
+      const res = await saveProjectSeoOverrides(targetProjectId, {
+        seo_title: projectToSave.seo_title ?? null,
+        seo_description: projectToSave.seo_description ?? null,
+        canonical_url: projectToSave.canonical_url ?? null,
+        og_image: projectToSave.og_image ?? null,
+        og_image_alt: projectToSave.og_image_alt ?? null,
+        no_index: projectToSave.no_index,
+        keywords: projectToSave.keywords,
+      });
       if (res.success) {
-        showToast("Project SEO updated", "success");
+        showToast("Project SEO saved", "success");
       } else {
         showToast(res.error || "Failed to save project SEO", "error");
       }
     });
+  };
+
+  const handleHeaderSave = () => {
+    if (activeTab === "pages") {
+      handleSaveActivePage();
+    } else if (activeTab === "projects") {
+      handleSaveActiveProject();
+    } else {
+      handleSaveGlobal();
+    }
   };
 
   const handleProfilePhotoUpload = async (
@@ -257,7 +297,7 @@ export default function AdminSeoPage() {
 
         {mode === "studio" && (
           <button
-            onClick={handleSaveGlobal}
+            onClick={handleHeaderSave}
             disabled={isPending}
             style={{
               backgroundColor: currentTheme.primary,
@@ -943,7 +983,7 @@ export default function AdminSeoPage() {
                   <input
                     type="text"
                     value={activePageSeo.title || ""}
-                    onChange={(e) => handleSavePage({ title: e.target.value })}
+                    onChange={(e) => updateActivePageField("title", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-white focus:outline-none focus:border-white/30"
                     placeholder="Page SEO Title"
                   />
@@ -956,7 +996,7 @@ export default function AdminSeoPage() {
                   <textarea
                     rows={3}
                     value={activePageSeo.description || ""}
-                    onChange={(e) => handleSavePage({ description: e.target.value })}
+                    onChange={(e) => updateActivePageField("description", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-white focus:outline-none focus:border-white/30 leading-relaxed"
                   />
                 </div>
@@ -968,7 +1008,7 @@ export default function AdminSeoPage() {
                   <input
                     type="text"
                     value={activePageSeo.canonical_url || ""}
-                    onChange={(e) => handleSavePage({ canonical_url: e.target.value })}
+                    onChange={(e) => updateActivePageField("canonical_url", e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-white focus:outline-none focus:border-white/30"
                     placeholder={globalSeo.canonical_base_url ? `${globalSeo.canonical_base_url.replace(/\/+$/, "")}${selectedPagePath}` : `https://rohanmia.vercel.app${selectedPagePath}`}
                   />
@@ -980,7 +1020,7 @@ export default function AdminSeoPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleSavePage({ robots_index: !activePageSeo.robots_index })
+                        updateActivePageField("robots_index", !activePageSeo.robots_index)
                       }
                       className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
                         activePageSeo.robots_index ? "bg-emerald-500" : "bg-neutral-700"
@@ -999,7 +1039,7 @@ export default function AdminSeoPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleSavePage({ robots_follow: !activePageSeo.robots_follow })
+                        updateActivePageField("robots_follow", !activePageSeo.robots_follow)
                       }
                       className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
                         activePageSeo.robots_follow ? "bg-emerald-500" : "bg-neutral-700"
@@ -1012,6 +1052,26 @@ export default function AdminSeoPage() {
                       />
                     </button>
                   </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveActivePage}
+                    disabled={isPending}
+                    style={{
+                      backgroundColor: currentTheme.primary,
+                      color: "#000000",
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
+                  >
+                    {isPending ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <Check size={13} />
+                    )}
+                    <span>Save Page SEO</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1046,7 +1106,7 @@ export default function AdminSeoPage() {
                       type="text"
                       value={activeProject.seo_title || ""}
                       onChange={(e) =>
-                        handleSaveProject({ seo_title: e.target.value })
+                        updateActiveProjectField("seo_title", e.target.value)
                       }
                       className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-white focus:outline-none focus:border-white/30"
                       placeholder={activeProject.title || "Project SEO Title"}
@@ -1061,7 +1121,7 @@ export default function AdminSeoPage() {
                       rows={3}
                       value={activeProject.seo_description || ""}
                       onChange={(e) =>
-                        handleSaveProject({ seo_description: e.target.value })
+                        updateActiveProjectField("seo_description", e.target.value)
                       }
                       className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-white focus:outline-none focus:border-white/30 leading-relaxed"
                       placeholder={activeProject.tagline || ""}
@@ -1073,7 +1133,7 @@ export default function AdminSeoPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleSaveProject({ no_index: !activeProject.no_index })
+                        updateActiveProjectField("no_index", !activeProject.no_index)
                       }
                       className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
                         activeProject.no_index ? "bg-rose-500" : "bg-neutral-700"
@@ -1084,6 +1144,26 @@ export default function AdminSeoPage() {
                           activeProject.no_index ? "right-[3px]" : "left-[3px]"
                         }`}
                       />
+                    </button>
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleSaveActiveProject}
+                      disabled={isPending}
+                      style={{
+                        backgroundColor: currentTheme.primary,
+                        color: "#000000",
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-mono font-semibold hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-50"
+                    >
+                      {isPending ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Check size={13} />
+                      )}
+                      <span>Save Project SEO</span>
                     </button>
                   </div>
                 </div>
