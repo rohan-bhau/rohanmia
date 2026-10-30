@@ -1,15 +1,38 @@
 import { getGalleryImages } from "@/actions/adminGallery";
 import GalleryClient from "@/components/gallery/GalleryClient";
 
+import { buildDynamicMetadata, getBaseSiteUrl } from "@/lib/seo/metadata";
+import { getCachedSeoSettings } from "@/lib/publicData";
+import { generateImageGalleryJsonLd, serializeJsonLd } from "@/lib/seo/jsonLd";
+
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Gallery & Visual Archive | MD Rohan Mia",
-  description:
-    "Curated visual chronicle of personal moments, travels, engineering work, and memories.",
-};
+export async function generateMetadata() {
+  return await buildDynamicMetadata({ path: "/gallery" });
+}
 
 export default async function GalleryPage() {
-  const images = await getGalleryImages();
-  return <GalleryClient initialImages={images || []} />;
+  const [images, seoSettings] = await Promise.all([
+    getGalleryImages(),
+    getCachedSeoSettings().catch(() => null),
+  ]);
+
+  const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
+  const galleryJsonLd = generateImageGalleryJsonLd(
+    images || [],
+    baseUrl,
+    seoSettings?.primary_name
+  );
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(galleryJsonLd),
+        }}
+      />
+      <GalleryClient initialImages={images || []} />
+    </>
+  );
 }

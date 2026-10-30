@@ -134,8 +134,19 @@ export async function saveHeroData(data: Partial<HeroData>) {
     `;
 
     await executeSql(query);
+
+    if (data.profile_image) {
+      await executeSql(`
+        UPDATE seo_settings 
+        SET profile_image_url = ${escapeSqlString(data.profile_image)}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = 'primary';
+      `);
+    }
+
     updateTag(PUBLIC_DATA_TAGS.hero);
+    updateTag(PUBLIC_DATA_TAGS.seo);
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     revalidatePath("/control-room-internal");
     return { success: true, hero: updated };
   } catch (error: any) {
@@ -194,6 +205,7 @@ export async function uploadHeroProfileImage(formData: FormData) {
     await saveHeroData({ profile_image: uploadRes.url });
 
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     revalidatePath("/control-room-internal");
     return { success: true, url: uploadRes.url };
   } catch (error: any) {

@@ -17,12 +17,19 @@ function isPublicDestination(pathname: string | null): boolean {
   return false;
 }
 
+function isBotUser(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return true;
+  if (navigator.webdriver) return true;
+  const ua = (navigator.userAgent || '').toLowerCase();
+  return /bot|crawler|spider|googlebot|google-inspectiontool|bingbot|yandex|slurp|duckduckbot|baiduspider|headlesschrome/i.test(ua);
+}
+
 export default function AnalyticsTracker() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Strictly track only public visitor routes - never track private admin or API paths
-    if (!isPublicDestination(pathname)) {
+    // Strictly track only public visitor routes and ignore bots/crawlers
+    if (!isPublicDestination(pathname) || isBotUser()) {
       return;
     }
 
@@ -48,7 +55,15 @@ export default function AnalyticsTracker() {
       }).catch(() => {});
     };
 
-    track();
+    // Non-blocking deferred dispatch for genuine visitors
+    let idleHandle: number | undefined;
+    let timerHandle: ReturnType<typeof setTimeout> | undefined;
+
+    if (typeof window.requestIdleCallback === 'function') {
+      idleHandle = window.requestIdleCallback(track, { timeout: 3000 });
+    } else {
+      timerHandle = setTimeout(track, 1000);
+    }
 
     // Heartbeat to track duration (every 10 seconds) - runs silently without triggering router refresh
     const interval = setInterval(() => {
@@ -65,7 +80,15 @@ export default function AnalyticsTracker() {
       }).catch(() => {});
     }, 10000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (idleHandle && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleHandle);
+      }
+      if (timerHandle) {
+        clearTimeout(timerHandle);
+      }
+      clearInterval(interval);
+    };
   }, [pathname]);
 
   return null;

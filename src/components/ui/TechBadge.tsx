@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { 
   SiNextdotjs, 
   SiReact, 
@@ -110,10 +109,11 @@ import {
   SiMariadb,
   SiNeo4J,
   SiGooglecloud,
-  SiGitlab
+  SiGitlab,
+  SiLeaflet
 } from 'react-icons/si';
 import { FaAws } from 'react-icons/fa6';
-import { Code2, Cpu, Database, Server, Laptop, Monitor } from 'lucide-react';
+import { Code2, Cpu, Database, Server, Laptop, Monitor, LineChart, ShieldCheck, Sparkles, Globe, Layers } from 'lucide-react';
 
 interface TechBadgeProps {
   name: string;
@@ -291,11 +291,55 @@ const ICON_MAP: Record<string, { icon: React.ComponentType<{ size?: number; styl
   'zod': { icon: SiZod, color: '#3E67B1' },
   'clerk': { icon: SiClerk, color: '#6C47FF' },
   'jsonwebtokens': { icon: SiJsonwebtokens, color: '#ffffff' },
+  'Recharts': { icon: LineChart, color: '#22D3EE' },
+  'Better Auth': { icon: ShieldCheck, color: '#38BDF8' },
+  'HeroUI': { icon: Sparkles, color: '#006FEE' },
+  'Leaflet': { icon: SiLeaflet, color: '#199900' },
+  'NextAuth': { icon: ShieldCheck, color: '#A855F7' },
+  'REST APIs': { icon: Globe, color: '#A855F7' },
 };
 
+function normalizeKey(str: string): string {
+  return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+const NORMALIZED_ICON_MAP: Record<string, { icon: React.ComponentType<{ size?: number; style?: React.CSSProperties; className?: string }>; color: string }> = {};
+
+for (const [key, value] of Object.entries(ICON_MAP)) {
+  const norm = normalizeKey(key);
+  if (norm && !NORMALIZED_ICON_MAP[norm]) {
+    NORMALIZED_ICON_MAP[norm] = value;
+  }
+}
+
+// Explicit normalized aliases for fast O(1) matching
+NORMALIZED_ICON_MAP['recharts'] = { icon: LineChart, color: '#22D3EE' };
+NORMALIZED_ICON_MAP['verceledge'] = { icon: SiVercel, color: '#ffffff' };
+NORMALIZED_ICON_MAP['vercel'] = { icon: SiVercel, color: '#ffffff' };
+NORMALIZED_ICON_MAP['betterauth'] = { icon: ShieldCheck, color: '#38BDF8' };
+NORMALIZED_ICON_MAP['heroui'] = { icon: Sparkles, color: '#006FEE' };
+NORMALIZED_ICON_MAP['leaflet'] = { icon: SiLeaflet, color: '#199900' };
+NORMALIZED_ICON_MAP['nextauth'] = { icon: ShieldCheck, color: '#A855F7' };
+NORMALIZED_ICON_MAP['restapis'] = { icon: Globe, color: '#A855F7' };
+NORMALIZED_ICON_MAP['socketio'] = { icon: SiSocketdotio, color: '#ffffff' };
+NORMALIZED_ICON_MAP['cloudinary'] = { icon: SiCloudinary, color: '#3448C5' };
+NORMALIZED_ICON_MAP['docker'] = { icon: SiDocker, color: '#2496ED' };
+NORMALIZED_ICON_MAP['express'] = { icon: SiExpress, color: '#ffffff' };
+NORMALIZED_ICON_MAP['mongodb'] = { icon: SiMongodb, color: '#47A248' };
+NORMALIZED_ICON_MAP['nextjs'] = { icon: SiNextdotjs, color: '#ffffff' };
+NORMALIZED_ICON_MAP['nodejs'] = { icon: SiNodedotjs, color: '#339933' };
+NORMALIZED_ICON_MAP['prisma'] = { icon: SiPrisma, color: '#5a67d8' };
+NORMALIZED_ICON_MAP['postgresql'] = { icon: SiPostgresql, color: '#4169E1' };
+NORMALIZED_ICON_MAP['react'] = { icon: SiReact, color: '#61DAFB' };
+NORMALIZED_ICON_MAP['react19'] = { icon: SiReact, color: '#61DAFB' };
+NORMALIZED_ICON_MAP['reduxtoolkit'] = { icon: SiRedux, color: '#764ABC' };
+NORMALIZED_ICON_MAP['stripe'] = { icon: SiStripe, color: '#635BFF' };
+NORMALIZED_ICON_MAP['tailwindcss'] = { icon: SiTailwindcss, color: '#06B6D4' };
+NORMALIZED_ICON_MAP['typescript'] = { icon: SiTypescript, color: '#3178C6' };
+
 /**
- * Dynamic brand icon loader that fetches official SVGs from Simple Icons CDN
- * so any real technology displays its actual official logo, never a generic fallback.
+ * High-performance local brand icon loader that uses reliable local SVGs.
+ * Completely eliminates external 3rd-party CDN failures in crawler rendering.
  */
 export const DynamicBrandIcon: React.FC<{
   size?: number;
@@ -304,54 +348,43 @@ export const DynamicBrandIcon: React.FC<{
   techName?: string;
   iconSlug?: string;
 }> = ({ size = 20, style, className, techName = '', iconSlug }) => {
-  const [failed, setFailed] = React.useState(false);
-  const slug = (iconSlug || techName).toLowerCase().replace(/[^a-z0-9]/g, '');
-  const colorHex = (style?.color as string)?.replace('#', '') || 'ffffff';
+  const normSlug = normalizeKey(iconSlug || '');
+  const normName = normalizeKey(techName || '');
 
-  if (failed || !slug) {
-    return <Code2 size={size} style={style} className={className} />;
+  const match = (normSlug && NORMALIZED_ICON_MAP[normSlug]) || (normName && NORMALIZED_ICON_MAP[normName]);
+  if (match) {
+    const Icon = match.icon;
+    return <Icon size={size} style={{ color: match.color, ...style }} className={className} />;
   }
 
-  return (
-    <Image
-      src={`https://cdn.simpleicons.org/${slug}/${colorHex}`}
-      alt={techName || slug}
-      width={size}
-      height={size}
-      className={className}
-      unoptimized
-      style={{
-        width: size,
-        height: size,
-        objectFit: 'contain',
-        display: 'inline-block',
-        ...style,
-      }}
-      onError={() => setFailed(true)}
-    />
-  );
+  return <Code2 size={size} style={style} className={className} />;
 };
 
 export function getIconForTech(name: string, iconSlug?: string) {
   if (!name && !iconSlug) return { icon: Code2, color: '#94a3b8' };
 
-  // 1. Direct match on iconSlug if present
-  if (iconSlug) {
-    const slugKey = iconSlug.toLowerCase().trim();
-    if (ICON_MAP[slugKey]) return ICON_MAP[slugKey];
+  const normSlug = normalizeKey(iconSlug || '');
+  const normName = normalizeKey(name || '');
+
+  // 1. Normalized match on iconSlug
+  if (normSlug && NORMALIZED_ICON_MAP[normSlug]) {
+    return NORMALIZED_ICON_MAP[normSlug];
   }
 
-  // 2. Direct exact match on name
-  if (name && ICON_MAP[name]) return ICON_MAP[name];
+  // 2. Normalized match on name (handles UPPERCASE, lowercase, kebab-case, spaces)
+  if (normName && NORMALIZED_ICON_MAP[normName]) {
+    return NORMALIZED_ICON_MAP[normName];
+  }
 
   const lower = (name || '').toLowerCase().trim();
-  const lowerSlug = (iconSlug || '').toLowerCase().trim();
 
-  // 3. Lowercase match
-  if (ICON_MAP[lower]) return ICON_MAP[lower];
-  if (lowerSlug && ICON_MAP[lowerSlug]) return ICON_MAP[lowerSlug];
-
-  // 4. Keyword and alias matching
+  // 3. Keyword and alias matching
+  if (lower.includes('vercel')) return NORMALIZED_ICON_MAP['vercel'];
+  if (lower.includes('rechart') || lower.includes('chart')) return NORMALIZED_ICON_MAP['recharts'];
+  if (lower.includes('better auth') || lower.includes('betterauth')) return NORMALIZED_ICON_MAP['betterauth'];
+  if (lower.includes('heroui') || lower.includes('hero ui')) return NORMALIZED_ICON_MAP['heroui'];
+  if (lower.includes('leaflet')) return NORMALIZED_ICON_MAP['leaflet'];
+  if (lower.includes('nextauth')) return NORMALIZED_ICON_MAP['nextauth'];
   if (lower.includes('next')) return ICON_MAP['Next.js'];
   if (lower.includes('react native')) return ICON_MAP['React Native'];
   if (lower.includes('react')) return ICON_MAP['React'];
@@ -445,10 +478,11 @@ export function getIconForTech(name: string, iconSlug?: string) {
   if (lower.includes('gitlab')) return ICON_MAP['GitLab'];
   if (lower.includes('db') || lower.includes('data')) return { icon: Database, color: '#38bdf8' };
   if (lower.includes('api') || lower.includes('server')) return { icon: Server, color: '#a855f7' };
+  if (lower.includes('ui') || lower.includes('style') || lower.includes('css')) return { icon: Layers, color: '#006fee' };
 
-  // 5. Fallback to official Simple Icons CDN dynamic brand vector
+  // 4. Fallback to clean local vector icon
   return {
-    icon: (props: any) => <DynamicBrandIcon {...props} techName={name} iconSlug={iconSlug} />,
+    icon: Code2,
     color: '#38bdf8',
   };
 }

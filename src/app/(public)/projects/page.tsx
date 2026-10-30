@@ -3,13 +3,15 @@ import { getCachedProjects } from "@/lib/publicData";
 import ProjectsClientView from "@/components/projects/ProjectsClientView";
 import { CaseStudy } from "@/data/projects";
 
+import { buildDynamicMetadata, getBaseSiteUrl } from "@/lib/seo/metadata";
+import { getCachedSeoSettings } from "@/lib/publicData";
+import { generateProjectsCollectionJsonLd, serializeJsonLd } from "@/lib/seo/jsonLd";
+
 export const revalidate = 60; // 0ms instantaneous visitor load with background revalidation
 
-export const metadata = {
-  title: "Projects & Systems | MD Rohan Mia",
-  description:
-    "A curated collection of production web applications, system architectures, and mobile software engineered by Rohan Mia.",
-};
+export async function generateMetadata() {
+  return await buildDynamicMetadata({ path: "/projects" });
+}
 
 export default async function ProjectsPage() {
   const dbProjects = await getCachedProjects();
@@ -53,5 +55,23 @@ export default async function ProjectsPage() {
     whatILearned: p.what_i_learned,
   }));
 
-  return <ProjectsClientView initialProjects={projects} />;
+  const seoSettings = await getCachedSeoSettings().catch(() => null);
+  const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
+  const collectionJsonLd = seoSettings
+    ? generateProjectsCollectionJsonLd(dbProjects, seoSettings, baseUrl)
+    : null;
+
+  return (
+    <>
+      {collectionJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(collectionJsonLd),
+          }}
+        />
+      )}
+      <ProjectsClientView initialProjects={projects} />
+    </>
+  );
 }

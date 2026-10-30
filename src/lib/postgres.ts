@@ -101,3 +101,4 @@ export * from './db/gallery';
 export * from './db/guestbook';
 export * from './db/contact';
 export * from './db/links';
+export * from './db/seo';

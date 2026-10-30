@@ -1,15 +1,17 @@
-import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { getSeoSettingsDb } from "@/lib/db/seo";
+import { getBaseSiteUrl } from "@/lib/seo/metadata";
 
-export default function robots(): MetadataRoute.Robots {
-  const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/+$/, '');
-  const adminSecretPath = (process.env.ADMIN_ENTRY_PATH || '/control-room-internal').replace(/\/+$/, '');
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const seoSettings = await getSeoSettingsDb().catch(() => null);
+  const baseUrl = getBaseSiteUrl(seoSettings?.canonical_base_url);
 
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: [adminSecretPath, '/control-room-internal/', '/api/'],
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/api/"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: baseUrl ? `${baseUrl}/sitemap.xml` : "/sitemap.xml",
   };
 }

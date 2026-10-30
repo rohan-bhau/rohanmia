@@ -368,6 +368,91 @@ export function ensurePortfolioTables(): Promise<void> {
       await executeSql(
         `UPDATE featured_case_studies SET migrated_to_project = true WHERE migrated_to_project = false;`,
       );
+
+      // --- Dynamic SEO System Tables & Columns ---
+      await executeSql(`
+        CREATE TABLE IF NOT EXISTS seo_settings (
+          id VARCHAR(64) PRIMARY KEY DEFAULT 'primary',
+          primary_name VARCHAR(128) DEFAULT 'Md Rohan Mia',
+          alternate_names JSONB DEFAULT '["Rohan Mia", "Bhau", "Rohan Bhau", "rohan-bhau"]'::jsonb,
+          nickname VARCHAR(64) DEFAULT 'Bhau',
+          professional_title VARCHAR(128) DEFAULT 'Full Stack Developer',
+          location_locality VARCHAR(64) DEFAULT 'Dhaka',
+          location_country VARCHAR(64) DEFAULT 'Bangladesh',
+          short_bio TEXT DEFAULT 'Full Stack Developer specializing in Next.js, React, TypeScript, Node.js, Express.js, PostgreSQL, and MongoDB.',
+          detailed_bio TEXT DEFAULT 'Md Rohan Mia (known as Rohan Bhau) is a full stack developer based in Dhaka, Bangladesh, building high-concurrency web applications, distributed APIs, and interactive digital experiences.',
+          skills JSONB DEFAULT '["Next.js", "React", "TypeScript", "Node.js", "Express.js", "PostgreSQL", "MongoDB", "Tailwind CSS", "REST APIs", "Full Stack Development"]'::jsonb,
+          canonical_base_url VARCHAR(255) DEFAULT '',
+          default_meta_title VARCHAR(255) DEFAULT 'Md Rohan Mia | Full Stack Developer in Bangladesh',
+          default_meta_description TEXT DEFAULT 'Portfolio of Md Rohan Mia (Rohan Bhau) - Full Stack Developer based in Dhaka, Bangladesh. Building production Next.js platforms, distributed backends, and responsive web applications.',
+          default_og_title VARCHAR(255) DEFAULT 'Md Rohan Mia (Rohan Bhau) — Full Stack Developer',
+          default_og_description TEXT DEFAULT 'Explore the personal portfolio, engineering case studies, and architecture projects of Md Rohan Mia, Full Stack Developer from Dhaka, Bangladesh.',
+          default_og_image TEXT DEFAULT '',
+          google_verification_token VARCHAR(255) DEFAULT 'yH9eJO5yYLc4wgh3jwtqR_QE28Vsc1SrST5teq331do',
+          google_tag_id VARCHAR(64) DEFAULT 'G-4PP1H13CXG',
+          default_robots_index BOOLEAN DEFAULT true,
+          default_robots_follow BOOLEAN DEFAULT true,
+          default_twitter_card VARCHAR(32) DEFAULT 'summary_large_image',
+          profile_image_url TEXT DEFAULT '',
+          profile_image_alt TEXT DEFAULT 'Md Rohan Mia (Rohan Bhau) — Full Stack Developer in Bangladesh',
+          profile_image_title TEXT DEFAULT 'Md Rohan Mia - Professional Profile Photo',
+          profile_image_caption TEXT DEFAULT 'Md Rohan Mia, Full Stack Developer based in Dhaka, Bangladesh',
+          profile_image_variants JSONB DEFAULT '{}'::jsonb,
+          social_profiles JSONB DEFAULT '["https://github.com/rohan-bhau", "https://www.linkedin.com/in/rohan-mia/", "https://x.com/_Rohan_Bhau", "https://www.facebook.com/bhau.rohan", "https://www.instagram.com/__rohan.bhau/"]'::jsonb,
+          target_keywords JSONB DEFAULT '["Md Rohan Mia", "Rohan Mia", "Rohan Bhau", "Bhau developer", "Full stack developer in Bangladesh", "Full stack developer in Dhaka", "Next.js developer Bangladesh", "React developer Bangladesh"]'::jsonb,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      await executeSql(`
+        CREATE TABLE IF NOT EXISTS page_seo (
+          page_path VARCHAR(128) PRIMARY KEY,
+          title VARCHAR(255),
+          description TEXT,
+          canonical_url TEXT,
+          og_title VARCHAR(255),
+          og_description TEXT,
+          og_image TEXT,
+          og_image_alt TEXT,
+          twitter_card VARCHAR(32) DEFAULT 'summary_large_image',
+          robots_index BOOLEAN DEFAULT true,
+          robots_follow BOOLEAN DEFAULT true,
+          keywords JSONB DEFAULT '[]'::jsonb,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+
+      // Add SEO columns to projects table
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_title VARCHAR(255);`);
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_description TEXT;`);
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS canonical_url TEXT;`);
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS og_image TEXT;`);
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS og_image_alt TEXT;`);
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS no_index BOOLEAN DEFAULT false;`);
+      await executeSql(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS keywords JSONB DEFAULT '[]'::jsonb;`);
+      await executeSql(`ALTER TABLE seo_settings ADD COLUMN IF NOT EXISTS google_tag_id VARCHAR(64) DEFAULT 'G-4PP1H13CXG';`);
+
+      // Seed initial seo_settings row if not exists, populating profile_image from hero_content if available
+      await executeSql(`
+        INSERT INTO seo_settings (id, profile_image_url, updated_at)
+        SELECT 'primary', COALESCE((SELECT profile_image FROM hero_content WHERE id = 'primary' LIMIT 1), ''), CURRENT_TIMESTAMP
+        ON CONFLICT (id) DO NOTHING;
+      `);
+
+      // Seed standard pages into page_seo if empty
+      await executeSql(`
+        INSERT INTO page_seo (page_path, title, description, og_title, og_description)
+        VALUES
+          ('/', 'Md Rohan Mia | Full Stack Developer in Bangladesh', 'Portfolio of Md Rohan Mia (Rohan Bhau) - Full Stack Developer based in Dhaka, Bangladesh. Building scalable web platforms, high-concurrency systems, and bespoke UI architectures.', 'Md Rohan Mia (Rohan Bhau) — Full Stack Developer', 'Explore the interactive portfolio and production case studies of Md Rohan Mia, Full Stack Engineer in Dhaka, Bangladesh.'),
+          ('/about', 'About Md Rohan Mia (Rohan Bhau) | Full Stack Engineer', 'Learn about Md Rohan Mia (Bhau), a full stack developer and creative engineer based in Dhaka, Bangladesh. Engineering background, core principles, and technical proficiencies.', 'About Md Rohan Mia — Career & Engineering Journey', 'The story, engineering principles, and experience behind Md Rohan Mia (Rohan Bhau).'),
+          ('/projects', 'Projects & Systems Architecture | Md Rohan Mia', 'A curated collection of production web applications, system architectures, and mobile software engineered by Md Rohan Mia (Rohan Bhau).', 'Projects & Production Architectures — Md Rohan Mia', 'Case studies and system breakdowns of production platforms engineered by Md Rohan Mia.'),
+          ('/tech-stack', 'Tech Stack & Engineering Toolchain | Md Rohan Mia', 'The tools, frameworks, and architectural platforms powering high-performance systems engineered by Md Rohan Mia: Next.js, React, TypeScript, Node.js, PostgreSQL, MongoDB.', 'Tech Stack & Systems — Md Rohan Mia', 'Core competencies, frameworks, databases, and DevOps tools used by Md Rohan Mia.'),
+          ('/gallery', 'Visual Chronicle & Gallery | Md Rohan Mia', 'Curated visual chronicle of personal milestones, travels, developer events, and memories by Md Rohan Mia.', 'Gallery & Visual Chronicle — Md Rohan Mia', 'Visual archive and memories from Md Rohan Mia.'),
+          ('/guestbook', 'Guestbook & Community Wall | Md Rohan Mia', 'Leave a note, kind message, or feedback on Md Rohan Mia''s guestbook wall. Connected with developer peers across the globe.', 'Guestbook — Md Rohan Mia', 'Community messages and feedback on Md Rohan Mia''s portfolio.'),
+          ('/links', 'Verified Links & Social Profiles | Md Rohan Mia', 'Verified links, social handles, code repositories, and direct contact channels for Md Rohan Mia (Rohan Bhau).', 'Verified Links & Social Identity — Md Rohan Mia', 'Connect with Md Rohan Mia across GitHub, LinkedIn, Twitter/X, and social channels.'),
+          ('/contact', 'Contact & Work Inquiries | Md Rohan Mia', 'Get in touch with Md Rohan Mia for freelance contracts, full stack development projects, architecture consulting, or technical collaborations.', 'Contact Md Rohan Mia — Hire Full Stack Developer', 'Send an inquiry or schedule a meeting with Md Rohan Mia, Full Stack Developer in Dhaka, Bangladesh.')
+        ON CONFLICT (page_path) DO NOTHING;
+      `);
     })().catch((err) => {
       portfolioTablesReady = null;
       throw err;

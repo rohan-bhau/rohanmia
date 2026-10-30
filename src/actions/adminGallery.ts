@@ -77,6 +77,7 @@ export async function saveAdminGalleryPhoto(data: {
     updateTag(PUBLIC_DATA_TAGS.gallery);
     revalidatePath("/gallery");
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     return { success: true, photo };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -100,6 +101,7 @@ export async function removeAdminGalleryPhoto(
     updateTag(PUBLIC_DATA_TAGS.gallery);
     revalidatePath("/gallery");
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -117,6 +119,7 @@ export async function reorderAdminGalleryPhotos(
     updateTag(PUBLIC_DATA_TAGS.gallery);
     revalidatePath("/gallery");
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

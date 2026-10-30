@@ -1,11 +1,10 @@
-import type { Metadata } from 'next';
+import { buildDynamicMetadata } from '@/lib/seo/metadata';
 import GuestbookClient from './GuestbookClient';
 import { getGuestbookData, getOAuthStatus } from '@/lib/guestbook';
 
-export const metadata: Metadata = {
-  title: 'Guestbook — Rohan Mia',
-  description: 'Leave a note, a kind word, or some feedback on my guestbook wall.',
-};
+export async function generateMetadata() {
+  return await buildDynamicMetadata({ path: "/guestbook" });
+}
 
 export default async function GuestbookPage() {
   // Load entries on the server so they are already in the HTML on first paint

@@ -324,7 +324,9 @@ export async function saveAdminProject(
     revalidatePath("/projects");
     revalidatePath(`/projects/${saved.slug}`);
     revalidatePath("/");
+    revalidatePath("/sitemap.xml");
     updateTag(PUBLIC_DATA_TAGS.projects);
+    updateTag(PUBLIC_DATA_TAGS.seo);
     return { success: true, project: saved };
   } catch (err: any) {
     return { success: false, error: err.message };
