@@ -7,7 +7,7 @@ import LinksClient from './LinksClient';
 import { buildDynamicMetadata } from '@/lib/seo/metadata';
 import { getCachedSeoSettings } from '@/lib/publicData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return await buildDynamicMetadata({ path: "/links" });

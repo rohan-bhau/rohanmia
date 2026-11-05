@@ -796,6 +796,7 @@ export async function saveAruConfig(updates: {
   await assertAdmin();
   try {
     const updated = await updateAiConfigDb(updates);
+    updateTag(PUBLIC_DATA_TAGS.ai);
     revalidatePath("/control-room-internal/aru");
     return { success: true, config: updated };
   } catch (err: any) {

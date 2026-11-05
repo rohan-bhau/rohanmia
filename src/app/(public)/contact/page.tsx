@@ -5,7 +5,7 @@ import ContactClientView from './ContactClientView';
 
 import { buildDynamicMetadata } from '@/lib/seo/metadata';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return await buildDynamicMetadata({ path: "/contact" });

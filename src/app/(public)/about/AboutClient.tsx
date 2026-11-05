@@ -337,7 +337,7 @@ export default function AboutClient({
                         >
                           <Briefcase size={16} />
                         </div>
-                        <h3 className="font-serif text-xl sm:text-2xl text-white font-medium tracking-tight whitespace-nowrap">
+                        <h3 className="font-serif text-xl sm:text-2xl text-white font-medium tracking-tight break-words sm:whitespace-nowrap">
                           {exp.company}
                         </h3>
                       </div>

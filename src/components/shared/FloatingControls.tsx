@@ -20,12 +20,12 @@ export default function FloatingControls() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/control-room-internal')) return null;
 
   return (
     <div className="floating-controls-container pointer-events-none">
       {/* Scroll to Top (Cleanly stacked vertically right above the AI Chatbot trigger) */}
-      <div className="fixed bottom-[152px] right-[26px] md:bottom-[98px] md:right-[34px] z-40 pointer-events-auto">
+      <div className="fixed bottom-[160px] right-[22px] md:bottom-[98px] md:right-[34px] z-40 pointer-events-auto">
         <AnimatePresence>
           {showScrollTop && (
             <motion.div

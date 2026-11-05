@@ -14,9 +14,11 @@ import { getLinksDb } from "@/lib/db/links";
 import { getFeaturedProjectsDb, getProjectsDb } from "@/lib/db/projects";
 import { getTechStackDb } from "@/lib/db/stack";
 import { getSeoSettingsDb, getAllPageSeoDb, getPageSeoDb } from "@/lib/db/seo";
+import { getAiConfigDb } from "@/lib/db/aiConfig";
 
 export const PUBLIC_DATA_TAGS = {
   about: "public-about",
+  ai: "public-ai",
   bento: "public-bento",
   gallery: "public-gallery",
   guestbook: "public-guestbook",
@@ -110,5 +112,14 @@ export const getCachedPageSeo = unstable_cache(
   async (pagePath: string) => getPageSeoDb(pagePath),
   ["public-page-seo"],
   cacheOptions(PUBLIC_DATA_TAGS.seo),
+);
+
+export const getCachedAruAvatar = unstable_cache(
+  async (): Promise<string> => {
+    const config = await getAiConfigDb();
+    return config?.avatar_url || "/aru-avatar.png";
+  },
+  ["public-aru-avatar"],
+  cacheOptions(PUBLIC_DATA_TAGS.ai),
 );
 

@@ -1414,7 +1414,7 @@ export default function Chatbot() {
   const activeChips = isAdmin ? adminSuggestions : visitorSuggestions;
 
   return (
-    <div className="fixed bottom-3 right-3 left-3 sm:left-auto sm:bottom-6 sm:right-6 md:right-8 z-[70] chatbot-container pointer-events-auto flex justify-end">
+    <div className="fixed bottom-[94px] right-4 left-4 sm:left-auto md:bottom-6 md:right-8 z-[70] chatbot-container pointer-events-none flex justify-end">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -1423,7 +1423,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.95 }}
             transition={{ type: "spring", damping: 28, stiffness: 360 }}
-            className="w-full sm:w-[410px] md:w-[430px] max-h-[calc(100dvh-6.75rem)] h-[min(440px,calc(100dvh-6.75rem))] sm:h-[540px] sm:max-h-[580px] border border-white/[0.12] rounded-[24px] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(14,165,233,0.08)] flex flex-col overflow-hidden backdrop-blur-3xl bg-[#0b0d13]/95 pointer-events-auto ring-1 ring-white/[0.08]"
+            className="w-full sm:w-[410px] md:w-[430px] mb-2 md:mb-0 max-h-[calc(100dvh-11rem)] h-[min(510px,calc(100dvh-11rem))] md:h-[540px] md:max-h-[580px] border border-white/[0.12] rounded-[24px] shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(14,165,233,0.08)] flex flex-col overflow-hidden backdrop-blur-3xl bg-[#0b0d13]/95 pointer-events-auto ring-1 ring-white/[0.08]"
           >
             {/* Header */}
             <div className="p-3 sm:p-4 border-b border-white/10 flex items-center justify-between pointer-events-auto transition-colors bg-gradient-to-r from-primary/15 via-primary/5 to-transparent shrink-0">
@@ -1997,39 +1997,41 @@ export default function Chatbot() {
 
       {/* Floating Toggle Trigger Button - only displayed when chat is closed */}
       {!isOpen && (
-        <Tooltip text={isAdmin ? "Aru • Executive Co-pilot" : "Chat with Aru"} position="left">
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.94 }}
-            onClick={handleOpenToggle}
-            className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-white relative group overflow-hidden shadow-2xl transition-all ${
-              isAdmin
-                ? "bg-gradient-to-br from-amber-500 via-primary to-accent shadow-[0_0_30px_rgba(245,158,11,0.4)]"
-                : "bg-gradient-to-br from-primary to-accent shadow-[0_0_30px_rgba(14,165,233,0.4)]"
-            }`}
-            aria-label="Open AI assistant"
-          >
-            <div
-              className={`absolute inset-0 rounded-full animate-ping opacity-25 group-hover:opacity-45 ${
-                isAdmin ? "bg-amber-400" : "bg-primary"
+        <div className="pointer-events-auto">
+          <Tooltip text={isAdmin ? "Aru • Executive Co-pilot" : "Chat with Aru"} position="left">
+            <motion.button
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={handleOpenToggle}
+              className={`w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-white relative group overflow-hidden shadow-2xl transition-all cursor-pointer touch-manipulation ${
+                isAdmin
+                  ? "bg-gradient-to-br from-amber-500 via-primary to-accent shadow-[0_0_30px_rgba(245,158,11,0.4)]"
+                  : "bg-gradient-to-br from-primary to-accent shadow-[0_0_30px_rgba(14,165,233,0.4)]"
               }`}
-            />
-            <div className="relative w-full h-full p-1">
-              <div className="w-full h-full rounded-full overflow-hidden relative">
-                <Image
-                  src={avatarUrl}
-                  alt="Aru AI"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                />
+              aria-label="Open AI assistant"
+            >
+              <div
+                className={`absolute inset-0 rounded-full animate-ping opacity-25 group-hover:opacity-45 ${
+                  isAdmin ? "bg-amber-400" : "bg-primary"
+                }`}
+              />
+              <div className="relative w-full h-full p-1">
+                <div className="w-full h-full rounded-full overflow-hidden relative">
+                  <Image
+                    src={avatarUrl}
+                    alt="Aru AI"
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
-            </div>
-          </motion.button>
-        </Tooltip>
+            </motion.button>
+          </Tooltip>
+        </div>
       )}
     </div>
   );

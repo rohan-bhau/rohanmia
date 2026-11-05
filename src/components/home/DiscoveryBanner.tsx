@@ -159,10 +159,10 @@ export default function DiscoveryBanner() {
 
               {/* Exact Editorial Headline Typography */}
               <div className="order-2 font-sans font-light text-lg sm:text-3xl md:text-4xl lg:text-5xl tracking-wide text-white select-none">
-                <h2 className="whitespace-nowrap uppercase">
+                <h2 className="whitespace-normal sm:whitespace-nowrap uppercase">
                   FROM CONCEPT TO <span className="font-extrabold text-white">CREATION</span>
                 </h2>
-                <h2 className="mt-2 sm:mt-3 whitespace-nowrap uppercase">
+                <h2 className="mt-2 sm:mt-3 whitespace-normal sm:whitespace-nowrap uppercase">
                   LET&apos;S MAKE IT <span className="font-extrabold text-white">HAPPEN!</span>
                 </h2>
               </div>

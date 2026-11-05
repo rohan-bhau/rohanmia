@@ -10,6 +10,11 @@ let contactBookingTablesReady: Promise<void> | null = null;
 export function ensureGuestbookTable(): Promise<void> {
   if (!guestbookTableReady) {
     guestbookTableReady = (async () => {
+      const check = await executeSql<{ ready: boolean }>(`
+        SELECT to_regclass('public.guestbook_entries') IS NOT NULL AS ready;
+      `);
+      if (check.rows[0]?.ready) return;
+
       await executeSql(`
         CREATE TABLE IF NOT EXISTS guestbook_entries (
           id VARCHAR(64) PRIMARY KEY,
@@ -41,6 +46,14 @@ export function ensureGuestbookTable(): Promise<void> {
 export function ensureContactAndBookingTables(): Promise<void> {
   if (!contactBookingTablesReady) {
     contactBookingTablesReady = (async () => {
+      const check = await executeSql<{ ready: boolean }>(`
+        SELECT (
+          to_regclass('public.contact_messages') IS NOT NULL AND
+          to_regclass('public.meeting_bookings') IS NOT NULL
+        ) AS ready;
+      `);
+      if (check.rows[0]?.ready) return;
+
       await executeSql(`
         CREATE TABLE IF NOT EXISTS contact_messages (
           id VARCHAR(64) PRIMARY KEY,
@@ -92,6 +105,19 @@ export function ensureContactAndBookingTables(): Promise<void> {
 export function ensurePortfolioTables(): Promise<void> {
   if (!portfolioTablesReady) {
     portfolioTablesReady = (async () => {
+      const check = await executeSql<{ ready: boolean }>(`
+        SELECT (
+          to_regclass('public.projects') IS NOT NULL AND
+          to_regclass('public.seo_settings') IS NOT NULL AND
+          to_regclass('public.page_seo') IS NOT NULL AND
+          EXISTS (
+            SELECT 1 FROM information_schema.columns
+            WHERE table_name = 'seo_settings' AND column_name = 'google_tag_id'
+          )
+        ) AS ready;
+      `);
+      if (check.rows[0]?.ready) return;
+
       const ddlStatements = [
         `CREATE TABLE IF NOT EXISTS projects (
           id VARCHAR(64) PRIMARY KEY,

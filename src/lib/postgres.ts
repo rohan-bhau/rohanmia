@@ -1,6 +1,11 @@
 import https from 'https';
 import dns from 'dns';
 
+const keepAliveAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 25,
+});
+
 /**
  * SQL Escaping Utilities
  */
@@ -40,6 +45,7 @@ async function runQuery<T>(query: string, useFamily4: boolean = true): Promise<{
         'Content-Length': Buffer.byteLength(postData)
       },
       timeout: 6000,
+      agent: keepAliveAgent,
       family: 4,
       lookup: (hostname, options, callback) => {
         dns.lookup(hostname, { family: 4 }, callback);

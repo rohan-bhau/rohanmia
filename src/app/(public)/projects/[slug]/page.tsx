@@ -1,18 +1,19 @@
 import { notFound } from "next/navigation";
 import type { CaseStudy } from "@/data/projects";
-import {
-  DbProjectRow,
-  getProjectBySlugDb,
-  getProjectsDb,
-} from "@/lib/db/projects";
+import type { DbProjectRow } from "@/lib/db/projects";
 import CaseStudyClient from "./CaseStudyClient";
+import { buildDynamicMetadata, getBaseSiteUrl } from "@/lib/seo/metadata";
+import { getCachedProjects, getCachedSeoSettings } from "@/lib/publicData";
+import { generateProjectJsonLd, serializeJsonLd } from "@/lib/seo/jsonLd";
+
+export const revalidate = 60;
 
 interface CaseStudyPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  const dbProjects = await getProjectsDb();
+  const dbProjects = await getCachedProjects();
   return dbProjects.map((project) => ({ slug: project.slug }));
 }
 
@@ -66,13 +67,10 @@ function mapDbProject(project: DbProjectRow): CaseStudy {
   };
 }
 
-import { buildDynamicMetadata, getBaseSiteUrl } from "@/lib/seo/metadata";
-import { getCachedSeoSettings } from "@/lib/publicData";
-import { generateProjectJsonLd, serializeJsonLd } from "@/lib/seo/jsonLd";
-
 export async function generateMetadata({ params }: CaseStudyPageProps) {
   const { slug } = await params;
-  const dbP = await getProjectBySlugDb(slug);
+  const dbProjects = await getCachedProjects();
+  const dbP = dbProjects.find((p) => p.slug === slug);
   if (!dbP) notFound();
 
   return await buildDynamicMetadata({
@@ -98,7 +96,7 @@ export default async function ProjectCaseStudyPage({
 }: CaseStudyPageProps) {
   const { slug } = await params;
   const [dbProjects, seoSettings] = await Promise.all([
-    getProjectsDb(),
+    getCachedProjects(),
     getCachedSeoSettings().catch(() => null),
   ]);
 

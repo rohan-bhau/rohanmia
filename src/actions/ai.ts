@@ -4,6 +4,7 @@ import { executeSql, escapeSqlString, escapeSqlJson } from "@/lib/postgres";
 import { ensurePortfolioTables } from "@/lib/db/schema";
 import { getEffectiveSystemPrompt } from "@/lib/ai/context";
 import { getAiToolsDb, getAiConfigDb } from "@/lib/db/aiConfig";
+import { getCachedAruAvatar } from "@/lib/publicData";
 import { isAdminSession } from "@/lib/admin";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { saveLead } from "@/actions/leads";
@@ -13,8 +14,7 @@ import { saveLead } from "@/actions/leads";
  */
 export async function getAruAvatar(): Promise<string> {
   try {
-    const config = await getAiConfigDb();
-    return config?.avatar_url || "/aru-avatar.png";
+    return await getCachedAruAvatar();
   } catch {
     return "/aru-avatar.png";
   }

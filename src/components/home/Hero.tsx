@@ -45,22 +45,16 @@ export default function Hero({
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [canType, setCanType] = useState(isAdmin);
+  const [canType, setCanType] = useState(true);
   const displayData = !isAdmin && initialData ? initialData : data;
 
-  // Wait for preloader entrance to finish before typing on public homepage
+  // Listen for preloader completion or start typing immediately
   useEffect(() => {
-    if (isAdmin) return;
-
-    if (typeof window === "undefined") return;
-
+    if (isAdmin || typeof window === "undefined") return;
     const handleDone = () => setCanType(true);
     window.addEventListener("bhau-preloader-done", handleDone);
-    // Fallback: start typing after 2.8s entrance if event already fired
-    const fallback = setTimeout(() => setCanType(true), 2800);
     return () => {
       window.removeEventListener("bhau-preloader-done", handleDone);
-      clearTimeout(fallback);
     };
   }, [isAdmin]);
 
@@ -162,7 +156,7 @@ export default function Hero({
                   </span>
                 </EditableElement>
 
-                <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-normal tracking-tight text-foreground leading-[1.02]">
+                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-serif font-normal tracking-tight text-foreground leading-[1.02]">
                   <EditableElement
                     isAdmin={isAdmin}
                     label="First Name"

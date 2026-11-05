@@ -1,8 +1,6 @@
 import React from 'react';
 import { Outfit, Geist_Mono, Newsreader, Instrument_Serif } from "next/font/google";
 import "./globals.css";
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 import Providers from "@/components/shared/Providers";
 import Background from "@/components/shared/Background";
 import Preloader from "@/components/shared/Preloader";

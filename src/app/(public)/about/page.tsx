@@ -7,7 +7,7 @@ import { buildDynamicMetadata, getBaseSiteUrl } from '@/lib/seo/metadata';
 import { getCachedSeoSettings } from '@/lib/publicData';
 import { generateProfilePageJsonLd, serializeJsonLd } from '@/lib/seo/jsonLd';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export async function generateMetadata() {
   return await buildDynamicMetadata({ path: "/about" });

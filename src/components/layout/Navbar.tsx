@@ -169,6 +169,9 @@ export default function Navbar() {
       document.documentElement.style.overflow = "hidden";
 
       const blockScroll = (e: Event) => {
+        if (drawerRef.current && drawerRef.current.contains(e.target as Node)) {
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
       };
@@ -218,21 +221,25 @@ export default function Navbar() {
       href: "/",
       icon: Home,
       isMore: false,
-      active: pathname === "/",
+      active: !mobileMoreDrawerOpen && pathname === "/",
     },
     {
       name: "About",
       href: "/about",
       icon: User2,
       isMore: false,
-      active: pathname === "/about" || pathname?.startsWith("/about/"),
+      active:
+        !mobileMoreDrawerOpen &&
+        (pathname === "/about" || pathname?.startsWith("/about/")),
     },
     {
       name: "Work",
       href: "/projects",
       icon: FolderGit2,
       isMore: false,
-      active: pathname === "/projects" || pathname?.startsWith("/projects/"),
+      active:
+        !mobileMoreDrawerOpen &&
+        (pathname === "/projects" || pathname?.startsWith("/projects/")),
     },
     {
       name: "Stack",
@@ -240,9 +247,10 @@ export default function Navbar() {
       icon: Cpu,
       isMore: false,
       active:
-        pathname === "/tech-stack" ||
-        pathname?.startsWith("/tech-stack/") ||
-        pathname === "/stack",
+        !mobileMoreDrawerOpen &&
+        (pathname === "/tech-stack" ||
+          pathname?.startsWith("/tech-stack/") ||
+          pathname === "/stack"),
     },
     {
       name: "More",
@@ -693,7 +701,7 @@ export default function Navbar() {
               onTouchMove={(e) => {
                 e.preventDefault();
               }}
-              className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md md:hidden overscroll-none touch-none"
+              className="fixed inset-0 z-[75] bg-black/75 backdrop-blur-md md:hidden overscroll-none touch-none"
             />
 
             {/* Bottom Sheet Drawer */}
@@ -703,7 +711,7 @@ export default function Navbar() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: "100%", opacity: 0 }}
               transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="fixed bottom-24 left-3 right-3 sm:left-6 sm:right-6 max-w-md mx-auto z-50 md:hidden bg-[#0c0e12]/95 border border-white/[0.12] rounded-[28px] backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 flex flex-col gap-3.5 max-h-[76vh] overflow-y-auto overscroll-contain touch-pan-y no-scrollbar select-none"
+              className="fixed bottom-[104px] left-3 right-3 sm:left-6 sm:right-6 max-w-md mx-auto z-[75] md:hidden bg-[#0c0e12]/95 border border-white/[0.12] rounded-[28px] backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] p-4 flex flex-col gap-3.5 max-h-[calc(100dvh-11rem)] overflow-y-auto overscroll-contain touch-pan-y no-scrollbar select-none"
             >
               {/* Top Handle & Header */}
               <div className="flex flex-col items-center gap-2">
@@ -834,7 +842,7 @@ export default function Navbar() {
           MOBILE BOTTOM NAVIGATION DOCK (Curved Notch & Floating Circle)
          ======================================================== */}
       <nav
-        className="fixed bottom-4 inset-x-3 sm:inset-x-8 max-w-md mx-auto z-50 md:hidden select-none pointer-events-auto"
+        className="fixed bottom-4 inset-x-3 sm:inset-x-8 max-w-md mx-auto z-[80] md:hidden select-none pointer-events-auto"
         aria-label="Mobile Navigation"
       >
         <div className="relative w-full h-[66px]">
@@ -933,11 +941,13 @@ export default function Navbar() {
                 return (
                   <button
                     key={tab.name}
+                    type="button"
                     onClick={() =>
                       setMobileMoreDrawerOpen(!mobileMoreDrawerOpen)
                     }
-                    className="relative flex items-center justify-center w-full h-full cursor-pointer group"
+                    className="relative flex items-center justify-center w-full -mt-3 h-[calc(100%+12px)] pt-3 cursor-pointer group pointer-events-auto touch-manipulation"
                     aria-label="More options"
+                    aria-expanded={mobileMoreDrawerOpen}
                   >
                     {content}
                   </button>
@@ -952,7 +962,7 @@ export default function Navbar() {
                   onTouchStart={() => prefetchRoute(tab.href)}
                   onFocus={() => prefetchRoute(tab.href)}
                   onClick={() => setMobileMoreDrawerOpen(false)}
-                  className="relative flex items-center justify-center w-full h-full group"
+                  className="relative flex items-center justify-center w-full -mt-3 h-[calc(100%+12px)] pt-3 group pointer-events-auto touch-manipulation"
                 >
                   {content}
                 </Link>
