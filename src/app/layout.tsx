@@ -75,9 +75,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className="dark" data-accent={initialAccent} suppressHydrationWarning>
-      <body
-        className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
-      >
+      <head>
         {googleTagId && (
           <>
             <script
@@ -92,6 +90,10 @@ export default async function RootLayout({
             />
           </>
         )}
+      </head>
+      <body
+        className={`${outfit.variable} ${geistMono.variable} ${newsreader.variable} ${instrumentSerif.variable} font-sans antialiased`}
+      >
         {personJsonLd && (
           <script
             type="application/ld+json"

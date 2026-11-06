@@ -40,6 +40,14 @@ export default function AnalyticsTracker() {
     }
 
     const track = () => {
+      if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+        (window as any).gtag('event', 'page_view', {
+          page_path: pathname,
+          page_location: window.location.href,
+          page_title: document.title,
+        });
+      }
+
       const data = {
         path: pathname,
         visitorId,
