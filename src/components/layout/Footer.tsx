@@ -162,7 +162,7 @@ export default function Footer({ socialMap = {} }: { socialMap?: Record<string, 
                 }}
               >
                 <Calendar size={14} />
-                <span>Book 30-Min Discovery Call (In-Site)</span>
+                <span>Book a Call</span>
               </Link>
 
               {socialMap.email && (

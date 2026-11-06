@@ -24,8 +24,8 @@ export default function FloatingControls() {
 
   return (
     <div className="floating-controls-container pointer-events-none">
-      {/* Scroll to Top (Cleanly stacked vertically right above the AI Chatbot trigger) */}
-      <div className="fixed bottom-[160px] right-[22px] md:bottom-[98px] md:right-[34px] z-40 pointer-events-auto">
+      {/* Scroll to Top (Desktop only — hidden on mobile devices) */}
+      <div className="hidden md:block fixed md:bottom-[98px] md:right-[34px] z-40 pointer-events-auto">
         <AnimatePresence>
           {showScrollTop && (
             <motion.div

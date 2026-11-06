@@ -93,11 +93,30 @@ export default function Navbar() {
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
+  const scrollTopAfterDrawerCloseRef = useRef(false);
 
   const { currentTheme } = useThemeAccent();
   const { openBooking } = useBooking();
 
   const prefetchRoute = (href: string) => router.prefetch(href);
+
+  const handleNavLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+  ) => {
+    setDesktopMoreHovered(false);
+    if (pathname === href) {
+      e.preventDefault();
+      if (mobileMoreDrawerOpen) {
+        scrollTopAfterDrawerCloseRef.current = true;
+        setMobileMoreDrawerOpen(false);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } else {
+      setMobileMoreDrawerOpen(false);
+    }
+  };
 
   const handleDesktopMouseEnter = () => {
     if (hoverTimeoutRef.current) {
@@ -192,6 +211,12 @@ export default function Navbar() {
         document.body.style.overflow = originalOverflow;
         document.documentElement.style.overflow = originalHtmlOverflow;
         window.scrollTo(0, scrollY);
+        if (scrollTopAfterDrawerCloseRef.current) {
+          scrollTopAfterDrawerCloseRef.current = false;
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        }
 
         document.removeEventListener("wheel", blockScroll, { capture: true });
         document.removeEventListener("touchmove", blockScroll, {
@@ -300,7 +325,11 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             {/* Left: Brand Identity */}
             <div className="flex items-center gap-3">
-              <Link href="/" className="group flex items-center gap-3">
+              <Link
+                href="/"
+                onClick={(e) => handleNavLinkClick(e, "/")}
+                className="group flex items-center gap-3"
+              >
                 <AnimatedLogo
                   size={42}
                   animated={true}
@@ -349,7 +378,7 @@ export default function Navbar() {
                           setDesktopMoreHovered(false);
                         }}
                         onFocus={() => prefetchRoute(link.href)}
-                        onClick={() => setDesktopMoreHovered(false)}
+                        onClick={(e) => handleNavLinkClick(e, link.href)}
                         className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
                           active
                             ? "text-white font-semibold"
@@ -453,7 +482,7 @@ export default function Navbar() {
                             prefetch={true}
                             onMouseEnter={() => prefetchRoute("/guestbook")}
                             onFocus={() => prefetchRoute("/guestbook")}
-                            onClick={() => setDesktopMoreHovered(false)}
+                            onClick={(e) => handleNavLinkClick(e, "/guestbook")}
                             className="group relative h-[134px] rounded-xl overflow-hidden border border-white/[0.08] bg-[#14161b] flex flex-col justify-end p-2.5 transition-all duration-300 hover:border-white/25"
                           >
                             <Image
@@ -481,7 +510,7 @@ export default function Navbar() {
                             prefetch={true}
                             onMouseEnter={() => prefetchRoute("/gallery")}
                             onFocus={() => prefetchRoute("/gallery")}
-                            onClick={() => setDesktopMoreHovered(false)}
+                            onClick={(e) => handleNavLinkClick(e, "/gallery")}
                             className="group relative h-[134px] rounded-xl overflow-hidden border border-white/[0.08] bg-[#14161b] flex flex-col justify-end p-2.5 transition-all duration-300 hover:border-white/25"
                           >
                             <Image
@@ -512,7 +541,7 @@ export default function Navbar() {
                             prefetch={true}
                             onMouseEnter={() => prefetchRoute("/links")}
                             onFocus={() => prefetchRoute("/links")}
-                            onClick={() => setDesktopMoreHovered(false)}
+                            onClick={(e) => handleNavLinkClick(e, "/links")}
                             className="flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/15 transition-all group"
                           >
                             <div
@@ -542,7 +571,7 @@ export default function Navbar() {
                             prefetch={true}
                             onMouseEnter={() => prefetchRoute("/tech-stack")}
                             onFocus={() => prefetchRoute("/tech-stack")}
-                            onClick={() => setDesktopMoreHovered(false)}
+                            onClick={(e) => handleNavLinkClick(e, "/tech-stack")}
                             className="flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/15 transition-all group"
                           >
                             <div
@@ -572,7 +601,7 @@ export default function Navbar() {
                             prefetch={true}
                             onMouseEnter={() => prefetchRoute("/contact")}
                             onFocus={() => prefetchRoute("/contact")}
-                            onClick={() => setDesktopMoreHovered(false)}
+                            onClick={(e) => handleNavLinkClick(e, "/contact")}
                             className="flex items-center gap-2 p-1.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.06] hover:border-white/15 transition-all group"
                           >
                             <div
@@ -657,7 +686,7 @@ export default function Navbar() {
                 }}
               >
                 <Calendar size={13} />
-                <span>Book Call</span>
+                <span>Book a Call</span>
               </button>
 
               {/* Mobile Quick Book CTA */}
@@ -750,7 +779,7 @@ export default function Navbar() {
                       prefetch={true}
                       onTouchStart={() => prefetchRoute(link.href)}
                       onFocus={() => prefetchRoute(link.href)}
-                      onClick={() => setMobileMoreDrawerOpen(false)}
+                      onClick={(e) => handleNavLinkClick(e, link.href)}
                       className={`relative flex flex-col p-3 rounded-2xl border transition-all duration-200 group overflow-hidden ${
                         isCurrent
                           ? "border-white/20 bg-white/[0.08]"
@@ -829,7 +858,7 @@ export default function Navbar() {
                   }}
                 >
                   <Calendar size={14} />
-                  <span>Book 30-Min Discovery Call</span>
+                  <span>Book a Call</span>
                   <ArrowRight size={13} />
                 </button>
               </div>
@@ -961,7 +990,7 @@ export default function Navbar() {
                   prefetch={true}
                   onTouchStart={() => prefetchRoute(tab.href)}
                   onFocus={() => prefetchRoute(tab.href)}
-                  onClick={() => setMobileMoreDrawerOpen(false)}
+                  onClick={(e) => handleNavLinkClick(e, tab.href)}
                   className="relative flex items-center justify-center w-full -mt-3 h-[calc(100%+12px)] pt-3 group pointer-events-auto touch-manipulation"
                 >
                   {content}
